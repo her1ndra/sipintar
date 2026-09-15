@@ -68,6 +68,13 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
+        <li class="nav-item <?= siPintarMenuActive('/admin/gap/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/gap/index.php">
+                <i class="fas fa-fw fa-chart-bar"></i>
+                <span>Analisis Kesenjangan</span>
+            </a>
+        </li>
+
         <li class="nav-item <?= siPintarMenuActive('/admin/sertifikat/', $currentScript) ?>">
             <a class="nav-link" href="<?= BASE_URL ?>/admin/sertifikat/index.php">
                 <i class="fas fa-fw fa-certificate"></i>

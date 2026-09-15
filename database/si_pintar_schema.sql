@@ -305,26 +305,22 @@ CREATE TABLE bukti_dokumentasi (
 -- =====================================================================
 
 -- 6.1 Analisis Kesenjangan (Gap) Kompetensi
-CREATE TABLE analisis_gap (
-    id_gap          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    id_pegawai      INT UNSIGNED NOT NULL,
-    id_kompetensi   INT UNSIGNED NOT NULL,
-    id_penilaian    INT UNSIGNED NULL COMMENT 'Sumber hasil penilaian aktual',
-    level_standar   TINYINT UNSIGNED NOT NULL,
-    level_aktual    TINYINT UNSIGNED NOT NULL,
-    nilai_gap       TINYINT NOT NULL COMMENT 'level_standar - level_aktual',
-    kategori_gap    ENUM('Tidak Ada Gap','Gap Ringan','Gap Sedang','Gap Berat') NOT NULL,
-    periode_analisis YEAR NOT NULL,
+CREATE TABLE analisis_kesenjangan_kompetensi (
+    id_kesenjangan                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_jabatan                     INT UNSIGNED NOT NULL,
+    id_pegawai                     INT UNSIGNED NOT NULL,
+    kompetensi_jabatan             TEXT NOT NULL,
+    kompetensi_pegawai_saat_ini    TEXT NOT NULL,
+    gap_kompetensi                 TEXT NOT NULL,
+    dampak                         TEXT NOT NULL,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_gap_jabatan
+        FOREIGN KEY (id_jabatan) REFERENCES jabatan(id_jabatan)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_gap_pegawai
         FOREIGN KEY (id_pegawai) REFERENCES pegawai(id_pegawai)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_gap_kompetensi
-        FOREIGN KEY (id_kompetensi) REFERENCES kompetensi(id_kompetensi)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_gap_penilaian
-        FOREIGN KEY (id_penilaian) REFERENCES penilaian_kompetensi(id_penilaian)
-        ON UPDATE CASCADE ON DELETE SET NULL
+        ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 6.2 Katalog Diklat/Pelatihan
