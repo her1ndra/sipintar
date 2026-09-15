@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../includes/header.php';
 ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah sertifikat</a>
 <table class="table table-bordered table-striped bg-white">
-<thead><tr><th>Pegawai</th><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>Kadaluarsa</th></tr></thead>
+<thead><tr><th>Pegawai</th><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>Kadaluarsa</th><th>File</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
@@ -21,10 +21,20 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></td>
   <td><?= htmlspecialchars($row['tanggal_terbit'] ?? '-') ?></td>
   <td><?= htmlspecialchars($row['tanggal_kadaluarsa'] ?? '-') ?></td>
+  <td>
+    <?php if (!empty($row['file_sertifikat'])): ?>
+      <a href="<?= BASE_URL . '/' . htmlspecialchars($row['file_sertifikat']) ?>" target="_blank" rel="noopener">Lihat file</a>
+    <?php else: ?>
+      -
+    <?php endif; ?>
+  </td>
+  <td>
+    <a href="hapus.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus sertifikat ini?')">Hapus</a>
+  </td>
 </tr>
 <?php endforeach; ?>
 <?php if (!$data): ?>
-<tr><td colspan="5" class="text-center text-muted">Belum ada data sertifikat.</td></tr>
+<tr><td colspan="7" class="text-center text-muted">Belum ada data sertifikat.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>

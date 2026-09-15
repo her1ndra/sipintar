@@ -188,7 +188,7 @@ function siPintarMenuActive(string $needle, string $path): string
         <li class="nav-item dropdown no-arrow">
             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small text-right">
-                    <?= htmlspecialchars($user['nama'] ?? $user['username']) ?><br>
+                    <?= htmlspecialchars($user['nama'] ?? $user['nip']) ?><br>
                     <span style="font-size: .7rem;"><?= htmlspecialchars($user['role']) ?><?= $user['nama_jabatan'] ? ' - ' . htmlspecialchars($user['nama_jabatan']) : '' ?></span>
                 </span>
                 <img class="img-profile rounded-circle" src="<?= BASE_URL ?>/assets/img/undraw_profile.svg">

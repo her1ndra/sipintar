@@ -3,7 +3,8 @@ require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 $pdo = Database::getConnection();
 $data = $pdo->query(
-    "SELECT p.id_pegawai, p.nip, p.nama_lengkap, p.status_aktif, j.nama_jabatan
+        "SELECT p.id_pegawai, p.nip, p.nama_lengkap, j.nama_jabatan,
+          (SELECT COUNT(*) FROM sertifikat_pegawai s WHERE s.id_pegawai = p.id_pegawai) AS jumlah_sertifikat
      FROM pegawai p JOIN jabatan j ON p.id_jabatan = j.id_jabatan
      ORDER BY p.nama_lengkap"
 )->fetchAll();
@@ -12,14 +13,14 @@ require_once __DIR__ . '/../../includes/header.php';
 ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah pegawai</a>
 <table class="table table-bordered table-striped bg-white">
-<thead><tr><th>NIP</th><th>Nama</th><th>Jabatan</th><th>Status</th><th>Aksi</th></tr></thead>
+<thead><tr><th>Nama</th><th>NIP</th><th>Jabatan</th><th>Sertifikat</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
-  <td><?= htmlspecialchars($row['nip']) ?></td>
   <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
+  <td><?= htmlspecialchars($row['nip']) ?></td>
   <td><?= htmlspecialchars($row['nama_jabatan']) ?></td>
-  <td><?= htmlspecialchars($row['status_aktif']) ?></td>
+  <td><a href="../sertifikat/index.php" class="text-primary"><?= (int) $row['jumlah_sertifikat'] ?> sertifikat</a></td>
   <td>
     <a href="edit.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-warning">Edit</a>
     <a href="hapus.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus pegawai ini?')">Hapus</a>

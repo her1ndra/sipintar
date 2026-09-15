@@ -111,7 +111,7 @@ CREATE TABLE users (
     id_user         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_pegawai      INT UNSIGNED NULL UNIQUE
         COMMENT 'Wajib diisi jika role = Penilai; boleh NULL untuk Admin murni',
-    username        VARCHAR(50)  NOT NULL UNIQUE,
+    nip             VARCHAR(30)  NOT NULL UNIQUE,
     password        VARCHAR(255) NOT NULL,
     role            ENUM('Admin','Penilai') NOT NULL DEFAULT 'Penilai',
     status_aktif    TINYINT(1) NOT NULL DEFAULT 1,

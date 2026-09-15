@@ -11,7 +11,7 @@ $pegawaiList = $pdo->query(
 )->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
+    $nip = trim($_POST['nip']);
     $password = $_POST['password'];
     $role = $_POST['role'];
     $idPegawai = $_POST['id_pegawai'] !== '' ? (int) $_POST['id_pegawai'] : null;
@@ -21,9 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare(
-            'INSERT INTO users (id_pegawai, username, password, role) VALUES (?, ?, ?, ?)'
+            'INSERT INTO users (id_pegawai, nip, password, role) VALUES (?, ?, ?, ?)'
         );
-        $stmt->execute([$idPegawai, $username, $hash, $role]);
+          $stmt->execute([$idPegawai, $nip, $hash, $role]);
         setFlash('success', 'Akun user berhasil dibuat.');
         header('Location: index.php');
         exit;
@@ -51,8 +51,8 @@ require_once __DIR__ . '/../../includes/header.php';
     </select>
   </div>
   <div class="mb-3">
-    <label class="form-label">Username</label>
-    <input type="text" name="username" class="form-control" required>
+    <label class="form-label">NIP</label>
+    <input type="text" name="nip" class="form-control" inputmode="numeric" pattern="[0-9]+" required>
   </div>
   <div class="mb-3">
     <label class="form-label">Kata sandi</label>

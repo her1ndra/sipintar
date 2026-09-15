@@ -107,6 +107,13 @@ unset($_SESSION['login_error']);
 
         .input-wrapper { position: relative; }
 
+        .input-error {
+            display: none;
+            margin-top: 6px;
+            color: #b91c1c;
+            font-size: 0.85rem;
+        }
+
         .form-input {
             width: 100%;
             height: 55px;
@@ -223,11 +230,12 @@ unset($_SESSION['login_error']);
         <form method="post" action="<?= BASE_URL ?>/auth/proses_login.php" class="form-content">
 
             <div>
-                <label class="form-label" for="username">Username</label>
+                <label class="form-label" for="nip">NIP</label>
                 <div class="input-wrapper">
                     <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Masukkan username" required autofocus autocomplete="off">
+                    <input type="text" id="nip" name="nip" class="form-input" placeholder="Masukkan NIP" inputmode="numeric" pattern="[0-9]+" oninput="validateNip(this)" required autofocus autocomplete="off" aria-describedby="nip-error">
                 </div>
+                <small id="nip-error" class="input-error">NIP harus berupa angka.</small>
             </div>
 
             <div>
@@ -252,6 +260,14 @@ unset($_SESSION['login_error']);
     </div>
 
     <script>
+        function validateNip(input) {
+            var error = document.getElementById("nip-error");
+            var hasInvalidCharacter = /[^0-9]/.test(input.value);
+
+            error.style.display = hasInvalidCharacter ? "block" : "none";
+            input.value = input.value.replace(/[^0-9]/g, '');
+        }
+
         function togglePass() {
             var passInput = document.getElementById("password");
             var icon = document.getElementById("eye-icon");

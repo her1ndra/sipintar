@@ -25,7 +25,7 @@ function currentUser(): array
 {
     return [
         'id_user'      => $_SESSION['id_user'] ?? null,
-        'username'     => $_SESSION['username'] ?? null,
+        'nip'          => $_SESSION['nip'] ?? null,
         'role'         => $_SESSION['role'] ?? null,
         'id_pegawai'   => $_SESSION['id_pegawai'] ?? null,
         'nama'         => $_SESSION['nama'] ?? null,
