@@ -61,10 +61,10 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <li class="nav-item <?= siPintarMenuActive('/admin/jabatan/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/jabatan/index.php">
-                <i class="fas fa-fw fa-sitemap"></i>
-                <span>Master Jabatan</span>
+        <li class="nav-item <?= siPintarMenuActive('/admin/analisis_tugas/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/analisis_tugas/index.php">
+                <i class="fas fa-fw fa-tasks"></i>
+                <span>Analisis Tugas</span>
             </a>
         </li>
 
@@ -72,16 +72,6 @@ function siPintarMenuActive(string $needle, string $path): string
             <a class="nav-link" href="<?= BASE_URL ?>/admin/sertifikat/index.php">
                 <i class="fas fa-fw fa-certificate"></i>
                 <span>Sertifikat Pegawai</span>
-            </a>
-        </li>
-
-        <hr class="sidebar-divider">
-        <div class="sidebar-heading">Penilaian</div>
-
-        <li class="nav-item <?= siPintarMenuActive('/admin/wewenang/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/wewenang/index.php">
-                <i class="fas fa-fw fa-user-shield"></i>
-                <span>Wewenang Penilaian</span>
             </a>
         </li>
 

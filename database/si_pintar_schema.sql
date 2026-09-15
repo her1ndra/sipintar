@@ -79,6 +79,22 @@ CREATE TABLE pegawai (
         ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 2.2 Analisis tugas per jabatan/pegawai
+CREATE TABLE analisis_tugas (
+    id_analisis_tugas              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_jabatan                     INT UNSIGNED NOT NULL,
+    tugas                          TEXT NOT NULL,
+    kegiatan                       TEXT NOT NULL,
+    kompetensi_sementara_jabatan   TEXT NULL,
+    kompetensi_jabatan             TEXT NOT NULL,
+    created_at                     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                   ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_analisis_tugas_jabatan
+        FOREIGN KEY (id_jabatan) REFERENCES jabatan(id_jabatan)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 2.2 Sertifikat Pegawai (1 pegawai bisa punya banyak sertifikat)
 --     dibuat_oleh juga WAJIB Admin (dicek di PHP)
 CREATE TABLE sertifikat_pegawai (

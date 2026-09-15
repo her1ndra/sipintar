@@ -4,7 +4,7 @@ requireRole('Admin');
 $pdo = Database::getConnection();
 // Hanya pegawai berjabatan Ketua/Wakil Ketua/Panitera/Sekretaris yang relevan jadi Penilai
 $pegawaiList = $pdo->query(
-    "SELECT p.id_pegawai, p.nama_lengkap, j.nama_jabatan
+    "SELECT p.id_pegawai, p.nip, p.nama_lengkap, j.nama_jabatan
      FROM pegawai p JOIN jabatan j ON p.id_jabatan = j.id_jabatan
      WHERE j.is_penilai = 1
      ORDER BY p.nama_lengkap"
@@ -15,6 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $role = $_POST['role'];
     $idPegawai = $_POST['id_pegawai'] !== '' ? (int) $_POST['id_pegawai'] : null;
+
+    if ($role === 'Penilai' && $idPegawai) {
+      $nipStmt = $pdo->prepare('SELECT nip FROM pegawai WHERE id_pegawai = ?');
+      $nipStmt->execute([$idPegawai]);
+      $nip = (string) $nipStmt->fetchColumn();
+    }
 
     if ($role === 'Penilai' && !$idPegawai) {
         setFlash('error', 'Role Penilai wajib dikaitkan dengan data pegawai.');
@@ -46,13 +52,15 @@ require_once __DIR__ . '/../../includes/header.php';
     <select name="id_pegawai" class="form-select">
       <option value="">-- tidak terkait pegawai --</option>
       <?php foreach ($pegawaiList as $p): ?>
-      <option value="<?= $p['id_pegawai'] ?>"><?= htmlspecialchars($p['nama_lengkap']) ?> (<?= htmlspecialchars($p['nama_jabatan']) ?>)</option>
+      <option value="<?= $p['id_pegawai'] ?>" data-nip="<?= htmlspecialchars($p['nip']) ?>">
+        <?= htmlspecialchars($p['nama_lengkap']) ?> (<?= htmlspecialchars($p['nama_jabatan']) ?>)
+      </option>
       <?php endforeach; ?>
     </select>
   </div>
   <div class="mb-3">
     <label class="form-label">NIP</label>
-    <input type="text" name="nip" class="form-control" inputmode="numeric" pattern="[0-9]+" required>
+    <input type="text" name="nip" id="nip" class="form-control" inputmode="numeric" pattern="[0-9]+" required>
   </div>
   <div class="mb-3">
     <label class="form-label">Kata sandi</label>
@@ -61,4 +69,25 @@ require_once __DIR__ . '/../../includes/header.php';
   <button type="submit" class="btn btn-primary">Simpan</button>
   <a href="index.php" class="btn btn-secondary">Batal</a>
 </form>
+<script>
+  var roleInput = document.getElementById('role');
+  var pegawaiInput = document.querySelector('select[name="id_pegawai"]');
+  var nipInput = document.getElementById('nip');
+  var pegawaiWrap = document.getElementById('pegawaiWrap');
+
+  function updateNipFromPegawai() {
+    var selectedOption = pegawaiInput.options[pegawaiInput.selectedIndex];
+    var isPenilai = roleInput.value === 'Penilai';
+
+    pegawaiWrap.style.display = isPenilai ? 'block' : 'none';
+    nipInput.readOnly = isPenilai;
+    if (isPenilai) {
+      nipInput.value = selectedOption ? selectedOption.dataset.nip || '' : '';
+    }
+  }
+
+  roleInput.addEventListener('change', updateNipFromPegawai);
+  pegawaiInput.addEventListener('change', updateNipFromPegawai);
+  updateNipFromPegawai();
+</script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

@@ -14,7 +14,7 @@ require_once __DIR__ . '/../../includes/header.php';
 ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah akun</a>
 <table class="table table-bordered table-striped bg-white">
-<thead><tr><th>NIP</th><th>Role</th><th>Pegawai</th><th>Jabatan</th><th>Status</th></tr></thead>
+<thead><tr><th>NIP</th><th>Role</th><th>Pegawai</th><th>Jabatan</th><th>Status</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
@@ -23,6 +23,9 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['nama_lengkap'] ?? '-') ?></td>
   <td><?= htmlspecialchars($row['nama_jabatan'] ?? '-') ?></td>
   <td><?= $row['status_aktif'] ? 'Aktif' : 'Nonaktif' ?></td>
+  <td>
+    <a href="ganti_password.php?id=<?= (int) $row['id_user'] ?>" class="btn btn-sm btn-warning">Ganti password</a>
+  </td>
 </tr>
 <?php endforeach; ?>
 </tbody>
