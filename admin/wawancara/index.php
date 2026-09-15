@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireRole('Penilai');
+requireRole('Admin');
 $pdo = Database::getConnection();
-$user = currentUser();
-$stmt = $pdo->prepare(
+$data = $pdo->query(
     "SELECT w.id_wawancara, p.nama_lengkap, d.kompetensi,
             GROUP_CONCAT(CONCAT(d.id_hasil, '. ', d.isi_penilaian)
                 ORDER BY d.id_hasil SEPARATOR '<br>') AS daftar_pertanyaan,
@@ -11,13 +10,10 @@ $stmt = $pdo->prepare(
      FROM wawancara w
      JOIN pegawai p ON p.id_pegawai = w.id_pegawai
      LEFT JOIN hasil_wawancara d ON d.id_wawancara = w.id_wawancara
-     WHERE w.id_user_penilai = ?
      GROUP BY w.id_wawancara, p.nama_lengkap, d.kompetensi,
               d.file_bukti, d.status_kompetensi
      ORDER BY w.id_wawancara DESC"
-);
-$stmt->execute([$user['id_user']]);
-$data = $stmt->fetchAll();
+)->fetchAll();
 $pageTitle = 'Wawancara';
 require_once __DIR__ . '/../../includes/header.php';
 ?>

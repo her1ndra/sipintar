@@ -92,6 +92,23 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
+        <hr class="sidebar-divider">
+        <div class="sidebar-heading">Penilaian Kompetensi</div>
+
+        <li class="nav-item <?= siPintarMenuActive('/admin/kuesioner/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/kuesioner/index.php">
+                <i class="fas fa-fw fa-clipboard-list"></i>
+                <span>Kuesioner</span>
+            </a>
+        </li>
+
+        <li class="nav-item <?= siPintarMenuActive('/admin/wawancara/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/wawancara/index.php">
+                <i class="fas fa-fw fa-comments"></i>
+                <span>Wawancara</span>
+            </a>
+        </li>
+
     <?php else: ?>
 
         <li class="nav-item <?= siPintarMenuActive('/penilai/dashboard.php', $currentScript) ?>">

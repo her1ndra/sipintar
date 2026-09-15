@@ -193,7 +193,7 @@ CREATE TABLE kuesioner (
 --     kuesioner, opsional ditautkan ke satu kompetensi)
 CREATE TABLE pertanyaan_kuesioner (
     id_pertanyaan   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    id_kuesioner    INT UNSIGNED NOT NULL,
+    id_kuesioner    INT UNSIGNED NULL COMMENT 'Opsional; wawancara dapat dibuat tanpa kuesioner',
     id_kompetensi   INT UNSIGNED NULL,
     nomor_urut      INT UNSIGNED NOT NULL DEFAULT 1,
     teks_pertanyaan TEXT NOT NULL,
@@ -206,6 +206,48 @@ CREATE TABLE pertanyaan_kuesioner (
         FOREIGN KEY (id_kompetensi) REFERENCES kompetensi(id_kompetensi)
         ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE detail_wawancara (
+    id_detail       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_wawancara    INT UNSIGNED NOT NULL,
+    kompetensi      VARCHAR(200) NOT NULL,
+    isi_penilaian   TEXT NOT NULL,
+    foto_bukti      VARCHAR(255) NULL,
+    status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_detail_wawancara
+        FOREIGN KEY (id_wawancara) REFERENCES wawancara(id_wawancara)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE hasil_wawancara (
+    id_hasil        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_wawancara    INT UNSIGNED NOT NULL,
+    kompetensi      VARCHAR(200) NOT NULL,
+    isi_penilaian   TEXT NOT NULL,
+    file_bukti      VARCHAR(255) NULL,
+    status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_hasil_wawancara (id_wawancara),
+    CONSTRAINT fk_hasil_wawancara_wawancara
+        FOREIGN KEY (id_wawancara) REFERENCES wawancara(id_wawancara)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*
+CREATE TABLE hasil_wawancara_legacy (
+    id_hasil        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_wawancara    INT UNSIGNED NOT NULL UNIQUE,
+    file_bukti      VARCHAR(255) NULL,
+    status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hasil_wawancara_wawancara
+        FOREIGN KEY (id_wawancara) REFERENCES wawancara(id_wawancara)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+*/
 
 -- 4.5 Sesi Wawancara / Pengisian Kuesioner terhadap seorang pegawai
 CREATE TABLE wawancara (
@@ -234,6 +276,9 @@ CREATE TABLE jawaban_wawancara (
     id_wawancara    INT UNSIGNED NOT NULL,
     id_pertanyaan   INT UNSIGNED NOT NULL,
     jawaban_teks    TEXT NULL,
+    file_jawaban    VARCHAR(255) NULL COMMENT 'File jawaban kuesioner',
+    foto_bukti      VARCHAR(255) NULL COMMENT 'Foto bukti kompetensi wawancara',
+    status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
     skor            DECIMAL(5,2) NULL COMMENT 'Skor 1-5 hasil penilaian jawaban',
     catatan         TEXT NULL,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -243,6 +288,18 @@ CREATE TABLE jawaban_wawancara (
         ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_jawaban_pertanyaan
         FOREIGN KEY (id_pertanyaan) REFERENCES pertanyaan_kuesioner(id_pertanyaan)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE hasil_kuesioner (
+    id_hasil        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_wawancara    INT UNSIGNED NOT NULL UNIQUE,
+    file_bukti      VARCHAR(255) NULL,
+    status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hasil_kuesioner_wawancara
+        FOREIGN KEY (id_wawancara) REFERENCES wawancara(id_wawancara)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

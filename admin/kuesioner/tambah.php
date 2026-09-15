@@ -1,16 +1,8 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireRole('Penilai');
+requireRole('Admin');
 $pdo = Database::getConnection();
-$user = currentUser();
-$jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
-$pegawaiList = [];
-if ($jabatanIds) {
-    $placeholders = implode(',', array_fill(0, count($jabatanIds), '?'));
-    $stmt = $pdo->prepare("SELECT id_pegawai, nama_lengkap, id_jabatan FROM pegawai WHERE id_jabatan IN ($placeholders) ORDER BY nama_lengkap");
-    $stmt->execute($jabatanIds);
-    $pegawaiList = $stmt->fetchAll();
-}
+$pegawaiList = $pdo->query('SELECT id_pegawai, nama_lengkap, id_jabatan FROM pegawai ORDER BY nama_lengkap')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPegawai = (int) ($_POST['id_pegawai'] ?? 0);
@@ -26,13 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($idPegawai <= 0 || $tanggal === '' || $kompetensi === '' || !$rows) {
         setFlash('error', 'Nama pegawai, tanggal, kompetensi, dan pertanyaan wajib diisi.');
     } else {
+        $pdo->beginTransaction();
+        $user = currentUser();
         $pegawai = array_values(array_filter($pegawaiList, static function ($item) use ($idPegawai) {
             return (int) $item['id_pegawai'] === $idPegawai;
         }))[0] ?? null;
         if (!$pegawai) {
-            setFlash('error', 'Pegawai tidak ditemukan atau tidak berada dalam kewenangan Anda.');
+            $pdo->rollBack();
+            setFlash('error', 'Pegawai tidak ditemukan.');
         } else {
-            $pdo->beginTransaction();
             $judul = 'Kuesioner ' . date('Y-m-d H:i');
             $stmt = $pdo->prepare(
                 'INSERT INTO kuesioner (id_user_pembuat, id_jabatan_dinilai, judul_kuesioner, tahun_periode, status)
@@ -44,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'INSERT INTO wawancara (id_pegawai, id_kuesioner, id_user_penilai, tanggal_wawancara)
                  VALUES (?, ?, ?, ?)'
             )->execute([$idPegawai, $idKuesioner, $user['id_user'], $tanggal]);
+            $idWawancara = $pdo->lastInsertId();
             $detail = $pdo->prepare(
                 'INSERT INTO pertanyaan_kuesioner (id_kuesioner, nomor_urut, teks_pertanyaan)
                  VALUES (?, ?, ?)'

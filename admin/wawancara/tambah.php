@@ -1,16 +1,9 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireRole('Penilai');
+requireRole('Admin');
 $pdo = Database::getConnection();
-$user = currentUser();
-$jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
-$pegawaiList = [];
-if ($jabatanIds) {
-    $placeholders = implode(',', array_fill(0, count($jabatanIds), '?'));
-    $stmt = $pdo->prepare("SELECT id_pegawai, nama_lengkap FROM pegawai WHERE id_jabatan IN ($placeholders) ORDER BY nama_lengkap");
-    $stmt->execute($jabatanIds);
-    $pegawaiList = $stmt->fetchAll();
-}
+$pegawaiList = $pdo->query('SELECT id_pegawai, nama_lengkap FROM pegawai ORDER BY nama_lengkap')->fetchAll();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPegawai = (int) ($_POST['id_pegawai'] ?? 0);
     $tanggal = $_POST['tanggal_wawancara'] ?? '';
@@ -28,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $pdo->beginTransaction();
         $pdo->prepare('INSERT INTO wawancara (id_pegawai, id_kuesioner, id_user_penilai, tanggal_wawancara) VALUES (?, NULL, ?, ?)')
-            ->execute([$idPegawai, $user['id_user'], $tanggal]);
+            ->execute([$idPegawai, currentUser()['id_user'], $tanggal]);
         $idWawancara = $pdo->lastInsertId();
         $detail = $pdo->prepare(
             'INSERT INTO hasil_wawancara (id_wawancara, kompetensi, isi_penilaian)
