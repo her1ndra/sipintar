@@ -134,13 +134,6 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <li class="nav-item <?= siPintarMenuActive('/penilai/penilaian/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/penilai/penilaian/index.php">
-                <i class="fas fa-fw fa-star-half-alt"></i>
-                <span>Penilaian Kompetensi</span>
-            </a>
-        </li>
-
         <li class="nav-item <?= siPintarMenuActive('/penilai/gap/', $currentScript) ?>">
             <a class="nav-link" href="<?= BASE_URL ?>/penilai/gap/index.php">
                 <i class="fas fa-fw fa-chart-bar"></i>

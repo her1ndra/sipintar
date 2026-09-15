@@ -31,8 +31,8 @@ kompetensi pegawai, sesuai ERD/DFD yang sudah dirancang sebelumnya.
 - `admin/` - modul khusus role Admin: pegawai (CRUD lengkap), jabatan (master,
   read-only), sertifikat, wewenang penilaian, akun user
 - `penilai/` - modul khusus role Penilai: dashboard (daftar pegawai binaan sesuai
-  wewenang), kuesioner (buat kuesioner + pertanyaan sendiri), wawancara, penilaian
-  kompetensi, analisis gap, kebutuhan diklat, kegiatan hakim (khusus Ketua/Wakil Ketua)
+  wewenang), kuesioner (buat kuesioner + pertanyaan sendiri), wawancara, analisis
+  kesenjangan, kebutuhan diklat, kegiatan hakim (khusus Ketua/Wakil Ketua)
 - `assets/` - tampilan (tema SB Admin 2 + FontAwesome + Bootstrap 4/jQuery lokal di
   `assets/vendor/`, logo & foto gedung PN Yogyakarta di `assets/img/`, `assets/css/style.css`
   berisi override tema hijau-emas PN Yogyakarta agar selaras dengan SI-APIC)
