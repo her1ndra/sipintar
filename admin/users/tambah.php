@@ -11,10 +11,10 @@ $pegawaiList = $pdo->query(
 )->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nip = trim($_POST['nip']);
-    $password = $_POST['password'];
-    $role = $_POST['role'];
-    $idPegawai = $_POST['id_pegawai'] !== '' ? (int) $_POST['id_pegawai'] : null;
+  $nip = trim($_POST['nip'] ?? '');
+  $password = $_POST['password'] ?? '';
+  $role = $_POST['role'] ?? '';
+  $idPegawai = !empty($_POST['id_pegawai']) ? (int) $_POST['id_pegawai'] : null;
 
     if ($role === 'Penilai' && $idPegawai) {
       $nipStmt = $pdo->prepare('SELECT nip FROM pegawai WHERE id_pegawai = ?');
@@ -22,17 +22,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $nip = (string) $nipStmt->fetchColumn();
     }
 
-    if ($role === 'Penilai' && !$idPegawai) {
+  if ($nip === '' || $password === '' || !in_array($role, ['Admin', 'Penilai'], true)) {
+    setFlash('error', 'NIP, kata sandi, dan role wajib diisi dengan benar.');
+  } elseif ($role === 'Penilai' && !$idPegawai) {
         setFlash('error', 'Role Penilai wajib dikaitkan dengan data pegawai.');
     } else {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare(
-            'INSERT INTO users (id_pegawai, nip, password, role) VALUES (?, ?, ?, ?)'
-        );
+    $existingStmt = $pdo->prepare('SELECT id_user FROM users WHERE nip = ? LIMIT 1');
+    $existingStmt->execute([$nip]);
+
+    if ($existingStmt->fetchColumn()) {
+      setFlash('error', 'NIP tersebut sudah memiliki akun user.');
+    } else {
+      $hash = password_hash($password, PASSWORD_DEFAULT);
+      $stmt = $pdo->prepare(
+        'INSERT INTO users (id_pegawai, nip, password, role) VALUES (?, ?, ?, ?)'
+      );
+
+      try {
           $stmt->execute([$idPegawai, $nip, $hash, $role]);
         setFlash('success', 'Akun user berhasil dibuat.');
         header('Location: index.php');
         exit;
+      } catch (PDOException $exception) {
+        if ($exception->getCode() === '23000') {
+          setFlash('error', 'NIP tersebut sudah memiliki akun user atau pegawai sudah terhubung ke akun lain.');
+        } else {
+          throw $exception;
+        }
+      }
+    }
     }
 }
 $pageTitle = 'Tambah akun user';
