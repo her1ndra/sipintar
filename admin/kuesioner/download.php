@@ -6,7 +6,7 @@ $idKuesioner = (int) ($_GET['id'] ?? 0);
 $format = $_GET['format'] ?? 'pdf';
 $pdo = Database::getConnection();
 $stmt = $pdo->prepare(
-    'SELECT k.judul_kuesioner, k.tahun_periode, j.nama_jabatan,
+    'SELECT k.judul_kuesioner, k.tahun_periode, k.kompetensi,
             q.nomor_urut, q.teks_pertanyaan
      FROM kuesioner k
      JOIN jabatan j ON j.id_jabatan = k.id_jabatan_dinilai
@@ -31,7 +31,7 @@ if ($format === 'pdf') {
         'KUESIONER',
         'Judul: ' . $pdfText($rows[0]['judul_kuesioner']),
         'Tahun periode: ' . $rows[0]['tahun_periode'],
-        'Kompetensi / jabatan: ' . $pdfText($rows[0]['nama_jabatan']),
+        'Kompetensi / jabatan: ' . $pdfText($rows[0]['kompetensi']),
         '',
         'No.  Pertanyaan',
     ];
@@ -88,7 +88,7 @@ echo "\xEF\xBB\xBF";
 $output = fopen('php://output', 'wb');
 fputcsv($output, ['Judul kuesioner', $rows[0]['judul_kuesioner']], ';');
 fputcsv($output, ['Tahun periode', $rows[0]['tahun_periode']], ';');
-fputcsv($output, ['Kompetensi / jabatan', $rows[0]['nama_jabatan']], ';');
+fputcsv($output, ['Kompetensi / jabatan', $rows[0]['kompetensi']], ';');
 fputcsv($output, []);
 fputcsv($output, ['No', 'Pertanyaan'], ';');
 foreach ($rows as $row) {

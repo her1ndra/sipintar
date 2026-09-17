@@ -5,7 +5,7 @@ $pdo = Database::getConnection();
 
 $data = $pdo->query(
     "SELECT k.id_kuesioner, k.judul_kuesioner, k.tahun_periode, k.status,
-            w.id_wawancara, p.nama_lengkap, j.nama_jabatan,
+            w.id_wawancara, p.nama_lengkap, k.kompetensi,
             GROUP_CONCAT(CONCAT(q.nomor_urut, '. ', q.teks_pertanyaan)
                 ORDER BY q.nomor_urut SEPARATOR '<br>') AS daftar_pertanyaan,
             hk.file_bukti, hk.daftar_nilai, hk.status_kompetensi
@@ -15,7 +15,7 @@ $data = $pdo->query(
      LEFT JOIN wawancara w ON w.id_kuesioner = k.id_kuesioner
      LEFT JOIN pegawai p ON w.id_pegawai = p.id_pegawai
      LEFT JOIN hasil_kuesioner hk ON hk.id_wawancara = w.id_wawancara
-     GROUP BY k.id_kuesioner, w.id_wawancara, p.nama_lengkap, j.nama_jabatan,
+     GROUP BY k.id_kuesioner, w.id_wawancara, p.nama_lengkap, k.kompetensi,
               hk.file_bukti, hk.daftar_nilai, hk.status_kompetensi
      ORDER BY k.created_at DESC, w.id_wawancara DESC"
 )->fetchAll();
@@ -67,7 +67,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <tr>
                 <td class="text-center"><?= $index + 1 ?></td>
                 <td><?= htmlspecialchars($row['nama_lengkap'] ?: '-') ?></td>
-                <td><?= htmlspecialchars($row['nama_jabatan']) ?></td>
+                <td><?= htmlspecialchars($row['kompetensi']) ?></td>
                 <td class="question-cell"><?= $renderQuestions($row['daftar_pertanyaan'], 'modal-kuesioner-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
                 <td class="evidence-cell">
                     <?php if ($row['file_bukti']): ?><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($row['file_bukti']) ?>">Lihat file</a><?php else: ?>-<?php endif; ?>

@@ -177,6 +177,7 @@ CREATE TABLE kuesioner (
     id_user_pembuat INT UNSIGNED NOT NULL COMMENT 'users.id_user dengan role Penilai',
     id_jabatan_dinilai INT UNSIGNED NOT NULL
         COMMENT 'Harus salah satu jabatan yang ada di wewenang_penilaian milik pembuat',
+    kompetensi       VARCHAR(200) NOT NULL,
     judul_kuesioner VARCHAR(200) NOT NULL,
     tahun_periode   YEAR NOT NULL,
     status          ENUM('Draft','Aktif','Non-Aktif') NOT NULL DEFAULT 'Draft',

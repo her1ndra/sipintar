@@ -4,7 +4,7 @@ requireRole('Admin');
 $pdo = Database::getConnection();
 $idWawancara = (int) ($_GET['id'] ?? 0);
 $stmt = $pdo->prepare(
-    'SELECT w.id_wawancara, p.nama_lengkap, k.judul_kuesioner, j.nama_jabatan
+    'SELECT w.id_wawancara, p.nama_lengkap, k.judul_kuesioner, k.kompetensi
      FROM wawancara w
      JOIN pegawai p ON p.id_pegawai = w.id_pegawai
      JOIN kuesioner k ON k.id_kuesioner = w.id_kuesioner
@@ -105,7 +105,7 @@ require_once __DIR__ . '/../../includes/header.php';
 </style>
 <h2 class="h4 mb-3">Kuesioner: <?= htmlspecialchars($sesi['nama_lengkap']) ?></h2>
 <form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm kuesioner-form">
-    <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><div class="form-control bg-light"><?= htmlspecialchars($sesi['nama_jabatan']) ?></div></div>
+    <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><div class="form-control bg-light"><?= htmlspecialchars($sesi['kompetensi']) ?></div></div>
     <div class="mb-3">
         <label class="form-label">Daftar Pertanyaan dan Nilai</label>
         <div id="daftar-pertanyaan">

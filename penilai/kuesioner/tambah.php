@@ -35,10 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
             $judul = 'Kuesioner ' . date('Y-m-d H:i');
             $stmt = $pdo->prepare(
-                'INSERT INTO kuesioner (id_user_pembuat, id_jabatan_dinilai, judul_kuesioner, tahun_periode, status)
-                 VALUES (?, ?, ?, ?, ?)'
+                'INSERT INTO kuesioner (id_user_pembuat, id_jabatan_dinilai, kompetensi, judul_kuesioner, tahun_periode, status)
+                 VALUES (?, ?, ?, ?, ?, ?)'
             );
-            $stmt->execute([$user['id_user'], $pegawai['id_jabatan'], $judul, (int) date('Y', strtotime($tanggal)), 'Aktif']);
+            $stmt->execute([$user['id_user'], $pegawai['id_jabatan'], $kompetensi, $judul, (int) date('Y', strtotime($tanggal)), 'Aktif']);
             $idKuesioner = $pdo->lastInsertId();
             $pdo->prepare(
                 'INSERT INTO wawancara (id_pegawai, id_kuesioner, id_user_penilai, tanggal_wawancara)
