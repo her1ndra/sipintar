@@ -9,6 +9,8 @@ $pegawaiList = $pdo->query(
      WHERE j.is_penilai = 1
      ORDER BY p.nama_lengkap"
 )->fetchAll();
+$akunPegawai = $pdo->query('SELECT id_pegawai FROM users WHERE id_pegawai IS NOT NULL')->fetchAll(PDO::FETCH_COLUMN);
+$akunPegawai = array_map('intval', $akunPegawai);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $nip = trim($_POST['nip'] ?? '');
@@ -24,14 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($nip === '' || $password === '' || !in_array($role, ['Admin', 'Penilai'], true)) {
     setFlash('error', 'NIP, kata sandi, dan role wajib diisi dengan benar.');
-  } elseif ($role === 'Penilai' && !$idPegawai) {
-        setFlash('error', 'Role Penilai wajib dikaitkan dengan data pegawai.');
-    } else {
-    $existingStmt = $pdo->prepare('SELECT id_user FROM users WHERE nip = ? LIMIT 1');
-    $existingStmt->execute([$nip]);
+  } else  if ($role === 'Penilai' && !$idPegawai) {
+      setFlash('error', 'Role Penilai wajib dikaitkan dengan data pegawai.');
+  } else {
+  $existingStmt = $pdo->prepare(
+    'SELECT id_user, id_pegawai, nip FROM users WHERE nip = ? OR (? IS NOT NULL AND id_pegawai = ?) LIMIT 1'
+  );
+    $existingStmt->execute([$nip, $idPegawai, $idPegawai]);
+    $existingAccount = $existingStmt->fetch();
 
-    if ($existingStmt->fetchColumn()) {
-      setFlash('error', 'NIP tersebut sudah memiliki akun user.');
+    if ($existingAccount) {
+      $message = $existingAccount['id_pegawai'] !== null && $idPegawai !== null
+        && (int) $existingAccount['id_pegawai'] === $idPegawai
+        ? 'Pegawai tersebut sudah memiliki akun user.'
+        : 'NIP tersebut sudah memiliki akun user.';
+      setFlash('error', $message);
     } else {
       $hash = password_hash($password, PASSWORD_DEFAULT);
       $stmt = $pdo->prepare(
@@ -70,6 +79,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <select name="id_pegawai" class="form-select">
       <option value="">-- tidak terkait pegawai --</option>
       <?php foreach ($pegawaiList as $p): ?>
+      <?php if (in_array((int) $p['id_pegawai'], $akunPegawai, true)) continue; ?>
       <option value="<?= $p['id_pegawai'] ?>" data-nip="<?= htmlspecialchars($p['nip']) ?>">
         <?= htmlspecialchars($p['nama_lengkap']) ?> (<?= htmlspecialchars($p['nama_jabatan']) ?>)
       </option>

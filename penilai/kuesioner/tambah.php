@@ -14,7 +14,7 @@ if ($jabatanIds) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPegawai = (int) ($_POST['id_pegawai'] ?? 0);
-    $tanggal = $_POST['tanggal_wawancara'] ?? '';
+    $tanggal = date('Y-m-d');
     $kompetensi = trim($_POST['kompetensi'] ?? '');
     $pertanyaan = $_POST['pertanyaan'] ?? [];
     $rows = [];
@@ -63,23 +63,12 @@ $pageTitle = 'Buat kuesioner';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 <form method="post" class="bg-white p-4 rounded shadow-sm">
-    <div class="mb-3">
-        <label class="form-label">Nama pegawai yang dinilai</label>
-        <select name="id_pegawai" class="form-select" required>
-            <option value="">-- pilih pegawai --</option>
-            <?php foreach ($pegawaiList as $pegawai): ?>
-                <option value="<?= (int) $pegawai['id_pegawai'] ?>"><?= htmlspecialchars($pegawai['nama_lengkap']) ?></option>
-            <?php endforeach; ?>
+    <div class="mb-3"><label class="form-label">Nama pegawai yang dinilai</label>
+        <select name="id_pegawai" class="form-select" required><option value="">-- pilih pegawai --</option>
+        <?php foreach ($pegawaiList as $pegawai): ?><option value="<?= (int) $pegawai['id_pegawai'] ?>"><?= htmlspecialchars($pegawai['nama_lengkap']) ?></option><?php endforeach; ?>
         </select>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Tanggal kuesioner</label>
-        <input type="date" name="tanggal_wawancara" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Kompetensi / Jabatan</label>
-        <input name="kompetensi" class="form-control" placeholder="Kompetensi / jabatan" required>
-    </div>
+    <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><input name="kompetensi" class="form-control" placeholder="Kompetensi / jabatan" required></div>
     <div class="form-label">Daftar Pertanyaan</div>
     <div id="detail-kuesioner">
         <div class="row g-2 mb-2 detail-row">
@@ -88,8 +77,7 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </div>
     <button type="button" id="tambah-baris" class="btn btn-outline-secondary mb-3">+ Tambah pertanyaan</button><br>
-    <button type="submit" class="btn btn-primary">Buat kuesioner</button>
-    <a href="index.php" class="btn btn-secondary">Batal</a>
+    <button type="submit" class="btn btn-primary">Buat kuesioner</button> <a href="index.php" class="btn btn-secondary">Batal</a>
 </form>
 <script>
 document.getElementById('tambah-baris').addEventListener('click', function () {

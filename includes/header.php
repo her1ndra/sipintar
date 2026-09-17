@@ -83,16 +83,6 @@ function siPintarMenuActive(string $needle, string $path): string
         </li>
 
         <hr class="sidebar-divider">
-        <div class="sidebar-heading">Administrasi</div>
-
-        <li class="nav-item <?= siPintarMenuActive('/admin/users/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/users/index.php">
-                <i class="fas fa-fw fa-user-cog"></i>
-                <span>Akun User</span>
-            </a>
-        </li>
-
-        <hr class="sidebar-divider">
         <div class="sidebar-heading">Penilaian Kompetensi</div>
 
         <li class="nav-item <?= siPintarMenuActive('/admin/kuesioner/', $currentScript) ?>">
@@ -123,7 +113,7 @@ function siPintarMenuActive(string $needle, string $path): string
         <li class="nav-item <?= siPintarMenuActive('/penilai/kuesioner/', $currentScript) ?>">
             <a class="nav-link" href="<?= BASE_URL ?>/penilai/kuesioner/index.php">
                 <i class="fas fa-fw fa-clipboard-list"></i>
-                <span>Kuesioner Saya</span>
+                <span>Kuesioner</span>
             </a>
         </li>
 
@@ -163,6 +153,17 @@ function siPintarMenuActive(string $needle, string $path): string
     <?php endif; ?>
 
     <hr class="sidebar-divider">
+
+    <?php if ($user['role'] === 'Admin'): ?>
+    <div class="sidebar-heading">Administrasi</div>
+    <li class="nav-item <?= siPintarMenuActive('/admin/users/', $currentScript) ?>">
+        <a class="nav-link" href="<?= BASE_URL ?>/admin/users/index.php">
+            <i class="fas fa-fw fa-user-cog"></i>
+            <span>Akun User</span>
+        </a>
+    </li>
+    <hr class="sidebar-divider">
+    <?php endif; ?>
 
     <li class="nav-item">
         <a class="nav-link" href="<?= BASE_URL ?>/auth/logout.php" id="tombol-logout-sidebar" style="cursor: pointer;">

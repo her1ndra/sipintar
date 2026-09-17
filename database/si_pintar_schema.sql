@@ -225,6 +225,7 @@ CREATE TABLE hasil_wawancara (
     id_wawancara    INT UNSIGNED NOT NULL,
     kompetensi      VARCHAR(200) NOT NULL,
     isi_penilaian   TEXT NOT NULL,
+    nilai           TINYINT UNSIGNED NULL COMMENT 'Nilai 0-100',
     file_bukti      VARCHAR(255) NULL,
     status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -270,6 +271,17 @@ CREATE TABLE wawancara (
         ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE bukti_wawancara (
+    id_bukti        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_wawancara    INT UNSIGNED NOT NULL,
+    file_bukti      VARCHAR(255) NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_bukti_wawancara (id_wawancara),
+    CONSTRAINT fk_bukti_wawancara
+        FOREIGN KEY (id_wawancara) REFERENCES wawancara(id_wawancara)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 4.6 Jawaban per Pertanyaan dalam satu sesi Wawancara
 CREATE TABLE jawaban_wawancara (
     id_jawaban      INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -295,6 +307,7 @@ CREATE TABLE hasil_kuesioner (
     id_hasil        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_wawancara    INT UNSIGNED NOT NULL UNIQUE,
     file_bukti      VARCHAR(255) NULL,
+    daftar_nilai    TEXT NULL COMMENT 'JSON nilai per pertanyaan',
     status_kompetensi ENUM('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
