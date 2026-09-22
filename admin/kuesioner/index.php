@@ -5,25 +5,28 @@ $pdo = Database::getConnection();
 
 $data = $pdo->query(
     "SELECT k.id_kuesioner, k.judul_kuesioner, k.tahun_periode, k.status,
-            w.id_wawancara, p.nama_lengkap, k.kompetensi,
+            w.id_wawancara, COALESCE(p.nama_lengkap, p_target.nama_lengkap) AS nama_lengkap, k.kompetensi,
             GROUP_CONCAT(CONCAT(q.nomor_urut, '. ', q.teks_pertanyaan)
                 ORDER BY q.nomor_urut SEPARATOR '<br>') AS daftar_pertanyaan,
             hk.file_bukti, hk.daftar_nilai, hk.status_kompetensi
      FROM kuesioner k
-     JOIN jabatan j ON k.id_jabatan_dinilai = j.id_jabatan
      JOIN pertanyaan_kuesioner q ON q.id_kuesioner = k.id_kuesioner
      LEFT JOIN wawancara w ON w.id_kuesioner = k.id_kuesioner
      LEFT JOIN pegawai p ON w.id_pegawai = p.id_pegawai
+     LEFT JOIN pegawai p_target ON p_target.id_pegawai = k.id_jabatan_dinilai
      LEFT JOIN hasil_kuesioner hk ON hk.id_wawancara = w.id_wawancara
-     GROUP BY k.id_kuesioner, w.id_wawancara, p.nama_lengkap, k.kompetensi,
+     GROUP BY k.id_kuesioner, w.id_wawancara, p.nama_lengkap, p_target.nama_lengkap, k.kompetensi,
               hk.file_bukti, hk.daftar_nilai, hk.status_kompetensi
-     ORDER BY k.created_at DESC, w.id_wawancara DESC"
+     ORDER BY k.id_kuesioner ASC, w.id_wawancara DESC"
 )->fetchAll();
 
 $renderQuestions = static function (?string $value, string $modalId): string {
     $items = $value ? explode('<br>', $value) : [];
     if (!$items) return '-';
-    return '<div class="question-preview">' . implode('<br>', array_map('htmlspecialchars', $items)) . '</div><button type="button" class="btn btn-link btn-sm p-0 mt-2 question-more" data-toggle="modal" data-target="#' . $modalId . '">Lihat selengkapnya</button><div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Daftar pertanyaan lengkap</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div><div class="modal-body">' . implode('<br>', array_map('htmlspecialchars', $items)) . '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
+    $previewItems = array_slice($items, 0, 3);
+    $html = '<div class="question-preview">' . implode('<br>', array_map('htmlspecialchars', $previewItems)) . '</div>';
+    if (count($items) <= 3) return $html;
+    return $html . '<button type="button" class="btn btn-link btn-sm p-0 mt-2 question-more" data-toggle="modal" data-target="#' . $modalId . '">Lihat selengkapnya</button><div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Daftar pertanyaan lengkap</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div><div class="modal-body">' . implode('<br>', array_map('htmlspecialchars', $items)) . '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
 };
 $renderScoreModal = static function (?string $value, string $modalId): string {
     $scores = $value ? json_decode($value, true) : [];
@@ -63,10 +66,10 @@ require_once __DIR__ . '/../../includes/header.php';
             </tr>
         </thead>
         <tbody>
-        <?php foreach ($data as $index => $row): ?>
+        <?php foreach ($data as $row): ?>
             <tr>
-                <td class="text-center"><?= $index + 1 ?></td>
-                <td><?= htmlspecialchars($row['nama_lengkap'] ?: '-') ?></td>
+                <td class="text-center"><?= (int) $row['id_kuesioner'] ?></td>
+                <td><?= htmlspecialchars($row['nama_lengkap'] ?: 'Sesi belum dibuat') ?></td>
                 <td><?= htmlspecialchars($row['kompetensi']) ?></td>
                 <td class="question-cell"><?= $renderQuestions($row['daftar_pertanyaan'], 'modal-kuesioner-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
                 <td class="evidence-cell">
@@ -95,10 +98,4 @@ require_once __DIR__ . '/../../includes/header.php';
         </tbody>
     </table>
 </div>
-<script>
-document.querySelectorAll('.question-preview').forEach(function (preview) {
-    var moreButton = preview.nextElementSibling;
-    if (moreButton && preview.scrollHeight <= preview.clientHeight) moreButton.style.display = 'none';
-});
-</script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

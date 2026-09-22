@@ -9,7 +9,6 @@ $stmt = $pdo->prepare(
     'SELECT k.judul_kuesioner, k.tahun_periode, k.kompetensi,
             q.nomor_urut, q.teks_pertanyaan
      FROM kuesioner k
-     JOIN jabatan j ON j.id_jabatan = k.id_jabatan_dinilai
      JOIN pertanyaan_kuesioner q ON q.id_kuesioner = k.id_kuesioner
      WHERE k.id_kuesioner = ?
      ORDER BY q.nomor_urut'

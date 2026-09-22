@@ -8,23 +8,18 @@ $user = currentUser();
 $pdo = Database::getConnection();
 $jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
 
-if (!$jabatanIds) {
-    setFlash('error', 'Anda tidak memiliki kewenangan untuk mengunduh kuesioner ini.');
-    header('Location: index.php');
-    exit;
-}
-
-$placeholders = implode(',', array_fill(0, count($jabatanIds), '?'));
+$placeholders = $jabatanIds ? implode(',', array_fill(0, count($jabatanIds), '?')) : 'NULL';
 $stmt = $pdo->prepare(
     "SELECT k.judul_kuesioner, k.tahun_periode, k.kompetensi,
             q.nomor_urut, q.teks_pertanyaan
      FROM kuesioner k
-     JOIN jabatan j ON j.id_jabatan = k.id_jabatan_dinilai
-     JOIN pertanyaan_kuesioner q ON q.id_kuesioner = k.id_kuesioner
-     WHERE k.id_kuesioner = ? AND k.id_jabatan_dinilai IN ($placeholders)
-     ORDER BY q.nomor_urut"
+    JOIN pertanyaan_kuesioner q ON q.id_kuesioner = k.id_kuesioner
+    LEFT JOIN pegawai p_target ON p_target.id_pegawai = k.id_jabatan_dinilai
+    WHERE k.id_kuesioner = ?
+      AND (p_target.id_jabatan IN ($placeholders) OR k.id_jabatan_dinilai IN ($placeholders))
+    ORDER BY q.nomor_urut"
 );
-$stmt->execute(array_merge([$idKuesioner], $jabatanIds));
+$stmt->execute(array_merge([$idKuesioner], $jabatanIds, $jabatanIds));
 $rows = $stmt->fetchAll();
 
 if (!$rows) {

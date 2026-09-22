@@ -45,6 +45,9 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
 <?php endif; ?>
 
+<style>
+#dampak { text-align: justify; }
+</style>
 <form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:800px;">
     <div class="mb-3">
         <label class="form-label" for="id_jabatan">Nama jabatan</label>

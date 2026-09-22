@@ -11,10 +11,13 @@ $stmt = $pdo->prepare(
      FROM wawancara w
      JOIN pegawai p ON p.id_pegawai = w.id_pegawai
      JOIN kuesioner k ON k.id_kuesioner = w.id_kuesioner
-     JOIN jabatan j ON j.id_jabatan = k.id_jabatan_dinilai
-     WHERE w.id_wawancara = ? AND k.id_jabatan_dinilai IN ($jabatanPlaceholders)"
+     WHERE w.id_wawancara = ?
+       AND (
+           p.id_jabatan IN ($jabatanPlaceholders)
+           OR k.id_jabatan_dinilai IN ($jabatanPlaceholders)
+       )"
 );
-$stmt->execute(array_merge([$idWawancara], $jabatanIds));
+$stmt->execute(array_merge([$idWawancara], $jabatanIds, $jabatanIds));
 $sesi = $stmt->fetch();
 if (!$sesi) {
     setFlash('error', 'Kuesioner tidak ditemukan.');

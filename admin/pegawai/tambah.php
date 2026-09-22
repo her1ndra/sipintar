@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 $pdo = Database::getConnection();
-$jabatanList = $pdo->query('SELECT id_jabatan, nama_jabatan FROM jabatan ORDER BY nama_jabatan')->fetchAll();
+$jabatanList = $pdo->query('SELECT id_jabatan, nama_jabatan FROM jabatan ORDER BY id_jabatan')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nip = trim($_POST['nip']);

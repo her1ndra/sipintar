@@ -6,7 +6,7 @@ $data = $pdo->query(
         "SELECT p.id_pegawai, p.nip, p.nama_lengkap, j.nama_jabatan,
           (SELECT COUNT(*) FROM sertifikat_pegawai s WHERE s.id_pegawai = p.id_pegawai) AS jumlah_sertifikat
      FROM pegawai p JOIN jabatan j ON p.id_jabatan = j.id_jabatan
-     ORDER BY p.nama_lengkap"
+     ORDER BY j.id_jabatan, p.nama_lengkap"
 )->fetchAll();
 $pageTitle = 'Data pegawai';
 require_once __DIR__ . '/../../includes/header.php';

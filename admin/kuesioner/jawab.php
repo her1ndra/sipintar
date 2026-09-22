@@ -8,7 +8,6 @@ $stmt = $pdo->prepare(
      FROM wawancara w
      JOIN pegawai p ON p.id_pegawai = w.id_pegawai
      JOIN kuesioner k ON k.id_kuesioner = w.id_kuesioner
-     JOIN jabatan j ON j.id_jabatan = k.id_jabatan_dinilai
      WHERE w.id_wawancara = ?'
 );
 $stmt->execute([$idWawancara]);

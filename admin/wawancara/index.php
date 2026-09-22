@@ -39,11 +39,13 @@ $data = $pdo->query(
 $renderList = static function (?string $value, string $modalId): string {
     $items = $value ? explode('<br>', $value) : [];
     if (!$items) return '-';
-    $html = '<div class="small lh-lg question-preview">' . implode('<br>', array_map('htmlspecialchars', $items)) . '</div>';
-    if ($value !== '') {
-        $html .= '<button type="button" class="btn btn-link btn-sm p-0 mt-2 question-more" data-toggle="modal" data-target="#' . $modalId . '">Lihat selengkapnya</button>'
-            . '<div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Daftar pertanyaan lengkap</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><div class="small lh-lg">'
-            . implode('<br>', array_map('htmlspecialchars', $items)) . '</div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
+    $previewItems = array_slice($items, 0, 3);
+    $html = '<div class="small lh-lg question-preview">' . implode('<br>', array_map('htmlspecialchars', $previewItems)) . '</div>';
+    if (count($items) > 3) {
+        return $html
+        . '<button type="button" class="btn btn-link btn-sm p-0 mt-2 question-more" data-toggle="modal" data-target="#' . $modalId . '">Lihat selengkapnya</button>'
+        . '<div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Daftar pertanyaan lengkap</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><div class="small lh-lg">'
+        . implode('<br>', array_map('htmlspecialchars', $items)) . '</div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
     }
     return $html;
 };
@@ -92,12 +94,4 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php if (!$data): ?><tr><td colspan="7" class="text-center text-muted">Belum ada data wawancara.</td></tr><?php endif; ?>
 </tbody></table>
 </div>
-<script>
-document.querySelectorAll('.question-preview').forEach(function (preview) {
-    var moreButton = preview.nextElementSibling;
-    if (moreButton && preview.scrollHeight <= preview.clientHeight) {
-        moreButton.style.display = 'none';
-    }
-});
-</script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
