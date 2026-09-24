@@ -106,6 +106,13 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
+        <li class="nav-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">
+                <i class="fas fa-fw fa-gavel"></i>
+                <span>Kegiatan Hakim</span>
+            </a>
+        </li>
+
     <?php else: ?>
 
         <li class="nav-item <?= siPintarMenuActive('/penilai/dashboard.php', $currentScript) ?>">
@@ -145,7 +152,7 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <?php if (in_array($user['nama_jabatan'], ['Ketua', 'Wakil Ketua'], true)): ?>
+        <?php if ($user['nama_jabatan'] === 'Ketua'): ?>
         <hr class="sidebar-divider">
         <div class="sidebar-heading">Pimpinan</div>
 
