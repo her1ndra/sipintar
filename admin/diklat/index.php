@@ -26,8 +26,8 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= nl2br(htmlspecialchars($row['gap_kompetensi'] ?? '-')) ?></td>
   <td><?= htmlspecialchars($row['diklat_lainnya'] ?: ($row['nama_diklat'] ?? '-')) ?></td>
   <td><?= htmlspecialchars($row['metode_pengembangan'] ?? '-') ?></td>
-  <td><?= htmlspecialchars($row['prioritas']) ?></td>
-  <td>
+  <td class="text-center align-middle"><?= htmlspecialchars($row['prioritas']) ?></td>
+  <td class="text-center align-middle">
     <a href="edit.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-warning">Edit</a>
     <a href="hapus.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus kebutuhan diklat ini?')">Hapus</a>
   </td>

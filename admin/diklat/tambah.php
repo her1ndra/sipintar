@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gapValid = $gap && (int) $gap['id_pegawai'] === $idPegawai;
     }
     $diklatValid = $pilihanDiklat === 'lainnya' ? $diklatLainnya !== '' : $diklatValid;
-    if (!$pegawaiStmt->fetch() || !$diklatValid || !$gapValid || $metode === '' || !in_array($prioritas, ['Tinggi', 'Sedang', 'Rendah'], true) || $tahun < 2000) {
+    if (!$pegawaiStmt->fetch() || !$diklatValid || !$gapValid || $metode === '' || !in_array($prioritas, ['Sangat Tinggi', 'Tinggi', 'Sedang', 'Rendah'], true) || $tahun < 2000) {
         setFlash('error', 'Pegawai, diklat, prioritas, dan tahun rencana harus diisi dengan benar.');
     } else {
       if ($pilihanDiklat === 'lainnya') {
@@ -115,6 +115,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="mb-3">
     <label class="form-label">Prioritas</label>
     <select name="prioritas" class="form-select">
+      <option value="Sangat Tinggi">Sangat Tinggi</option>
       <option value="Tinggi">Tinggi</option>
       <option value="Sedang" selected>Sedang</option>
       <option value="Rendah">Rendah</option>

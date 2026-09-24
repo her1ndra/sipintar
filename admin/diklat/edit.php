@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gap = $idKesenjangan === null ? null : $gapStmt->fetch();
     if ($idKesenjangan !== null && (!$gap || (int) $gap['id_pegawai'] !== $idPegawai)) {
         setFlash('error', 'Gap kompetensi harus milik pegawai yang dipilih.');
-    } elseif ($idPegawai <= 0 || !$diklatValid || $metode === '' || !in_array($prioritas, ['Tinggi', 'Sedang', 'Rendah'], true) || !in_array($status, ['Diusulkan', 'Disetujui', 'Terlaksana', 'Ditolak'], true) || $tahun < 2000) {
+    } elseif ($idPegawai <= 0 || !$diklatValid || $metode === '' || !in_array($prioritas, ['Sangat Tinggi', 'Tinggi', 'Sedang', 'Rendah'], true) || !in_array($status, ['Diusulkan', 'Disetujui', 'Terlaksana', 'Ditolak'], true) || $tahun < 2000) {
         setFlash('error', 'Data kebutuhan diklat belum lengkap atau tidak valid.');
     } else {
         if ($pilihanDiklat === 'lainnya') {
@@ -92,7 +92,7 @@ $selected = static function (string $field, string $value) use ($data): string {
 <?php foreach ($diklatList as $diklat): ?><option value="<?= (int) $diklat['id_diklat'] ?>" <?= (int) ($data['id_diklat'] ?? 0) === (int) $diklat['id_diklat'] ? 'selected' : '' ?>><?= htmlspecialchars($diklat['nama_diklat']) ?></option><?php endforeach; ?><option value="lainnya" <?= !empty($data['diklat_lainnya']) && empty($data['id_diklat']) ? 'selected' : '' ?>>Lainnya</option></select></div>
 <div class="mb-3" id="diklat_lainnya_group" style="display:none;"><label class="form-label">Nama diklat lainnya</label><input type="text" name="diklat_lainnya" class="form-control" value="<?= htmlspecialchars($data['diklat_lainnya'] ?? '') ?>"></div>
 <div class="mb-3"><label class="form-label">Metode pengembangan</label><input name="metode_pengembangan" class="form-control" value="<?= htmlspecialchars($data['metode_pengembangan'] ?? '') ?>" required></div>
-<div class="mb-3"><label class="form-label">Prioritas</label><select name="prioritas" class="form-select"><?php foreach (['Tinggi', 'Sedang', 'Rendah'] as $value): ?><option value="<?= $value ?>" <?= $selected('prioritas', $value) ?>><?= $value ?></option><?php endforeach; ?></select></div>
+<div class="mb-3"><label class="form-label">Prioritas</label><select name="prioritas" class="form-select"><?php foreach (['Sangat Tinggi', 'Tinggi', 'Sedang', 'Rendah'] as $value): ?><option value="<?= $value ?>" <?= $selected('prioritas', $value) ?>><?= $value ?></option><?php endforeach; ?></select></div>
 <div class="mb-3"><label class="form-label">Status</label><select name="status" class="form-select"><?php foreach (['Diusulkan', 'Disetujui', 'Terlaksana', 'Ditolak'] as $value): ?><option value="<?= $value ?>" <?= $selected('status', $value) ?>><?= $value ?></option><?php endforeach; ?></select></div>
 <div class="mb-3"><label class="form-label">Tahun rencana</label><input type="number" name="tahun_rencana" min="2000" class="form-control" value="<?= htmlspecialchars($data['tahun_rencana']) ?>" required></div>
 <div class="mb-3"><label class="form-label">Catatan</label><textarea name="catatan" class="form-control"><?= htmlspecialchars($data['catatan'] ?? '') ?></textarea></div>
