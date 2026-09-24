@@ -257,50 +257,161 @@ if ($format === 'word') {
     exit;
 }
 
+function laporanPdfFromWord(PDO $pdo, array $data, DateTimeImmutable $start, DateTimeImmutable $end): string
+{
+    $autoload = __DIR__ . '/../../vendor/autoload.php';
+    if (!is_file($autoload)) {
+        throw new RuntimeException('Library konversi PDF belum tersedia.');
+    }
+    require_once $autoload;
+    $word = laporanWordTemplate($pdo, $data, $start, $end);
+    $docxPath = tempnam(sys_get_temp_dir(), 'tna-pdf-source-') . '.docx';
+    $pdfPath = tempnam(sys_get_temp_dir(), 'tna-pdf-result-') . '.pdf';
+    file_put_contents($docxPath, $word);
+    try {
+        \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
+        \PhpOffice\PhpWord\Settings::setPdfRendererPath(__DIR__ . '/../../vendor/dompdf/dompdf');
+        $phpWord = \PhpOffice\PhpWord\IOFactory::load($docxPath, 'Word2007');
+        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'PDF');
+        $writer->save($pdfPath);
+        $pdf = file_get_contents($pdfPath);
+    } finally {
+        @unlink($docxPath);
+        @unlink($pdfPath);
+    }
+    if ($pdf === false || $pdf === '') {
+        throw new RuntimeException('PDF hasil konversi kosong.');
+    }
+    return $pdf;
+}
+
+try {
+    $pdf = laporanPdfFromWord(Database::getConnection(), $data, $start, $end);
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="laporan-tna-' . $safePeriod . '.pdf"');
+    header('Content-Length: ' . strlen($pdf));
+    echo $pdf;
+    exit;
+} catch (Throwable $exception) {
+    // Fallback ke renderer tabel manual jika converter tidak mendukung elemen template tertentu.
+}
+
 function laporanPdfText(string $value): string
 {
     $value = preg_replace('/\s+/', ' ', str_replace(["\r", "\n"], ' ', $value));
     return iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $value) ?: $value;
 }
 
-function laporanPdfLines(array $data, array $sections, string $periodLabel, DateTimeImmutable $start, DateTimeImmutable $end): array
+function laporanPdfEscape(string $value): string
 {
-    $lines = ['DOKUMEN TRAINING NEED ANALYSIS 2026', 'Laporan ' . $periodLabel,
-        'Periode data: ' . $start->format('d/m/Y') . ' - ' . $end->modify('-1 day')->format('d/m/Y'), ''];
-    foreach ($sections as $key => $headers) {
-        $lines[] = strtoupper(laporanLabel($key)) . ' (' . count($data[$key]) . ')';
-        $lines[] = str_repeat('-', 96);
-        foreach ($data[$key] as $row) {
-            foreach (array_combine($headers, laporanBaris($key, $row)) as $header => $value) {
-                $wrapped = wordwrap(laporanPdfText($header . ': ' . $value), 96, "\n", true);
-                foreach (explode("\n", $wrapped) as $line) {
-                    $lines[] = $line;
-                }
-            }
-            $lines[] = '';
-        }
-        if (!$data[$key]) {
-            $lines[] = 'Tidak ada data pada periode ini.';
-            $lines[] = '';
-        }
-    }
-    return $lines;
+    return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $value);
 }
 
-$lines = laporanPdfLines($data, $sections, $periodLabel, $start, $end);
-$pages = array_chunk($lines, 48);
+function laporanPdfWrap(string $value, int $characters): array
+{
+    $value = laporanPdfText($value);
+    $parts = preg_split('/\r\n|\r|\n/', $value);
+    $lines = [];
+    foreach ($parts as $part) {
+        $wrapped = wordwrap($part === '' ? ' ' : $part, $characters, "\n", true);
+        foreach (explode("\n", $wrapped) as $line) {
+            $lines[] = $line === '' ? ' ' : $line;
+        }
+    }
+    return $lines ?: [' '];
+}
+
+function laporanPdfBuildPages(array $data, array $sections, string $periodLabel, DateTimeImmutable $start, DateTimeImmutable $end): array
+{
+    $pageWidth = 842;
+    $pageHeight = 595;
+    $left = 28;
+    $right = 28;
+    $top = 555;
+    $bottom = 28;
+    $fontSize = 6.5;
+    $lineHeight = 8;
+    $tableWidth = $pageWidth - $left - $right;
+    $streams = [];
+    $stream = "BT\n/F1 15 Tf\n" . $left . ' ' . $top . " Td\n(DOKUMEN TRAINING NEED ANALYSIS 2026) Tj\n/F1 9 Tf\n0 -16 Td\n(Laporan " . laporanPdfEscape(laporanPdfText($periodLabel)) . ") Tj\n0 -12 Td\n(Periode data: " . $start->format('d/m/Y') . ' - ' . $end->modify('-1 day')->format('d/m/Y') . ") Tj\nET\n";
+    $y = 505;
+
+    $newPage = static function () use (&$streams, &$stream, &$y, $pageWidth, $pageHeight, $left, $top, $periodLabel): void {
+        $streams[] = $stream;
+        $stream = "BT\n/F1 8 Tf\n" . $left . ' ' . $top . " Td\n(DOKUMEN TRAINING NEED ANALYSIS 2026 - " . laporanPdfEscape(laporanPdfText($periodLabel)) . ") Tj\nET\n";
+        $y = $top - 22;
+    };
+
+    foreach ($sections as $key => $headers) {
+        $columnCount = count($headers);
+        $columnWidth = $tableWidth / $columnCount;
+        $sectionTitle = strtoupper(laporanLabel($key)) . ' (' . count($data[$key]) . ')';
+        if ($y < $bottom + 45) {
+            $newPage();
+        }
+        $stream .= 'BT /F1 10 Tf ' . $left . ' ' . $y . ' Td (' . laporanPdfEscape(laporanPdfText($sectionTitle)) . ") Tj ET\n";
+        $y -= 15;
+        $headerLines = array_map(static fn (string $header): array => laporanPdfWrap($header, 16), $headers);
+        $headerHeight = max(array_map('count', $headerLines)) * $lineHeight + 7;
+        $stream .= $left . ' ' . ($y - $headerHeight) . ' ' . $tableWidth . ' ' . $headerHeight . " re S\n";
+        foreach ($headers as $index => $header) {
+            $x = $left + ($index * $columnWidth);
+            if ($index > 0) {
+                $stream .= $x . ' ' . ($y - $headerHeight) . ' m ' . $x . ' ' . $y . " l S\n";
+            }
+            foreach ($headerLines[$index] as $lineIndex => $line) {
+                $textY = $y - 9 - ($lineIndex * $lineHeight);
+                $stream .= 'BT /F1 ' . $fontSize . ' Tf ' . ($x + 3) . ' ' . $textY . ' Td (' . laporanPdfEscape($line) . ") Tj ET\n";
+            }
+        }
+        $y -= $headerHeight;
+        foreach ($data[$key] as $row) {
+            $values = laporanBaris($key, $row);
+            $cellLines = [];
+            $rowLines = 1;
+            foreach ($values as $index => $value) {
+                $cellLines[$index] = laporanPdfWrap($value, max(8, (int) floor($columnWidth / 3.8)));
+                $rowLines = max($rowLines, count($cellLines[$index]));
+            }
+            $rowHeight = ($rowLines * $lineHeight) + 7;
+            if ($y - $rowHeight < $bottom) {
+                $newPage();
+                $y -= 5;
+            }
+            $stream .= $left . ' ' . ($y - $rowHeight) . ' ' . $tableWidth . ' ' . $rowHeight . " re S\n";
+            foreach ($values as $index => $value) {
+                $x = $left + ($index * $columnWidth);
+                if ($index > 0) {
+                    $stream .= $x . ' ' . ($y - $rowHeight) . ' m ' . $x . ' ' . $y . " l S\n";
+                }
+                foreach ($cellLines[$index] as $lineIndex => $line) {
+                    $textY = $y - 9 - ($lineIndex * $lineHeight);
+                    $stream .= 'BT /F1 ' . $fontSize . ' Tf ' . ($x + 3) . ' ' . $textY . ' Td (' . laporanPdfEscape($line) . ") Tj ET\n";
+                }
+            }
+            $y -= $rowHeight;
+        }
+        if (!$data[$key]) {
+            $emptyHeight = 18;
+            $stream .= $left . ' ' . ($y - $emptyHeight) . ' ' . $tableWidth . ' ' . $emptyHeight . " re S\n";
+            $stream .= 'BT /F1 ' . $fontSize . ' Tf ' . ($left + 3) . ' ' . ($y - 11) . " Td (Tidak ada data pada periode ini.) Tj ET\n";
+            $y -= $emptyHeight;
+        }
+        $y -= 18;
+    }
+    $streams[] = $stream;
+    return $streams;
+}
+
+$pages = laporanPdfBuildPages($data, $sections, $periodLabel, $start, $end);
 $objects = ['<< /Type /Catalog /Pages 2 0 R >>', ''];
 $pageReferences = [];
 foreach ($pages as $pageIndex => $pageLines) {
     $pageObject = 3 + ($pageIndex * 2);
     $contentObject = $pageObject + 1;
     $pageReferences[] = $pageObject . ' 0 R';
-    $stream = "BT\n/F1 9 Tf\n40 800 Td\n";
-    foreach ($pageLines as $line) {
-        $stream .= '(' . str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $line) . ") Tj\n0 -15 Td\n";
-    }
-    $stream .= "ET";
-    $objects[] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ' . (3 + (count($pages) * 2)) . ' 0 R >> >> /Contents ' . $contentObject . ' 0 R >>';
+    $stream = $pageLines;
+    $objects[] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 ' . (3 + (count($pages) * 2)) . ' 0 R >> >> /Contents ' . $contentObject . ' 0 R >>';
     $objects[] = '<< /Length ' . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream";
 }
 $fontObject = 3 + (count($pages) * 2);

@@ -20,7 +20,11 @@ kompetensi pegawai, sesuai ERD/DFD yang sudah dirancang sebelumnya.
    ```
    php -S localhost:8000
    ```
-5. Buka `http://localhost:8000/auth/login.php`
+5. Untuk mengaktifkan ekspor PDF dengan format yang sama seperti Word, instal dependency:
+  ```
+  composer install
+  ```
+6. Buka `http://localhost:8000/auth/login.php`
 
 ## Struktur folder
 
