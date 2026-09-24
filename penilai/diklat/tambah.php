@@ -71,6 +71,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="mb-3">
     <label class="form-label">Prioritas</label>
     <select name="prioritas" class="form-select">
+      <option value="Sangat Tinggi">Sangat Tinggi</option>
       <option value="Tinggi">Tinggi</option>
       <option value="Sedang" selected>Sedang</option>
       <option value="Rendah">Rendah</option>

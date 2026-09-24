@@ -30,7 +30,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <tr>
   <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
   <td><?= htmlspecialchars($row['diklat_lainnya'] ?: ($row['nama_diklat'] ?? '-')) ?></td>
-  <td><?= htmlspecialchars($row['prioritas']) ?></td>
+  <td class="text-center align-middle"><?= htmlspecialchars($row['prioritas']) ?></td>
   <td><?= htmlspecialchars($row['status']) ?></td>
   <td><?= htmlspecialchars($row['tahun_rencana']) ?></td>
 </tr>
