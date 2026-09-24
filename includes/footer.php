@@ -27,6 +27,7 @@
 <script src="<?= BASE_URL ?>/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="<?= BASE_URL ?>/assets/vendor/jquery-easing/jquery.easing.min.js"></script>
 <script src="<?= BASE_URL ?>/assets/js/sb-admin-2.min.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/table-search.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>

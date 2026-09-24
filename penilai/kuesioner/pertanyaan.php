@@ -43,7 +43,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <input type="number" step="0.1" name="bobot" class="form-control" style="width:100px" value="1" placeholder="Bobot">
   <button type="submit" class="btn btn-primary">Tambah</button>
 </form>
-<ol class="list-group list-group-numbered bg-white">
+<ol class="list-group list-group-numbered bg-white" data-table-search>
 <?php foreach ($pertanyaan as $p): ?>
   <li class="list-group-item d-flex justify-content-between">
     <span><?= htmlspecialchars($p['teks_pertanyaan']) ?></span>

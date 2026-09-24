@@ -108,6 +108,30 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .table { font-size: .92rem; }
 .alert { border-radius: 12px; }
 
+/* Pencarian tabel ringkas dan berada di sisi kanan atas data. */
+.table-search-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .5rem;
+  min-height: 36px;
+  margin-bottom: .6rem;
+}
+.table-search-input {
+  width: 220px;
+  height: 34px;
+  padding: 6px 11px;
+  font-size: .82rem;
+  border-radius: 8px !important;
+}
+.table-search-result {
+  font-size: .72rem;
+  white-space: nowrap;
+}
+@media (max-width: 576px) {
+  .table-search-input { width: min(220px, 55vw); }
+}
+
 /* 9. Penghalusan sidebar (ukuran teks & perilaku toggled/mobile), sama seperti SI-APIC */
 .sidebar .nav-item .nav-link span { font-size: 0.8rem; }
 .sidebar-brand-text { font-size: 0.85rem; }

@@ -24,7 +24,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
   <td><?= htmlspecialchars($row['nama_jabatan']) ?></td>
   <td><?= nl2br(htmlspecialchars($row['gap_kompetensi'] ?? '-')) ?></td>
-  <td><?= htmlspecialchars($row['nama_diklat'] ?? '-') ?></td>
+  <td><?= htmlspecialchars($row['diklat_lainnya'] ?: ($row['nama_diklat'] ?? '-')) ?></td>
   <td><?= htmlspecialchars($row['metode_pengembangan'] ?? '-') ?></td>
   <td><?= htmlspecialchars($row['prioritas']) ?></td>
   <td>

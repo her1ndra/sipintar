@@ -29,7 +29,9 @@ foreach ($gapList as $gap) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPegawai = (int) ($_POST['id_pegawai'] ?? 0);
-    $idDiklat = ($_POST['id_diklat'] ?? '') !== '' ? (int) $_POST['id_diklat'] : null;
+  $pilihanDiklat = $_POST['id_diklat'] ?? '';
+  $idDiklat = $pilihanDiklat !== '' && $pilihanDiklat !== 'lainnya' ? (int) $pilihanDiklat : null;
+  $diklatLainnya = $pilihanDiklat === 'lainnya' ? trim($_POST['diklat_lainnya'] ?? '') : '';
     $idKesenjangan = ($_POST['id_kesenjangan'] ?? '') !== '' ? (int) $_POST['id_kesenjangan'] : null;
     $metode = trim($_POST['metode_pengembangan'] ?? '');
     $prioritas = $_POST['prioritas'] ?? 'Sedang';
@@ -50,13 +52,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gap = $gapStmt->fetch();
         $gapValid = $gap && (int) $gap['id_pegawai'] === $idPegawai;
     }
+    $diklatValid = $pilihanDiklat === 'lainnya' ? $diklatLainnya !== '' : $diklatValid;
     if (!$pegawaiStmt->fetch() || !$diklatValid || !$gapValid || $metode === '' || !in_array($prioritas, ['Tinggi', 'Sedang', 'Rendah'], true) || $tahun < 2000) {
         setFlash('error', 'Pegawai, diklat, prioritas, dan tahun rencana harus diisi dengan benar.');
     } else {
+      if ($pilihanDiklat === 'lainnya') {
+        $masterDiklatStmt = $pdo->prepare('SELECT id_diklat FROM diklat WHERE nama_diklat = ? LIMIT 1');
+        $masterDiklatStmt->execute([$diklatLainnya]);
+        $idDiklat = $masterDiklatStmt->fetchColumn();
+        if (!$idDiklat) {
+          $pdo->prepare('INSERT INTO diklat (nama_diklat) VALUES (?)')->execute([$diklatLainnya]);
+          $idDiklat = (int) $pdo->lastInsertId();
+        }
+        $diklatLainnya = '';
+      }
         $pdo->prepare(
-            'INSERT INTO kebutuhan_diklat (id_pegawai, id_kesenjangan, id_diklat, metode_pengembangan, prioritas, tahun_rencana, catatan)
-             VALUES (?, ?, ?, ?, ?, ?, ?)'
-        )->execute([$idPegawai, $idKesenjangan, $idDiklat, $metode, $prioritas, $tahun, $catatan]);
+              'INSERT INTO kebutuhan_diklat (id_pegawai, id_kesenjangan, id_diklat, diklat_lainnya, metode_pengembangan, prioritas, tahun_rencana, catatan)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+             )->execute([$idPegawai, $idKesenjangan, $idDiklat, $diklatLainnya ?: null, $metode, $prioritas, $tahun, $catatan]);
         setFlash('success', 'Penentuan kebutuhan diklat berhasil disimpan.');
         header('Location: index.php');
         exit;
@@ -83,24 +96,21 @@ require_once __DIR__ . '/../../includes/header.php';
   </div>
   <div class="mb-3">
     <label class="form-label">Diklat</label>
-    <select name="id_diklat" class="form-select">
+    <select name="id_diklat" id="id_diklat" class="form-select">
       <option value="">-- belum ditentukan --</option>
       <?php foreach ($diklatList as $diklat): ?>
       <option value="<?= (int) $diklat['id_diklat'] ?>"><?= htmlspecialchars($diklat['nama_diklat']) ?></option>
       <?php endforeach; ?>
+      <option value="lainnya" <?= ($_POST['id_diklat'] ?? '') === 'lainnya' ? 'selected' : '' ?>>Lainnya</option>
     </select>
+  </div>
+  <div class="mb-3" id="diklat_lainnya_group" style="display:none;">
+    <label class="form-label">Nama diklat lainnya</label>
+    <input type="text" name="diklat_lainnya" class="form-control" value="<?= htmlspecialchars($_POST['diklat_lainnya'] ?? '') ?>">
   </div>
   <div class="mb-3">
     <label class="form-label">Metode pengembangan</label>
-    <select name="metode_pengembangan" class="form-select" required>
-      <option value="">-- pilih metode --</option>
-      <option value="Pelatihan klasikal">Pelatihan klasikal</option>
-      <option value="Pelatihan daring">Pelatihan daring</option>
-      <option value="Bimbingan teknis">Bimbingan teknis</option>
-      <option value="Coaching">Coaching</option>
-      <option value="Mentoring">Mentoring</option>
-      <option value="Belajar mandiri">Belajar mandiri</option>
-    </select>
+    <input type="text" name="metode_pengembangan" class="form-control" required>
   </div>
   <div class="mb-3">
     <label class="form-label">Prioritas</label>
@@ -126,6 +136,12 @@ const gapByPegawai = <?= json_encode($gapByPegawai, JSON_HEX_TAG | JSON_HEX_AMP 
 const pegawaiSelect = document.querySelector('select[name="id_pegawai"]');
 const gapIdInput = document.getElementById('id_kesenjangan');
 const gapText = document.getElementById('gap_kompetensi');
+const diklatSelect = document.getElementById('id_diklat');
+const diklatLainnyaGroup = document.getElementById('diklat_lainnya_group');
+
+function updateDiklatLainnya() {
+  diklatLainnyaGroup.style.display = diklatSelect.value === 'lainnya' ? '' : 'none';
+}
 
 function updateGap() {
   const gap = gapByPegawai[pegawaiSelect.value];
@@ -134,5 +150,7 @@ function updateGap() {
 }
 
 pegawaiSelect.addEventListener('change', updateGap);
+diklatSelect.addEventListener('change', updateDiklatLainnya);
+updateDiklatLainnya();
 </script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
