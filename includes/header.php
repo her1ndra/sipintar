@@ -52,6 +52,13 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
+        <li class="nav-item <?= siPintarMenuActive('/admin/laporan/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/laporan/index.php">
+                <i class="fas fa-fw fa-file-alt"></i>
+                <span>Laporan TNA</span>
+            </a>
+        </li>
+
         <div class="sidebar-heading">Kepegawaian</div>
 
         <li class="nav-item <?= siPintarMenuActive('/admin/pegawai/', $currentScript) ?>">
@@ -103,13 +110,6 @@ function siPintarMenuActive(string $needle, string $path): string
             <a class="nav-link" href="<?= BASE_URL ?>/admin/diklat/index.php">
                 <i class="fas fa-fw fa-graduation-cap"></i>
                 <span>Kebutuhan Diklat</span>
-            </a>
-        </li>
-
-        <li class="nav-item <?= siPintarMenuActive('/admin/laporan/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/laporan/index.php">
-                <i class="fas fa-fw fa-file-alt"></i>
-                <span>Laporan TNA</span>
             </a>
         </li>
 
