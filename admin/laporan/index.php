@@ -27,8 +27,7 @@ require_once __DIR__ . '/../../includes/header.php';
       <div class="small">Sumber data: seluruh data aplikasi pada periode <?= htmlspecialchars($start->format('d/m/Y')) ?> sampai <?= htmlspecialchars($end->modify('-1 day')->format('d/m/Y')) ?>.</div>
     </div>
     <div class="mt-3 mt-md-0">
-      <a class="btn btn-light mr-1" href="download.php?<?= $downloadQuery ?>&format=word"><i class="fas fa-file-word text-primary mr-1"></i> Word</a>
-      <a class="btn btn-warning" href="download.php?<?= $downloadQuery ?>&format=pdf"><i class="fas fa-file-pdf mr-1"></i> PDF</a>
+      <a class="btn btn-light" href="download.php?<?= $downloadQuery ?>&format=word"><i class="fas fa-file-word text-primary mr-1"></i> Word</a>
     </div>
   </div>
 </div>

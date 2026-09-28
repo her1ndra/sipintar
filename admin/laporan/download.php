@@ -3,57 +3,11 @@ require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 require_once __DIR__ . '/data.php';
 
-$format = ($_GET['format'] ?? 'pdf') === 'word' ? 'word' : 'pdf';
-[$mode, $year, $month, $start, $end, $periodLabel] = laporanPeriode($_GET);
+[$mode, $year, $month, $start, $end] = laporanPeriode($_GET);
 $data = laporanAmbilData(Database::getConnection(), $start, $end);
 $safePeriod = preg_replace('/[^a-z0-9-]+/i', '-', strtolower($mode . '-' . $year . ($month ? '-' . $month : '')));
 
-$sections = [
-    'analisis_tugas' => ['Jabatan', 'Pegawai', 'Tugas', 'Kegiatan', 'Kompetensi sementara', 'Kompetensi jabatan', 'Tanggal input'],
-    'gap' => ['Jabatan', 'Pegawai', 'Kompetensi jabatan', 'Kompetensi saat ini', 'Gap kompetensi', 'Dampak', 'Tanggal input'],
-    'diklat' => ['Pegawai', 'Jabatan', 'Diklat', 'Metode pengembangan', 'Prioritas', 'Status', 'Tahun rencana', 'Catatan', 'Tanggal input'],
-    'kuesioner' => ['Judul', 'Kompetensi', 'Tahun periode', 'Status', 'Jabatan dinilai', 'Tanggal input'],
-    'wawancara' => ['Pegawai', 'Jabatan', 'Tanggal wawancara', 'Status', 'Catatan', 'Tanggal input'],
-    'hasil_wawancara' => ['Pegawai', 'Kompetensi', 'Nilai', 'Status', 'Penilaian', 'Tanggal input'],
-    'sertifikat' => ['Pegawai', 'Nama sertifikat', 'Penyelenggara', 'Tanggal terbit', 'Tanggal kadaluarsa', 'Tanggal input'],
-    'kegiatan_hakim' => ['Pegawai', 'Jenis kegiatan', 'Nama kegiatan', 'Penyelenggara', 'Peran/topik', 'Tanggal mulai', 'Tanggal selesai', 'Lokasi', 'Tanggal input'],
-];
-
-function laporanBaris(string $key, array $row): array
-{
-    $tanggal = laporanNilai($row['created_at'] ?? null);
-    switch ($key) {
-        case 'analisis_tugas':
-            $values = [$row['nama_jabatan'], $row['nama_lengkap'], $row['tugas'], $row['kegiatan'], $row['kompetensi_sementara_jabatan'], $row['kompetensi_jabatan'], $tanggal];
-            break;
-        case 'gap':
-            $values = [$row['nama_jabatan'], $row['nama_lengkap'], $row['kompetensi_jabatan'], $row['kompetensi_pegawai_saat_ini'], $row['gap_kompetensi'], $row['dampak'], $tanggal];
-            break;
-        case 'diklat':
-            $values = [$row['nama_lengkap'], $row['nama_jabatan'], $row['nama_diklat'], $row['metode_pengembangan'], $row['prioritas'], $row['status'], $row['tahun_rencana'], $row['catatan'], $tanggal];
-            break;
-        case 'kuesioner':
-            $values = [$row['judul_kuesioner'], $row['kompetensi'], $row['tahun_periode'], $row['status'], $row['nama_jabatan'], $tanggal];
-            break;
-        case 'wawancara':
-            $values = [$row['nama_lengkap'], $row['nama_jabatan'], $row['tanggal_wawancara'], $row['status'], $row['catatan'], $tanggal];
-            break;
-        case 'hasil_wawancara':
-            $values = [$row['nama_lengkap'], $row['kompetensi'], $row['nilai'], $row['status_kompetensi'], $row['isi_penilaian'], $tanggal];
-            break;
-        case 'sertifikat':
-            $values = [$row['nama_lengkap'], $row['nama_sertifikat'], $row['penyelenggara'], $row['tanggal_terbit'], $row['tanggal_kadaluarsa'], $tanggal];
-            break;
-        case 'kegiatan_hakim':
-            $values = [$row['nama_lengkap'], $row['jenis_kegiatan'], $row['nama_kegiatan'], $row['penyelenggara'], $row['peran_topik'], $row['tanggal_mulai'], $row['tanggal_selesai'], $row['lokasi'], $tanggal];
-            break;
-        default:
-            $values = [];
-    }
-    return array_map('laporanNilai', $values);
-}
-
-function wordSetCell(DOMDocument $document, DOMElement $cell, string $value): void
+function wordSetCell(DOMDocument $document, DOMElement $cell, string $value, bool $numberPoints = false): void
 {
     $namespace = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
     $properties = null;
@@ -72,11 +26,18 @@ function wordSetCell(DOMDocument $document, DOMElement $cell, string $value): vo
 
     $paragraph = $document->createElementNS($namespace, 'w:p');
     $run = null;
-    foreach (preg_split('/\r\n|\r|\n/', laporanNilai($value)) as $index => $line) {
+    $lines = preg_split('/\r\n|\r|\n/', laporanNilai($value));
+    $hasList = $numberPoints && count(array_filter($lines, static fn(string $line): bool => trim($line) !== '')) > 1;
+    $pointNumber = 1;
+    foreach ($lines as $index => $line) {
         if ($index > 0) {
             $run = $document->createElementNS($namespace, 'w:r');
             $run->appendChild($document->createElementNS($namespace, 'w:br'));
             $paragraph->appendChild($run);
+        }
+        if ($hasList && trim($line) !== '') {
+            $line = preg_replace('/^\s*\d+[.)]\s*/u', '', $line);
+            $line = $pointNumber++ . '. ' . $line;
         }
         $run = $document->createElementNS($namespace, 'w:r');
         $text = $document->createElementNS($namespace, 'w:t');
@@ -143,7 +104,7 @@ function wordFillTable(DOMDocument $document, DOMElement $table, array $rows): v
         $row = $prototype->cloneNode(true);
         $cells = $xpath->query('./w:tc', $row);
         foreach ($cells as $index => $cell) {
-            wordSetCell($document, $cell, (string) ($values[$index] ?? '-'));
+            wordSetCell($document, $cell, (string) ($values[$index] ?? '-'), $index > 0);
         }
         $table->appendChild($row);
     }
@@ -248,187 +209,9 @@ function laporanWordTemplate(PDO $pdo, array $data, DateTimeImmutable $start, Da
     return $content;
 }
 
-if ($format === 'word') {
-    $word = laporanWordTemplate(Database::getConnection(), $data, $start, $end);
-    header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    header('Content-Disposition: attachment; filename="laporan-tna-' . $safePeriod . '.docx"');
-    header('Content-Length: ' . strlen($word));
-    echo $word;
-    exit;
-}
-
-function laporanPdfFromWord(PDO $pdo, array $data, DateTimeImmutable $start, DateTimeImmutable $end): string
-{
-    $autoload = __DIR__ . '/../../vendor/autoload.php';
-    if (!is_file($autoload)) {
-        throw new RuntimeException('Library konversi PDF belum tersedia.');
-    }
-    require_once $autoload;
-    $word = laporanWordTemplate($pdo, $data, $start, $end);
-    $docxPath = tempnam(sys_get_temp_dir(), 'tna-pdf-source-') . '.docx';
-    $pdfPath = tempnam(sys_get_temp_dir(), 'tna-pdf-result-') . '.pdf';
-    file_put_contents($docxPath, $word);
-    try {
-        \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
-        \PhpOffice\PhpWord\Settings::setPdfRendererPath(__DIR__ . '/../../vendor/dompdf/dompdf');
-        $phpWord = \PhpOffice\PhpWord\IOFactory::load($docxPath, 'Word2007');
-        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'PDF');
-        $writer->save($pdfPath);
-        $pdf = file_get_contents($pdfPath);
-    } finally {
-        @unlink($docxPath);
-        @unlink($pdfPath);
-    }
-    if ($pdf === false || $pdf === '') {
-        throw new RuntimeException('PDF hasil konversi kosong.');
-    }
-    return $pdf;
-}
-
-try {
-    $pdf = laporanPdfFromWord(Database::getConnection(), $data, $start, $end);
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="laporan-tna-' . $safePeriod . '.pdf"');
-    header('Content-Length: ' . strlen($pdf));
-    echo $pdf;
-    exit;
-} catch (Throwable $exception) {
-    // Fallback ke renderer tabel manual jika converter tidak mendukung elemen template tertentu.
-}
-
-function laporanPdfText(string $value): string
-{
-    $value = preg_replace('/\s+/', ' ', str_replace(["\r", "\n"], ' ', $value));
-    return iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $value) ?: $value;
-}
-
-function laporanPdfEscape(string $value): string
-{
-    return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $value);
-}
-
-function laporanPdfWrap(string $value, int $characters): array
-{
-    $value = laporanPdfText($value);
-    $parts = preg_split('/\r\n|\r|\n/', $value);
-    $lines = [];
-    foreach ($parts as $part) {
-        $wrapped = wordwrap($part === '' ? ' ' : $part, $characters, "\n", true);
-        foreach (explode("\n", $wrapped) as $line) {
-            $lines[] = $line === '' ? ' ' : $line;
-        }
-    }
-    return $lines ?: [' '];
-}
-
-function laporanPdfBuildPages(array $data, array $sections, string $periodLabel, DateTimeImmutable $start, DateTimeImmutable $end): array
-{
-    $pageWidth = 842;
-    $pageHeight = 595;
-    $left = 28;
-    $right = 28;
-    $top = 555;
-    $bottom = 28;
-    $fontSize = 6.5;
-    $lineHeight = 8;
-    $tableWidth = $pageWidth - $left - $right;
-    $streams = [];
-    $stream = "BT\n/F1 15 Tf\n" . $left . ' ' . $top . " Td\n(DOKUMEN TRAINING NEED ANALYSIS 2026) Tj\n/F1 9 Tf\n0 -16 Td\n(Laporan " . laporanPdfEscape(laporanPdfText($periodLabel)) . ") Tj\n0 -12 Td\n(Periode data: " . $start->format('d/m/Y') . ' - ' . $end->modify('-1 day')->format('d/m/Y') . ") Tj\nET\n";
-    $y = 505;
-
-    $newPage = static function () use (&$streams, &$stream, &$y, $pageWidth, $pageHeight, $left, $top, $periodLabel): void {
-        $streams[] = $stream;
-        $stream = "BT\n/F1 8 Tf\n" . $left . ' ' . $top . " Td\n(DOKUMEN TRAINING NEED ANALYSIS 2026 - " . laporanPdfEscape(laporanPdfText($periodLabel)) . ") Tj\nET\n";
-        $y = $top - 22;
-    };
-
-    foreach ($sections as $key => $headers) {
-        $columnCount = count($headers);
-        $columnWidth = $tableWidth / $columnCount;
-        $sectionTitle = strtoupper(laporanLabel($key)) . ' (' . count($data[$key]) . ')';
-        if ($y < $bottom + 45) {
-            $newPage();
-        }
-        $stream .= 'BT /F1 10 Tf ' . $left . ' ' . $y . ' Td (' . laporanPdfEscape(laporanPdfText($sectionTitle)) . ") Tj ET\n";
-        $y -= 15;
-        $headerLines = array_map(static fn (string $header): array => laporanPdfWrap($header, 16), $headers);
-        $headerHeight = max(array_map('count', $headerLines)) * $lineHeight + 7;
-        $stream .= $left . ' ' . ($y - $headerHeight) . ' ' . $tableWidth . ' ' . $headerHeight . " re S\n";
-        foreach ($headers as $index => $header) {
-            $x = $left + ($index * $columnWidth);
-            if ($index > 0) {
-                $stream .= $x . ' ' . ($y - $headerHeight) . ' m ' . $x . ' ' . $y . " l S\n";
-            }
-            foreach ($headerLines[$index] as $lineIndex => $line) {
-                $textY = $y - 9 - ($lineIndex * $lineHeight);
-                $stream .= 'BT /F1 ' . $fontSize . ' Tf ' . ($x + 3) . ' ' . $textY . ' Td (' . laporanPdfEscape($line) . ") Tj ET\n";
-            }
-        }
-        $y -= $headerHeight;
-        foreach ($data[$key] as $row) {
-            $values = laporanBaris($key, $row);
-            $cellLines = [];
-            $rowLines = 1;
-            foreach ($values as $index => $value) {
-                $cellLines[$index] = laporanPdfWrap($value, max(8, (int) floor($columnWidth / 3.8)));
-                $rowLines = max($rowLines, count($cellLines[$index]));
-            }
-            $rowHeight = ($rowLines * $lineHeight) + 7;
-            if ($y - $rowHeight < $bottom) {
-                $newPage();
-                $y -= 5;
-            }
-            $stream .= $left . ' ' . ($y - $rowHeight) . ' ' . $tableWidth . ' ' . $rowHeight . " re S\n";
-            foreach ($values as $index => $value) {
-                $x = $left + ($index * $columnWidth);
-                if ($index > 0) {
-                    $stream .= $x . ' ' . ($y - $rowHeight) . ' m ' . $x . ' ' . $y . " l S\n";
-                }
-                foreach ($cellLines[$index] as $lineIndex => $line) {
-                    $textY = $y - 9 - ($lineIndex * $lineHeight);
-                    $stream .= 'BT /F1 ' . $fontSize . ' Tf ' . ($x + 3) . ' ' . $textY . ' Td (' . laporanPdfEscape($line) . ") Tj ET\n";
-                }
-            }
-            $y -= $rowHeight;
-        }
-        if (!$data[$key]) {
-            $emptyHeight = 18;
-            $stream .= $left . ' ' . ($y - $emptyHeight) . ' ' . $tableWidth . ' ' . $emptyHeight . " re S\n";
-            $stream .= 'BT /F1 ' . $fontSize . ' Tf ' . ($left + 3) . ' ' . ($y - 11) . " Td (Tidak ada data pada periode ini.) Tj ET\n";
-            $y -= $emptyHeight;
-        }
-        $y -= 18;
-    }
-    $streams[] = $stream;
-    return $streams;
-}
-
-$pages = laporanPdfBuildPages($data, $sections, $periodLabel, $start, $end);
-$objects = ['<< /Type /Catalog /Pages 2 0 R >>', ''];
-$pageReferences = [];
-foreach ($pages as $pageIndex => $pageLines) {
-    $pageObject = 3 + ($pageIndex * 2);
-    $contentObject = $pageObject + 1;
-    $pageReferences[] = $pageObject . ' 0 R';
-    $stream = $pageLines;
-    $objects[] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 ' . (3 + (count($pages) * 2)) . ' 0 R >> >> /Contents ' . $contentObject . ' 0 R >>';
-    $objects[] = '<< /Length ' . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream";
-}
-$fontObject = 3 + (count($pages) * 2);
-$objects[] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
-$objects[1] = '<< /Type /Pages /Kids [' . implode(' ', $pageReferences) . '] /Count ' . count($pages) . ' >>';
-$pdf = "%PDF-1.4\n";
-$offsets = [0];
-foreach ($objects as $number => $object) {
-    $offsets[$number + 1] = strlen($pdf);
-    $pdf .= ($number + 1) . " 0 obj\n" . $object . "\nendobj\n";
-}
-$xref = strlen($pdf);
-$pdf .= "xref\n0 " . (count($objects) + 1) . "\n0000000000 65535 f \n";
-for ($index = 1; $index <= count($objects); $index++) {
-    $pdf .= sprintf("%010d 00000 n \n", $offsets[$index]);
-}
-$pdf .= "trailer\n<< /Size " . (count($objects) + 1) . " /Root 1 0 R >>\nstartxref\n" . $xref . "\n%%EOF";
-header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="laporan-tna-' . $safePeriod . '.pdf"');
-echo $pdf;
+$word = laporanWordTemplate(Database::getConnection(), $data, $start, $end);
+header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+header('Content-Disposition: attachment; filename="laporan-tna-' . $safePeriod . '.docx"');
+header('Content-Length: ' . strlen($word));
+echo $word;
+exit;
