@@ -4,11 +4,13 @@ requireRole('Admin');
 
 $id = (int) ($_GET['id'] ?? 0);
 $pdo = Database::getConnection();
-$stmt = $pdo->prepare('SELECT file_sertifikat FROM sertifikat_pegawai WHERE id_sertifikat = ?');
+$stmt = $pdo->prepare('SELECT id_pegawai, file_sertifikat FROM sertifikat_pegawai WHERE id_sertifikat = ?');
 $stmt->execute([$id]);
 $sertifikat = $stmt->fetch();
+$redirect = 'index.php';
 
 if ($sertifikat) {
+    $redirect .= '?id_pegawai=' . (int) $sertifikat['id_pegawai'];
     $delete = $pdo->prepare('DELETE FROM sertifikat_pegawai WHERE id_sertifikat = ?');
     $delete->execute([$id]);
 
@@ -22,5 +24,5 @@ if ($sertifikat) {
     setFlash('success', 'Sertifikat berhasil dihapus.');
 }
 
-header('Location: index.php');
+header('Location: ' . $redirect);
 exit;

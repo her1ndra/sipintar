@@ -45,8 +45,8 @@ require_once __DIR__ . '/../../includes/header.php';
 <div class="table-responsive">
 <table class="table table-bordered table-striped bg-white" style="table-layout: fixed; min-width: 900px;">
 <colgroup>
-  <col style="width: 32%"><col style="width: 24%"><col style="width: 11%"><col style="width: 13%">
-  <col style="width: 14%"><col style="width: 6%">
+  <col style="width: 30%"><col style="width: 25%"><col style="width: 9%"><col style="width: 9%">
+  <col style="width: 18%"><col style="width: 9%">
 </colgroup>
 <thead><tr><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>Kadaluarsa</th><th>File</th><th>Aksi</th></tr></thead>
 <tbody>
@@ -64,6 +64,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php endif; ?>
   </td>
   <td class="text-center align-middle">
+    <a href="edit.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit sertifikat"><i class="fas fa-edit" aria-hidden="true"></i></a>
     <a href="hapus.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus sertifikat" onclick="return confirm('Hapus sertifikat ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
   </td>
 </tr>

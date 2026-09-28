@@ -25,6 +25,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= $row['status_aktif'] ? 'Aktif' : 'Nonaktif' ?></td>
   <td class="text-center align-middle">
     <a href="ganti_password.php?id=<?= (int) $row['id_user'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Ganti password" aria-label="Ganti password"><i class="fas fa-key" aria-hidden="true"></i></a>
+    <a href="hapus.php?id=<?= (int) $row['id_user'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus akun" aria-label="Hapus akun" onclick="return confirm('Hapus akun <?= htmlspecialchars($row['nip'], ENT_QUOTES) ?>?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
   </td>
 </tr>
 <?php endforeach; ?>

@@ -12,7 +12,7 @@ $pageTitle = 'Data pegawai';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah pegawai</a>
-<table class="table table-bordered table-striped bg-white">
+<table class="table table-bordered bg-white pegawai-table">
 <thead><tr><th>Nama</th><th>NIP</th><th>Jabatan</th><th>Sertifikat</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>

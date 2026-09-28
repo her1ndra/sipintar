@@ -226,6 +226,10 @@ function siPintarMenuActive(string $needle, string $path): string
 
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown" style="background-color: white;">
 
+                <a class="dropdown-item" href="<?= BASE_URL ?>/auth/profil.php" style="background-color: white; font-size: 0.8rem; color: #006837;">
+                    <i class="fas fa-user-edit fa-sm fa-fw mr-2" style="color: #006837; opacity: 0.7;"></i>
+                    Ganti profil
+                </a>
                 <a class="dropdown-item" href="<?= BASE_URL ?>/auth/logout.php" id="tombol-logout-topbar" style="background-color: white; font-size: 0.8rem; color: #006837;">
                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2" style="color: #006837; opacity: 0.7;"></i>
                     Keluar
