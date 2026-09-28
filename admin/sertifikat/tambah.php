@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 $pdo = Database::getConnection();
 $pegawaiList = $pdo->query('SELECT id_pegawai, nama_lengkap FROM pegawai ORDER BY nama_lengkap')->fetchAll();
+$idPegawaiTerpilih = filter_input(INPUT_GET, 'id_pegawai', FILTER_VALIDATE_INT) ?: null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPegawai = (int) $_POST['id_pegawai'];
@@ -44,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     $stmt->execute([$idPegawai, $nama, $penyelenggara, $terbit, $kadaluarsa, $filePath, currentUser()['id_user']]);
     setFlash('success', 'Sertifikat berhasil ditambahkan.');
-    header('Location: index.php');
+    header('Location: index.php?id_pegawai=' . $idPegawai);
     exit;
   }
 }
@@ -60,7 +61,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <select name="id_pegawai" class="form-select" required>
       <option value="">-- pilih pegawai --</option>
       <?php foreach ($pegawaiList as $p): ?>
-      <option value="<?= $p['id_pegawai'] ?>"><?= htmlspecialchars($p['nama_lengkap']) ?></option>
+      <option value="<?= $p['id_pegawai'] ?>" <?= (int) $p['id_pegawai'] === $idPegawaiTerpilih ? 'selected' : '' ?>><?= htmlspecialchars($p['nama_lengkap']) ?></option>
       <?php endforeach; ?>
     </select>
   </div>
