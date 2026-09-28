@@ -109,6 +109,23 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .table thead th { text-align: center; vertical-align: middle; }
 .alert { border-radius: 12px; }
 
+.table-action-btn,
+.icon-action-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px !important;
+}
+.table-action-btn + .table-action-btn,
+.icon-action-btn + .icon-action-btn { margin-left: .2rem; }
+.table-action-btn i,
+.icon-action-btn i { margin: 0 !important; }
+.table-action-btn:focus-visible,
+.icon-action-btn:focus-visible { outline: 2px solid var(--pn-green); outline-offset: 2px; }
+
 /* Pencarian tabel ringkas dan berada di sisi kanan atas data. */
 .table-search-wrapper {
   display: flex;

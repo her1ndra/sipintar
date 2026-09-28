@@ -85,7 +85,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <?php foreach (['kompetensi_jabatan' => 'Kompetensi jabatan', 'kompetensi_pegawai_saat_ini' => 'Kompetensi pegawai saat ini', 'gap_kompetensi' => 'Gap kompetensi', 'dampak' => 'Dampak'] as $field => $label): ?>
   <div class="mb-3"><label class="form-label"><?= $label ?></label><div class="gap-items" data-field="<?= $field ?>">
     <?php $values = $_POST[$field] ?? ['']; if (!is_array($values)) $values = [$values]; ?>
-    <?php foreach ($values as $value): ?><div class="gap-item mb-2 d-flex align-items-center gap-2"><input type="text" name="<?= $field ?>[]" class="form-control" value="<?= htmlspecialchars($value) ?>" required><button type="button" class="btn btn-outline-danger btn-sm remove-gap-item">Hapus</button></div><?php endforeach; ?>
+    <?php foreach ($values as $value): ?><div class="gap-item mb-2 d-flex align-items-center gap-2"><input type="text" name="<?= $field ?>[]" class="form-control" value="<?= htmlspecialchars($value) ?>" required><button type="button" class="btn btn-outline-danger btn-sm icon-action-btn remove-gap-item" title="Hapus poin" aria-label="Hapus poin"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div><?php endforeach; ?>
   </div><button type="button" class="btn btn-sm btn-outline-primary add-gap-item">+ Tambah poin</button></div>
   <?php endforeach; ?>
   <button type="submit" class="btn btn-primary">Simpan</button>
@@ -98,7 +98,7 @@ document.querySelectorAll('.add-gap-item').forEach(function (button) {
     var field = wrapper.dataset.field;
     var item = document.createElement('div');
     item.className = 'gap-item mb-2 d-flex align-items-center gap-2';
-    item.innerHTML = '<input type="text" name="' + field + '[]" class="form-control" required><button type="button" class="btn btn-outline-danger btn-sm remove-gap-item">Hapus</button>';
+    item.innerHTML = '<input type="text" name="' + field + '[]" class="form-control" required><button type="button" class="btn btn-outline-danger btn-sm icon-action-btn remove-gap-item" title="Hapus poin" aria-label="Hapus poin"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>';
     wrapper.appendChild(item);
   });
 });

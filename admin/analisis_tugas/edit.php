@@ -140,7 +140,7 @@ require_once __DIR__ . '/../../includes/header.php';
           <div class="kegiatan-item mb-2 d-flex align-items-center gap-2">
             <input type="text" name="kegiatan[]" class="form-control" value="<?= htmlspecialchars($item) ?>">
             <?php if ($index > 0): ?>
-              <button type="button" class="btn btn-outline-danger btn-sm remove-kegiatan" aria-label="Hapus poin">Hapus</button>
+              <button type="button" class="btn btn-outline-danger btn-sm icon-action-btn remove-kegiatan" title="Hapus poin" aria-label="Hapus poin"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
             <?php endif; ?>
           </div>
         <?php endforeach; ?>
@@ -180,9 +180,13 @@ function buildKegiatanItem(value = '') {
 
   const removeButton = document.createElement('button');
   removeButton.type = 'button';
-  removeButton.className = 'btn btn-outline-danger btn-sm remove-kegiatan';
+  removeButton.className = 'btn btn-outline-danger btn-sm icon-action-btn remove-kegiatan';
   removeButton.setAttribute('aria-label', 'Hapus poin');
-  removeButton.textContent = 'Hapus';
+  removeButton.title = 'Hapus poin';
+  const removeIcon = document.createElement('i');
+  removeIcon.className = 'fas fa-trash-alt';
+  removeIcon.setAttribute('aria-hidden', 'true');
+  removeButton.appendChild(removeIcon);
 
   item.appendChild(input);
   item.appendChild(removeButton);

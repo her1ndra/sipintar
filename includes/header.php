@@ -20,6 +20,7 @@ function siPintarMenuActive(string $needle, string $path): string
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title><?= htmlspecialchars($pageTitle ?? APP_NAME) ?> - <?= APP_NAME ?></title>
 
+<link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/img/logo.png">
 <link href="<?= BASE_URL ?>/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="<?= BASE_URL ?>/assets/css/sb-admin-2.min.css" rel="stylesheet">

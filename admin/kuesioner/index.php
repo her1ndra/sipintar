@@ -85,7 +85,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                     </div>
                     <?php if ($row['id_wawancara']): ?>
-                        <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary">Isi data</a>
+                        <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
                     <?php endif; ?>
                 </td>
             </tr>

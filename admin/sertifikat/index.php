@@ -28,8 +28,8 @@ require_once __DIR__ . '/../../includes/header.php';
       -
     <?php endif; ?>
   </td>
-  <td>
-    <a href="hapus.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus sertifikat ini?')">Hapus</a>
+  <td class="text-center align-middle">
+    <a href="hapus.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus sertifikat" onclick="return confirm('Hapus sertifikat ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
   </td>
 </tr>
 <?php endforeach; ?>

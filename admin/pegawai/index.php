@@ -21,9 +21,9 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['nip']) ?></td>
   <td><?= htmlspecialchars($row['nama_jabatan']) ?></td>
   <td><a href="../sertifikat/index.php" class="text-primary"><?= (int) $row['jumlah_sertifikat'] ?> sertifikat</a></td>
-  <td>
-    <a href="edit.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-warning">Edit</a>
-    <a href="hapus.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus pegawai ini?')">Hapus</a>
+  <td class="text-center align-middle">
+    <a href="edit.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
+    <a href="hapus.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus" onclick="return confirm('Hapus pegawai ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
   </td>
 </tr>
 <?php endforeach; ?>

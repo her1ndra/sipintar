@@ -101,8 +101,8 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php $idAnalisis = $row['id_analisis_tugas'] ?? null; ?>
     <?php if ($idAnalisis !== null): ?>
       <div class="action-buttons">
-        <a href="edit.php?id=<?= (int) $idAnalisis ?>" class="btn btn-sm btn-warning">Edit</a>
-        <a href="hapus.php?id=<?= (int) $idAnalisis ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus analisis tugas ini?')">Hapus</a>
+        <a href="edit.php?id=<?= (int) $idAnalisis ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
+        <a href="hapus.php?id=<?= (int) $idAnalisis ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus" onclick="return confirm('Hapus analisis tugas ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
       </div>
     <?php else: ?>
       <span class="text-muted">-</span>

@@ -28,8 +28,8 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['metode_pengembangan'] ?? '-') ?></td>
   <td class="text-center align-middle"><?= htmlspecialchars($row['prioritas']) ?></td>
   <td class="text-center align-middle">
-    <a href="edit.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-warning">Edit</a>
-    <a href="hapus.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus kebutuhan diklat ini?')">Hapus</a>
+    <a href="edit.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
+    <a href="hapus.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus" onclick="return confirm('Hapus kebutuhan diklat ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
   </td>
 </tr>
 <?php endforeach; ?>

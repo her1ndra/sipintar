@@ -72,8 +72,8 @@ require_once __DIR__ . '/../../includes/header.php';
   <td class="text-justify dampak-cell"><?= $renderGapField($row['dampak'], 'modal-gap-dampak-' . (int) $row['id_kesenjangan'], 'Dampak') ?></td>
   <td class="action-cell">
     <div class="action-buttons">
-      <a href="edit.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-warning">Edit</a>
-      <a href="hapus.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Hapus analisis kesenjangan ini?')">Hapus</a>
+    <a href="edit.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
+    <a href="hapus.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus" onclick="return confirm('Hapus analisis kesenjangan ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
     </div>
   </td>
 </tr>
