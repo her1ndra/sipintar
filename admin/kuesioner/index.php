@@ -86,6 +86,10 @@ require_once __DIR__ . '/../../includes/header.php';
                         <?php if ($row['id_wawancara']): ?>
                             <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
                         <?php endif; ?>
+                        <form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus kuesioner ini beserta seluruh sesi, jawaban, dan bukti terkait?')">
+                            <input type="hidden" name="id" value="<?= (int) $row['id_kuesioner'] ?>">
+                            <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus kuesioner" aria-label="Hapus kuesioner"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
+                        </form>
                     </div>
                 </td>
             </tr>

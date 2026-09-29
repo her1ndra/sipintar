@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Penilai');
+require_once __DIR__ . '/../../includes/penilaian_delete.php';
 $pdo = Database::getConnection();
 $user = currentUser();
 $idWawancara = (int) ($_GET['id'] ?? 0);
@@ -13,10 +14,13 @@ $stmt = $pdo->prepare("SELECT w.id_wawancara, p.nama_lengkap
 $stmt->execute(array_merge([$idWawancara], $jabatanIds));
 $sesi = $stmt->fetch();
 if (!$sesi) { setFlash('error', 'Wawancara tidak ditemukan.'); header('Location: index.php'); exit; }
+$competencyStmt = $pdo->prepare('SELECT kompetensi FROM hasil_wawancara WHERE id_wawancara = ? ORDER BY id_hasil LIMIT 1');
+$competencyStmt->execute([$idWawancara]);
+$competency = $competencyStmt->fetchColumn();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $scores = $_POST['nilai'] ?? [];
-    $questions = $_POST['pertanyaan'] ?? [];
+    $scores = is_array($_POST['nilai'] ?? null) ? $_POST['nilai'] : [];
+    $questions = is_array($_POST['pertanyaan'] ?? null) ? $_POST['pertanyaan'] : [];
     $files = $_FILES['file_bukti'] ?? null;
     $uploadedPaths = [];
     $path = null;
@@ -24,20 +28,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare('SELECT id_hasil FROM hasil_wawancara WHERE id_wawancara = ?');
     $stmt->execute([$idWawancara]);
     $validIds = array_map('strval', $stmt->fetchAll(PDO::FETCH_COLUMN));
-    $questionIds = array_filter(array_keys($questions), 'is_numeric');
+    $questionIds = array_map('strval', array_filter(array_keys($questions), 'is_numeric'));
     $newQuestions = array_filter($questions, static function ($question, $id) {
         return !is_numeric($id) && trim($question) !== '';
     }, ARRAY_FILTER_USE_BOTH);
     $newScores = array_intersect_key($scores, $newQuestions);
-    if (!$validIds || array_diff($questionIds, $validIds) || array_filter($questions, static function ($question) {
+    $submittedIds = array_map('strval', array_merge($questionIds, array_keys($newQuestions)));
+    $scoreIds = array_map('strval', array_keys($scores));
+    $removedIds = array_values(array_diff($validIds, $questionIds));
+    if (!$submittedIds || array_diff($questionIds, $validIds) || array_filter($questions, static function ($question) {
         return trim($question) === '';
     })) {
         setFlash('error', 'Semua pertanyaan wajib diisi dengan benar.');
         $canSave = false;
-    } elseif (array_diff(array_keys($scores), array_merge($validIds, array_keys($newQuestions)))) {
+    } elseif (array_diff($scoreIds, $submittedIds) || array_diff($submittedIds, $scoreIds)) {
         setFlash('error', 'Data pertanyaan tidak valid.');
         $canSave = false;
-    } elseif (count($scores) !== count($validIds) + count($newQuestions) || array_diff($validIds, array_keys($scores)) || count($newScores) !== count($newQuestions)) {
+    } elseif (count($scores) !== count($submittedIds) || count($newScores) !== count($newQuestions)) {
         setFlash('error', 'Semua pertanyaan wajib diberi nilai.');
         $canSave = false;
     } elseif (array_filter($scores, static function ($score) {
@@ -69,6 +76,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($canSave) {
         $average = array_sum(array_map('intval', $scores)) / count($scores);
         $overallStatus = $average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten');
+        $deletedEvidence = [];
+        $pdo->beginTransaction();
+        $getEvidence = $pdo->prepare('SELECT file_bukti FROM hasil_wawancara WHERE id_hasil = ? AND id_wawancara = ?');
+        $deleteQuestion = $pdo->prepare('DELETE FROM hasil_wawancara WHERE id_hasil = ? AND id_wawancara = ?');
+        foreach ($removedIds as $idHasil) {
+            $getEvidence->execute([$idHasil, $idWawancara]);
+            $filePath = $getEvidence->fetchColumn();
+            if ($filePath) {
+                $deletedEvidence[] = $filePath;
+            }
+            $deleteQuestion->execute([$idHasil, $idWawancara]);
+        }
         $update = $pdo->prepare(
             'UPDATE hasil_wawancara SET nilai = ?, status_kompetensi = ?
              WHERE id_hasil = ? AND id_wawancara = ?'
@@ -84,9 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         if ($newQuestions) {
-            $competencyStmt = $pdo->prepare('SELECT kompetensi FROM hasil_wawancara WHERE id_wawancara = ? ORDER BY id_hasil LIMIT 1');
-            $competencyStmt->execute([$idWawancara]);
-            $competency = $competencyStmt->fetchColumn();
             $addQuestion = $pdo->prepare('INSERT INTO hasil_wawancara (id_wawancara, kompetensi, isi_penilaian, nilai, status_kompetensi) VALUES (?, ?, ?, ?, ?)');
             foreach ($newQuestions as $questionId => $question) {
                 $score = (int) $newScores[$questionId];
@@ -99,6 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $addEvidence->execute([$idWawancara, $uploadedPath]);
             }
         }
+        $pdo->commit();
+        hapusFileBuktiPenilaian($deletedEvidence);
         setFlash('success', 'Data wawancara berhasil disimpan.');
         header('Location: index.php'); exit;
     }
@@ -118,19 +136,39 @@ require_once __DIR__ . '/../../includes/header.php';
 <h2 class="h4 mb-3">Wawancara: <?= htmlspecialchars($sesi['nama_lengkap']) ?></h2>
 <form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
     <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><div class="form-control bg-light"><?= htmlspecialchars($details[0]['kompetensi'] ?? '-') ?></div></div>
-    <div class="mb-3"><label class="form-label">Daftar Pertanyaan dan Nilai</label><div id="daftar-pertanyaan"><?php foreach ($details as $i => $item): ?><div class="border rounded p-2 mb-2"><input name="pertanyaan[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($item['isi_penilaian']) ?>" required><input type="number" name="nilai[<?= (int) $item['id_hasil'] ?>]" class="form-control" min="0" max="100" step="1" value="<?= $item['nilai'] !== null ? (int) $item['nilai'] : '' ?>" placeholder="Nilai 0-100" required><small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small></div><?php endforeach; ?></div><button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button></div>
+    <div class="mb-3"><label class="form-label">Daftar Pertanyaan dan Nilai</label><small class="form-text text-muted mb-2">Minimal satu pertanyaan harus tersisa.</small><div id="daftar-pertanyaan"><?php foreach ($details as $i => $item): ?><div class="border rounded p-2 mb-2 question-row"><input name="pertanyaan[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($item['isi_penilaian']) ?>" required><input type="number" name="nilai[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" min="0" max="100" step="1" value="<?= $item['nilai'] !== null ? (int) $item['nilai'] : '' ?>" placeholder="Nilai 0-100" required><small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small><div><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div></div><?php endforeach; ?></div><button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button></div>
     <div class="mb-3"><label class="form-label">Bukti Kompetensi</label><input type="file" name="file_bukti[]" class="form-control" accept=".jpg,.jpeg,.png" multiple><small class="text-muted">Bisa memilih beberapa file JPG/PNG, masing-masing maksimal 5 MB.</small><?php if ($hasil['file_bukti']): ?><div><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($hasil['file_bukti']) ?>">Lihat file saat ini</a></div><?php endif; ?><?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($bukti) ?>">Lihat bukti</a></div><?php endforeach; ?></div>
     <button class="btn btn-primary">Simpan data</button> <a href="index.php" class="btn btn-secondary">Kembali</a>
 </form>
 <script>
+var daftarPertanyaan = document.getElementById('daftar-pertanyaan');
+
+function perbaruiTombolHapus() {
+    var rows = daftarPertanyaan.querySelectorAll('.question-row');
+    rows.forEach(function (row) {
+        row.querySelector('.hapus-pertanyaan').disabled = rows.length <= 1;
+    });
+}
+
 document.getElementById('tambah-pertanyaan').addEventListener('click', function () {
     var id = 'baru_' + Date.now();
     var wrapper = document.createElement('div');
-    wrapper.className = 'border rounded p-2 mb-2';
+    wrapper.className = 'border rounded p-2 mb-2 question-row';
     wrapper.innerHTML = '<input name="pertanyaan[' + id + ']" class="form-control mb-2" placeholder="Pertanyaan baru" required>' +
-        '<input type="number" name="nilai[' + id + ']" class="form-control" min="0" max="100" step="1" placeholder="Nilai 0-100" required>' +
-        '<small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small>';
-    document.getElementById('daftar-pertanyaan').appendChild(wrapper);
+        '<input type="number" name="nilai[' + id + ']" class="form-control mb-2" min="0" max="100" step="1" placeholder="Nilai 0-100" required>' +
+        '<small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small>' +
+        '<div><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div>';
+    daftarPertanyaan.appendChild(wrapper);
+    perbaruiTombolHapus();
 });
+
+daftarPertanyaan.addEventListener('click', function (event) {
+    if (event.target.closest('.hapus-pertanyaan') && daftarPertanyaan.querySelectorAll('.question-row').length > 1) {
+        event.target.closest('.question-row').remove();
+        perbaruiTombolHapus();
+    }
+});
+
+perbaruiTombolHapus();
 </script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
