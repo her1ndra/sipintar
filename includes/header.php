@@ -2,6 +2,7 @@
 // $pageTitle harus sudah diset sebelum include file ini
 $user = currentUser();
 $currentScript = $_SERVER['SCRIPT_NAME'] ?? ($_SERVER['PHP_SELF'] ?? '');
+$kegiatanHakimMenuAktif = strpos($currentScript, '/penilai/kegiatan_hakim/') !== false;
 
 /**
  * Menentukan apakah sebuah item menu sidebar sedang aktif,
@@ -114,11 +115,18 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <li class="nav-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">
+        <li class="nav-item <?= $kegiatanHakimMenuAktif ? 'active' : '' ?>">
+            <a class="nav-link kegiatan-hakim-toggle <?= $kegiatanHakimMenuAktif ? '' : 'collapsed' ?>" href="#collapseKegiatanHakimAdmin" data-toggle="collapse" aria-expanded="<?= $kegiatanHakimMenuAktif ? 'true' : 'false' ?>" aria-controls="collapseKegiatanHakimAdmin">
                 <i class="fas fa-fw fa-gavel"></i>
                 <span>Kegiatan Hakim</span>
+                <i class="fas fa-angle-down kegiatan-hakim-caret" aria-hidden="true"></i>
             </a>
+            <div id="collapseKegiatanHakimAdmin" class="collapse <?= $kegiatanHakimMenuAktif ? 'show' : '' ?>" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/index.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">Data kegiatan</a>
+                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/statistik.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/statistik.php">Statistik kegiatan</a>
+                </div>
+            </div>
         </li>
 
     <?php else: ?>
@@ -164,11 +172,18 @@ function siPintarMenuActive(string $needle, string $path): string
         <hr class="sidebar-divider">
         <div class="sidebar-heading">Pimpinan</div>
 
-        <li class="nav-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">
+        <li class="nav-item <?= $kegiatanHakimMenuAktif ? 'active' : '' ?>">
+            <a class="nav-link kegiatan-hakim-toggle <?= $kegiatanHakimMenuAktif ? '' : 'collapsed' ?>" href="#collapseKegiatanHakimKetua" data-toggle="collapse" aria-expanded="<?= $kegiatanHakimMenuAktif ? 'true' : 'false' ?>" aria-controls="collapseKegiatanHakimKetua">
                 <i class="fas fa-fw fa-gavel"></i>
                 <span>Kegiatan Hakim</span>
+                <i class="fas fa-angle-down kegiatan-hakim-caret" aria-hidden="true"></i>
             </a>
+            <div id="collapseKegiatanHakimKetua" class="collapse <?= $kegiatanHakimMenuAktif ? 'show' : '' ?>" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/index.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">Data kegiatan</a>
+                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/statistik.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/statistik.php">Statistik kegiatan</a>
+                </div>
+            </div>
         </li>
         <?php endif; ?>
 
@@ -241,7 +256,7 @@ function siPintarMenuActive(string $needle, string $path): string
 
 <div class="container-fluid">
 
-<h1 class="h3 mb-4 text-gray-800"><?= htmlspecialchars($pageTitle ?? '') ?></h1>
+<h1 class="h3 mb-4 text-gray-800 <?= !empty($boldPageTitle) ? 'font-weight-bold' : '' ?>"><?= htmlspecialchars($pageTitle ?? '') ?></h1>
 <?php $flash = getFlash(); if ($flash): ?>
 <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : $flash['type'] ?>"><?= htmlspecialchars($flash['message']) ?></div>
 <?php endif; ?>

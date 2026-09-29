@@ -6,6 +6,7 @@ kompetensi pegawai, sesuai ERD/DFD yang sudah dirancang sebelumnya.
 ## Setup
 
 1. Buat database MySQL dan import `database/si_pintar_schema.sql`.
+  Untuk database yang sudah digunakan, jalankan `database/migration_jenis_kegiatan_hakim.sql` agar pilihan jenis kegiatan hakim dapat disimpan.
 2. Sesuaikan kredensial database di `config/database.php` (host, nama db, user, password).
 3. Karena hanya Admin yang boleh membuat akun lain lewat aplikasi, buat akun Admin
    pertama secara manual lewat SQL:

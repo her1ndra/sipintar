@@ -333,10 +333,20 @@ INSERT INTO `kebutuhan_diklat` (`id_kebutuhan`, `id_pegawai`, `id_kesenjangan`, 
 -- Struktur dari tabel `kegiatan_hakim`
 --
 
+CREATE TABLE `jenis_kegiatan_hakim` (
+  `nama_jenis` varchar(100) NOT NULL,
+  PRIMARY KEY (`nama_jenis`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `jenis_kegiatan_hakim` (`nama_jenis`) VALUES
+('Narasumber'),
+('Bimtek/Pelatihan'),
+('Pengajar');
+
 CREATE TABLE `kegiatan_hakim` (
   `id_kegiatan` int(10) UNSIGNED NOT NULL,
   `id_pegawai` int(10) UNSIGNED NOT NULL,
-  `jenis_kegiatan` enum('Narasumber','Bimtek/Pelatihan','Pengajar') NOT NULL,
+  `jenis_kegiatan` varchar(100) NOT NULL,
   `nama_kegiatan` varchar(200) NOT NULL,
   `penyelenggara` varchar(150) DEFAULT NULL,
   `peran_topik` varchar(200) DEFAULT NULL,

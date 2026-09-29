@@ -126,28 +126,39 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .table-action-btn:focus-visible,
 .icon-action-btn:focus-visible { outline: 2px solid var(--pn-green); outline-offset: 2px; }
 
-.pegawai-table thead th {
+.sidebar .nav-item .nav-link.kegiatan-hakim-toggle::after { display: none; }
+.sidebar .nav-item .nav-link.kegiatan-hakim-toggle .kegiatan-hakim-caret {
+  margin-right: 0 !important;
+  margin-left: .35rem;
+  color: #F9A825;
+  transition: transform .15s ease;
+}
+.sidebar .nav-item .nav-link.kegiatan-hakim-toggle:not(.collapsed) .kegiatan-hakim-caret {
+  transform: rotate(180deg);
+}
+
+.table thead th {
   color: #fff !important;
   background-color: var(--pn-green) !important;
   border-color: var(--pn-green-dark) !important;
   vertical-align: middle;
 }
-.pegawai-table th,
-.pegawai-table td {
+.table th,
+.table td {
   border-color: #c3d4c9 !important;
 }
-.pegawai-table th + th,
-.pegawai-table td + td {
+.table th + th,
+.table td + td {
   border-left: 1px solid #9fb9a8 !important;
 }
-.pegawai-table tbody tr,
-.pegawai-table tbody tr:nth-of-type(odd) {
+.table tbody tr,
+.table tbody tr:nth-of-type(odd) {
   background-color: #fff !important;
 }
-.pegawai-table tbody tr:hover > td {
+.table tbody tr:hover > td {
   background-color: #e7f3ec !important;
 }
-.pegawai-table tbody td { vertical-align: middle; }
+.table tbody td { vertical-align: middle; }
 
 /* Pencarian tabel ringkas dan berada di sisi kanan atas data. */
 .table-search-wrapper {

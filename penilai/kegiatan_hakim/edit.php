@@ -28,11 +28,14 @@ $hakimList = $pdo->query(
      JOIN jabatan j ON p.id_jabatan = j.id_jabatan
      WHERE j.nama_jabatan LIKE '%Hakim%' ORDER BY p.nama_lengkap"
 )->fetchAll();
-$jenisKegiatan = ['Narasumber', 'Pengajar', 'Bimtek/Pelatihan'];
+$jenisKegiatan = $pdo->query('SELECT nama_jenis FROM jenis_kegiatan_hakim ORDER BY nama_jenis')->fetchAll(PDO::FETCH_COLUMN);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPegawai = (int) ($_POST['id_pegawai'] ?? 0);
-    $jenis = $_POST['jenis_kegiatan'] ?? '';
+    $jenisPilihan = $_POST['jenis_kegiatan'] ?? '';
+    $jenis = $jenisPilihan === '__lainnya__'
+        ? trim($_POST['jenis_kegiatan_baru'] ?? '')
+        : $jenisPilihan;
     $nama = trim($_POST['nama_kegiatan'] ?? '');
     $penyelenggara = trim($_POST['penyelenggara'] ?? '');
     $mulai = $_POST['tanggal_mulai'] ?? '';
@@ -54,7 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$hakimStmt->fetchColumn()) {
         setFlash('error', 'Pegawai yang dipilih harus memiliki jabatan Hakim.');
         $canSave = false;
-    } elseif (!in_array($jenis, $jenisKegiatan, true) || $nama === '' || strlen($nama) > 200 || strlen($penyelenggara) > 150 || strlen($tempat) > 150) {
+    } elseif (($jenisPilihan === '__lainnya__' && ($jenis === '' || strlen($jenis) > 100))
+        || ($jenisPilihan !== '__lainnya__' && !in_array($jenis, $jenisKegiatan, true))
+        || $nama === '' || strlen($nama) > 200 || strlen($penyelenggara) > 150 || strlen($tempat) > 150) {
         setFlash('error', 'Data kegiatan belum lengkap atau melebihi batas karakter.');
         $canSave = false;
     } elseif (!$tanggalMulai || $tanggalMulai->format('Y-m-d') !== $mulai || ($selesai !== '' && (!$tanggalSelesai || $tanggalSelesai->format('Y-m-d') !== $selesai || $tanggalSelesai < $tanggalMulai))) {
@@ -103,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$newFilePath && !empty($_POST['hapus_lampiran'])) {
             $filePath = null;
         }
+        $pdo->prepare('INSERT IGNORE INTO jenis_kegiatan_hakim (nama_jenis) VALUES (?)')->execute([$jenis]);
         $pdo->prepare(
             'UPDATE kegiatan_hakim
              SET id_pegawai = ?, jenis_kegiatan = ?, nama_kegiatan = ?, penyelenggara = ?, tanggal_mulai = ?, tanggal_selesai = ?, lokasi = ?, file_bukti = ?
@@ -142,12 +148,18 @@ require_once __DIR__ . '/../../includes/header.php';
   </div>
   <div class="mb-3">
     <label class="form-label">Jenis kegiatan</label>
-    <select name="jenis_kegiatan" class="form-select" required>
+        <select name="jenis_kegiatan" id="jenis_kegiatan" class="form-select" required>
+            <option value="">-- pilih jenis kegiatan --</option>
       <?php foreach ($jenisKegiatan as $jenis): ?>
-      <option value="<?= htmlspecialchars($jenis) ?>" <?= ($data['jenis_kegiatan'] ?? '') === $jenis ? 'selected' : '' ?>><?= htmlspecialchars($jenis) ?></option>
+            <option value="<?= htmlspecialchars($jenis) ?>" <?= ($_POST['jenis_kegiatan'] ?? $data['jenis_kegiatan'] ?? '') === $jenis ? 'selected' : '' ?>><?= htmlspecialchars($jenis) ?></option>
       <?php endforeach; ?>
+            <option value="__lainnya__" <?= ($_POST['jenis_kegiatan'] ?? '') === '__lainnya__' ? 'selected' : '' ?>>Lainnya</option>
     </select>
   </div>
+    <div class="mb-3 <?= ($_POST['jenis_kegiatan'] ?? '') === '__lainnya__' ? '' : 'd-none' ?>" id="jenis-kegiatan-baru-wrapper">
+        <label class="form-label" for="jenis_kegiatan_baru">Jenis kegiatan lainnya</label>
+        <input type="text" name="jenis_kegiatan_baru" id="jenis_kegiatan_baru" class="form-control" maxlength="100" value="<?= htmlspecialchars($_POST['jenis_kegiatan_baru'] ?? '') ?>">
+    </div>
   <div class="mb-3"><label class="form-label">Nama kegiatan</label><input type="text" name="nama_kegiatan" class="form-control" maxlength="200" value="<?= htmlspecialchars($data['nama_kegiatan'] ?? '') ?>" required></div>
   <div class="mb-3"><label class="form-label">Penyelenggara</label><input type="text" name="penyelenggara" class="form-control" maxlength="150" value="<?= htmlspecialchars($data['penyelenggara'] ?? '') ?>"></div>
   <div class="mb-3"><label class="form-label">Tanggal mulai</label><input type="date" name="tanggal_mulai" class="form-control" value="<?= htmlspecialchars($data['tanggal_mulai'] ?? '') ?>" required></div>
@@ -165,4 +177,18 @@ require_once __DIR__ . '/../../includes/header.php';
   <button type="submit" class="btn btn-primary">Simpan perubahan</button>
   <a href="index.php" class="btn btn-secondary">Batal</a>
 </form>
+<script>
+const jenisKegiatanSelect = document.getElementById('jenis_kegiatan');
+const jenisKegiatanBaruWrapper = document.getElementById('jenis-kegiatan-baru-wrapper');
+const jenisKegiatanBaruInput = document.getElementById('jenis_kegiatan_baru');
+
+function toggleJenisKegiatanBaru() {
+    const isLainnya = jenisKegiatanSelect.value === '__lainnya__';
+    jenisKegiatanBaruWrapper.classList.toggle('d-none', !isLainnya);
+    jenisKegiatanBaruInput.required = isLainnya;
+}
+
+jenisKegiatanSelect.addEventListener('change', toggleJenisKegiatanBaru);
+toggleJenisKegiatanBaru();
+</script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

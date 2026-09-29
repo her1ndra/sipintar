@@ -63,11 +63,8 @@ $renderScoreModal = static function (?string $value, string $modalId): string {
 };
 $tableStyle = '<style>
 .wawancara-table { table-layout: fixed; min-width: 1250px; }
-.wawancara-table tbody tr:hover { background-color: inherit !important; }
-.wawancara-table thead tr, .wawancara-table thead th,
-.wawancara-table thead tr:hover, .wawancara-table thead th:hover { background-color: #fff !important; }
-.wawancara-table thead th { height: 64px; text-align: center; vertical-align: middle; border: 1px solid #d9dee7 !important; }
-.wawancara-table td { vertical-align: top; word-wrap: break-word; border: 1px solid #d9dee7 !important; }
+.wawancara-table thead th { height: 64px; text-align: center; vertical-align: middle; }
+.wawancara-table tbody td { vertical-align: top; word-wrap: break-word; }
 .wawancara-table .col-no { width: 50px; }
 .wawancara-table .col-nama { width: 140px; }
 .wawancara-table .col-kompetensi { width: 140px; }

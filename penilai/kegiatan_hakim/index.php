@@ -15,7 +15,6 @@ $data = $pdo->query(
      WHERE j.nama_jabatan LIKE '%Hakim%'
      ORDER BY kh.tanggal_mulai DESC"
 )->fetchAll();
-$jenisKegiatan = ['Narasumber', 'Pengajar', 'Bimtek/Pelatihan'];
 $namaBulan = [
     '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
     '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
@@ -24,7 +23,7 @@ $namaBulan = [
 $dataPerBulan = [];
 foreach ($data as $row) {
     $bulan = substr($row['tanggal_mulai'], 0, 7);
-    $dataPerBulan[$bulan][$row['jenis_kegiatan']][] = $row;
+  $dataPerBulan[$bulan][] = $row;
 }
 $pageTitle = 'Tracing kegiatan hakim';
 require_once __DIR__ . '/../../includes/header.php';
@@ -36,29 +35,33 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php foreach ($dataPerBulan as $bulan => $kegiatanBulan): ?>
 <section class="mb-4">
   <h4 class="mb-3"><?= htmlspecialchars($namaBulan[substr($bulan, 5, 2)] . ' ' . substr($bulan, 0, 4)) ?></h4>
-  <?php foreach ($jenisKegiatan as $jenis): ?>
-  <h5 class="mt-3"><?= htmlspecialchars($jenis === 'Bimtek/Pelatihan' ? 'Mengikuti Bimtek/Pelatihan' : 'Menjadi ' . $jenis) ?></h5>
   <div class="table-responsive">
-    <table class="table table-bordered table-striped bg-white">
-      <thead><tr><th>Hakim</th><th>Nama kegiatan</th><th>Penyelenggara</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
+    <table class="table table-bordered bg-white pegawai-table">
+      <thead><tr><th>Hakim</th><th>Jenis kegiatan</th><th>Nama kegiatan</th><th>Penyelenggara</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
       <tbody>
-      <?php foreach ($kegiatanBulan[$jenis] ?? [] as $row): ?>
+      <?php foreach ($kegiatanBulan as $row): ?>
       <tr>
         <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
+        <td><?= htmlspecialchars($row['jenis_kegiatan']) ?></td>
         <td><?= htmlspecialchars($row['nama_kegiatan']) ?></td>
         <td><?= htmlspecialchars($row['penyelenggara'] ?: '-') ?></td>
         <td><?= htmlspecialchars($row['tanggal_mulai']) ?><?= $row['tanggal_selesai'] ? ' s.d. ' . htmlspecialchars($row['tanggal_selesai']) : '' ?></td>
         <td><?= htmlspecialchars($row['lokasi'] ?: '-') ?></td>
         <td class="text-nowrap">
-          <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+          <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
           <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')">
             <input type="hidden" name="id" value="<?= (int) $row['id_kegiatan'] ?>">
-            <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+            <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
           </form>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary download-pdf"
-            data-kegiatan="<?= htmlspecialchars(json_encode([
+          <div class="dropdown d-inline-block">
+            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Unduh" aria-label="Unduh" aria-haspopup="true">
+              <i class="fas fa-download" aria-hidden="true"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <button
+                type="button"
+                class="dropdown-item download-pdf"
+                data-kegiatan="<?= htmlspecialchars(json_encode([
                 'id' => (int) $row['id_kegiatan'],
                 'nama' => $row['nama_lengkap'],
                 'jenis' => $row['jenis_kegiatan'],
@@ -68,17 +71,16 @@ require_once __DIR__ . '/../../includes/header.php';
                 'tempat' => $row['lokasi'] ?: '-',
                 'lampiran' => $row['file_bukti'] ? BASE_URL . '/' . ltrim($row['file_bukti'], '/') : null,
             ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
-          >Download PDF</button>
+              ><i class="fas fa-file-pdf text-danger mr-2" aria-hidden="true"></i>PDF</button>
+              <a class="dropdown-item" href="cetak.php?id=<?= (int) $row['id_kegiatan'] ?>&amp;format=word"><i class="fas fa-file-word text-primary mr-2" aria-hidden="true"></i>Word</a>
+            </div>
+          </div>
         </td>
       </tr>
       <?php endforeach; ?>
-      <?php if (empty($kegiatanBulan[$jenis])): ?>
-      <tr><td colspan="6" class="text-center text-muted">Tidak ada kegiatan.</td></tr>
-      <?php endif; ?>
       </tbody>
     </table>
   </div>
-  <?php endforeach; ?>
 </section>
 <?php endforeach; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -87,9 +89,9 @@ require_once __DIR__ . '/../../includes/header.php';
 document.querySelectorAll('.download-pdf').forEach(function (button) {
   button.addEventListener('click', async function () {
     var data = JSON.parse(button.dataset.kegiatan);
-    var originalText = button.textContent;
+    var originalContent = button.innerHTML;
     button.disabled = true;
-    button.textContent = 'Menyiapkan PDF...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Menyiapkan PDF...';
 
     try {
       if (!window.jspdf || !window.jspdf.jsPDF || !window.PDFLib) {
@@ -174,7 +176,7 @@ document.querySelectorAll('.download-pdf').forEach(function (button) {
       alert('PDF gagal dibuat: ' + error.message);
     } finally {
       button.disabled = false;
-      button.textContent = originalText;
+      button.innerHTML = originalContent;
     }
   });
 });

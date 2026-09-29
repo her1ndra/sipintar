@@ -39,10 +39,8 @@ $renderScoreModal = static function (?string $value, string $modalId): string {
 };
 $tableStyle = '<style>
 .kuesioner-table { table-layout: fixed; min-width: 1250px; }
-.kuesioner-table thead tr, .kuesioner-table thead th, .kuesioner-table thead tr:hover, .kuesioner-table thead th:hover { background-color: #fff !important; }
-.kuesioner-table tbody tr:hover { background-color: inherit !important; }
-.kuesioner-table thead th { height: 64px; text-align: center; vertical-align: middle; border: 1px solid #d9dee7 !important; }
-.kuesioner-table td { vertical-align: top; word-wrap: break-word; border: 1px solid #d9dee7 !important; }
+.kuesioner-table thead th { height: 64px; text-align: center; vertical-align: middle; }
+.kuesioner-table tbody td { vertical-align: top; word-wrap: break-word; }
 .kuesioner-table .col-no { width: 50px; } .kuesioner-table .col-nama { width: 140px; } .kuesioner-table .col-kompetensi { width: 140px; } .kuesioner-table .col-pertanyaan { width: 430px; } .kuesioner-table .col-bukti { width: 150px; } .kuesioner-table .col-status { width: 130px; } .kuesioner-table .col-aksi { width: 110px; }
 .kuesioner-table .question-cell { text-align: justify; font-size: 1.1rem; line-height: 1.6; }
 .kuesioner-table .question-preview { max-height: 8rem; overflow: hidden; font-size: .95rem; }
