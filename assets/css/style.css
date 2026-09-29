@@ -123,6 +123,16 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .icon-action-btn + .icon-action-btn { margin-left: .2rem; }
 .table-action-btn i,
 .icon-action-btn i { margin: 0 !important; }
+.kuesioner-table .action-cell .table-action-btn > i { font-size: 14px; }
+.kuesioner-table .action-cell .dropdown-toggle::after { display: none; }
+.kuesioner-table .action-cell > .d-flex { flex-wrap: nowrap; }
+.kuesioner-table .action-cell .dropdown,
+.kuesioner-table .action-cell form { flex: 0 0 34px; }
+.kuesioner-table .action-cell .table-action-btn {
+  flex: 0 0 34px;
+  min-width: 34px;
+  max-width: 34px;
+}
 .table-action-btn:focus-visible,
 .icon-action-btn:focus-visible { outline: 2px solid var(--pn-green); outline-offset: 2px; }
 

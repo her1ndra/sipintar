@@ -74,7 +74,7 @@ require_once __DIR__ . '/../../includes/header.php';
   </td>
   <td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><?= $renderScoreModal($row['daftar_nilai'], 'modal-nilai-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
         <td class="action-cell">
-            <div class="d-inline-flex align-items-center justify-content-center">
+            <div class="d-flex align-items-center justify-content-center w-100">
                 <div class="dropdown mr-1">
                     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download pertanyaan" aria-label="Download pertanyaan"><i class="fas fa-download"></i></button>
                     <div class="dropdown-menu dropdown-menu-right">
