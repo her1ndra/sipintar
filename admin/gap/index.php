@@ -51,10 +51,10 @@ require_once __DIR__ . '/../../includes/header.php';
 <style>
 .gap-table { table-layout: fixed; }
 .gap-table thead th { text-align: center; vertical-align: middle; }
-.gap-table td { vertical-align: top; word-wrap: break-word; }
+.table.gap-table tbody td { text-align: justify; vertical-align: top; word-wrap: break-word; }
 .gap-table .text-justify, .gap-table .gap-preview, .gap-table .gap-preview li, .gap-table .modal-body { text-align: justify; }
 .gap-table .dampak-cell { text-align: justify; }
-.gap-table .action-cell { text-align: center; vertical-align: middle; }
+.table.gap-table tbody td.action-cell { text-align: center; vertical-align: middle; }
 .gap-table .action-buttons { display: flex; justify-content: center; gap: .35rem; flex-wrap: wrap; }
 </style>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah analisis kesenjangan</a>
@@ -70,7 +70,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <td class="text-justify"><?= $renderGapField($row['kompetensi_pegawai_saat_ini'], 'modal-gap-kompetensi-pegawai-' . (int) $row['id_kesenjangan'], 'Kompetensi Pegawai Saat Ini') ?></td>
   <td class="text-justify"><?= $renderGapField($row['gap_kompetensi'], 'modal-gap-kompetensi-' . (int) $row['id_kesenjangan'], 'Gap Kompetensi') ?></td>
   <td class="text-justify dampak-cell"><?= $renderGapField($row['dampak'], 'modal-gap-dampak-' . (int) $row['id_kesenjangan'], 'Dampak') ?></td>
-  <td class="action-cell">
+    <td class="action-cell">
     <div class="action-buttons">
     <a href="edit.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
     <a href="hapus.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus" onclick="return confirm('Hapus analisis kesenjangan ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>

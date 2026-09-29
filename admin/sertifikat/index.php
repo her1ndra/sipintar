@@ -43,20 +43,19 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="text-muted">NIP <?= htmlspecialchars($pegawaiTerpilih['nip']) ?></div>
 </div>
 <div class="table-responsive">
-<table class="table table-bordered table-striped bg-white" style="table-layout: fixed; min-width: 900px;">
+<table class="table table-bordered table-striped bg-white" style="table-layout: fixed; min-width: 800px;">
 <colgroup>
-  <col style="width: 30%"><col style="width: 25%"><col style="width: 9%"><col style="width: 9%">
-  <col style="width: 18%"><col style="width: 9%">
+  <col style="width: 33%"><col style="width: 27%"><col style="width: 12%">
+  <col style="width: 18%"><col style="width: 10%">
 </colgroup>
-<thead><tr><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>Kadaluarsa</th><th>File</th><th>Aksi</th></tr></thead>
+<thead><tr><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>File</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
   <td><?= htmlspecialchars($row['nama_sertifikat']) ?></td>
   <td><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></td>
   <td><?= htmlspecialchars($row['tanggal_terbit'] ?? '-') ?></td>
-  <td><?= htmlspecialchars($row['tanggal_kadaluarsa'] ?? '-') ?></td>
-  <td>
+  <td class="text-center align-middle">
     <?php if (!empty($row['file_sertifikat'])): ?>
       <a href="<?= BASE_URL . '/' . htmlspecialchars($row['file_sertifikat']) ?>" target="_blank" rel="noopener">Lihat file</a>
     <?php else: ?>
@@ -70,7 +69,7 @@ require_once __DIR__ . '/../../includes/header.php';
 </tr>
 <?php endforeach; ?>
 <?php if (!$data): ?>
-<tr><td colspan="6" class="text-center text-muted">Belum ada sertifikat untuk pegawai ini.</td></tr>
+<tr><td colspan="5" class="text-center text-muted">Belum ada sertifikat untuk pegawai ini.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>

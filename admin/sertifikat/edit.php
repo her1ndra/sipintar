@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = trim($_POST['nama_sertifikat'] ?? '');
     $penyelenggara = trim($_POST['penyelenggara'] ?? '');
     $terbit = $_POST['tanggal_terbit'] ?: null;
-    $kadaluarsa = $_POST['tanggal_kadaluarsa'] ?: null;
     $filePath = $sertifikat['file_sertifikat'];
     $uploadedPath = null;
     $error = null;
@@ -64,10 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $update = $pdo->prepare(
                 'UPDATE sertifikat_pegawai
-                 SET nama_sertifikat = ?, penyelenggara = ?, tanggal_terbit = ?, tanggal_kadaluarsa = ?, file_sertifikat = ?
+                  SET nama_sertifikat = ?, penyelenggara = ?, tanggal_terbit = ?, file_sertifikat = ?
                  WHERE id_sertifikat = ?'
             );
-            $update->execute([$nama, $penyelenggara ?: null, $terbit, $kadaluarsa, $filePath, $idSertifikat]);
+              $update->execute([$nama, $penyelenggara ?: null, $terbit, $filePath, $idSertifikat]);
 
             if ($uploadedPath !== null && !empty($sertifikat['file_sertifikat'])) {
                 $oldFile = __DIR__ . '/../../' . $sertifikat['file_sertifikat'];
@@ -114,10 +113,6 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="mb-3">
     <label class="form-label" for="tanggal_terbit">Tanggal terbit</label>
     <input type="date" name="tanggal_terbit" id="tanggal_terbit" class="form-control" value="<?= htmlspecialchars($_POST['tanggal_terbit'] ?? $sertifikat['tanggal_terbit'] ?? '') ?>">
-  </div>
-  <div class="mb-3">
-    <label class="form-label" for="tanggal_kadaluarsa">Tanggal kadaluarsa</label>
-    <input type="date" name="tanggal_kadaluarsa" id="tanggal_kadaluarsa" class="form-control" value="<?= htmlspecialchars($_POST['tanggal_kadaluarsa'] ?? $sertifikat['tanggal_kadaluarsa'] ?? '') ?>">
   </div>
   <div class="mb-3">
     <label class="form-label" for="file_sertifikat">File sertifikat</label>

@@ -60,14 +60,14 @@ $renderKegiatan = static function (?string $value, string $modalId): string {
 };
 $tableStyle = '<style>
 .analisis-tugas-table { table-layout: fixed; }
-.analisis-tugas-table td { vertical-align: top; word-wrap: break-word; }
+.table.analisis-tugas-table tbody td:not(.action-cell) { text-align: justify; vertical-align: top; word-wrap: break-word; }
 .analisis-tugas-table thead th { text-align: center; vertical-align: middle; }
 .analisis-tugas-table .text-justify { text-align: justify; }
 .analisis-tugas-table .col-kegiatan { min-width: 280px; }
 .analisis-tugas-table .kegiatan-preview,
 .analisis-tugas-table .kegiatan-preview li { text-align: justify; }
 .analisis-tugas-table .modal-body { text-align: justify; }
-.analisis-tugas-table .action-cell { text-align: center; vertical-align: middle; }
+.table.analisis-tugas-table tbody td.action-cell { text-align: center; vertical-align: middle; }
 .analisis-tugas-table .action-buttons { display: flex; justify-content: center; gap: .35rem; flex-wrap: wrap; }
 </style>';
 $pageTitle = 'Analisis tugas';
