@@ -15,43 +15,72 @@ $data = $pdo->query(
      WHERE j.nama_jabatan LIKE '%Hakim%'
      ORDER BY kh.tanggal_mulai DESC"
 )->fetchAll();
+$jenisKegiatan = ['Narasumber', 'Pengajar', 'Bimtek/Pelatihan'];
+$namaBulan = [
+    '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+    '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+    '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+];
+$dataPerBulan = [];
+foreach ($data as $row) {
+    $bulan = substr($row['tanggal_mulai'], 0, 7);
+    $dataPerBulan[$bulan][$row['jenis_kegiatan']][] = $row;
+}
 $pageTitle = 'Tracing kegiatan hakim';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Catat kegiatan</a>
-<table class="table table-bordered table-striped bg-white">
-<thead><tr><th>Hakim</th><th>Jenis kegiatan</th><th>Nama kegiatan</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
-<tbody>
-<?php foreach ($data as $row): ?>
-<tr>
-  <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
-  <td><?= htmlspecialchars($row['jenis_kegiatan']) ?></td>
-  <td><?= htmlspecialchars($row['nama_kegiatan']) ?></td>
-  <td><?= htmlspecialchars($row['tanggal_mulai']) ?><?= $row['tanggal_selesai'] ? ' s.d. ' . htmlspecialchars($row['tanggal_selesai']) : '' ?></td>
-  <td><?= htmlspecialchars($row['lokasi'] ?: '-') ?></td>
-  <td>
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-primary download-pdf"
-      data-kegiatan="<?= htmlspecialchars(json_encode([
-          'id' => (int) $row['id_kegiatan'],
-          'nama' => $row['nama_lengkap'],
-          'jenis' => $row['jenis_kegiatan'],
-          'kegiatan' => $row['nama_kegiatan'],
-          'penyelenggara' => $row['penyelenggara'] ?: '-',
-          'tanggal' => $row['tanggal_mulai'] . ($row['tanggal_selesai'] ? ' s.d. ' . $row['tanggal_selesai'] : ''),
-          'tempat' => $row['lokasi'] ?: '-',
-          'lampiran' => $row['file_bukti'] ? BASE_URL . '/' . ltrim($row['file_bukti'], '/') : null,
-      ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
-    >Download PDF</button>
-  </td>
-</tr>
-<?php endforeach; ?>
 <?php if (!$data): ?>
-<tr><td colspan="6" class="text-center text-muted">Belum ada data kegiatan hakim.</td></tr>
+<div class="alert alert-info">Belum ada data kegiatan hakim.</div>
 <?php endif; ?>
-</tbody>
-</table>
+<?php foreach ($dataPerBulan as $bulan => $kegiatanBulan): ?>
+<section class="mb-4">
+  <h4 class="mb-3"><?= htmlspecialchars($namaBulan[substr($bulan, 5, 2)] . ' ' . substr($bulan, 0, 4)) ?></h4>
+  <?php foreach ($jenisKegiatan as $jenis): ?>
+  <h5 class="mt-3"><?= htmlspecialchars($jenis === 'Bimtek/Pelatihan' ? 'Mengikuti Bimtek/Pelatihan' : 'Menjadi ' . $jenis) ?></h5>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped bg-white">
+      <thead><tr><th>Hakim</th><th>Nama kegiatan</th><th>Penyelenggara</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
+      <tbody>
+      <?php foreach ($kegiatanBulan[$jenis] ?? [] as $row): ?>
+      <tr>
+        <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
+        <td><?= htmlspecialchars($row['nama_kegiatan']) ?></td>
+        <td><?= htmlspecialchars($row['penyelenggara'] ?: '-') ?></td>
+        <td><?= htmlspecialchars($row['tanggal_mulai']) ?><?= $row['tanggal_selesai'] ? ' s.d. ' . htmlspecialchars($row['tanggal_selesai']) : '' ?></td>
+        <td><?= htmlspecialchars($row['lokasi'] ?: '-') ?></td>
+        <td class="text-nowrap">
+          <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+          <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')">
+            <input type="hidden" name="id" value="<?= (int) $row['id_kegiatan'] ?>">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+          </form>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary download-pdf"
+            data-kegiatan="<?= htmlspecialchars(json_encode([
+                'id' => (int) $row['id_kegiatan'],
+                'nama' => $row['nama_lengkap'],
+                'jenis' => $row['jenis_kegiatan'],
+                'kegiatan' => $row['nama_kegiatan'],
+                'penyelenggara' => $row['penyelenggara'] ?: '-',
+                'tanggal' => $row['tanggal_mulai'] . ($row['tanggal_selesai'] ? ' s.d. ' . $row['tanggal_selesai'] : ''),
+                'tempat' => $row['lokasi'] ?: '-',
+                'lampiran' => $row['file_bukti'] ? BASE_URL . '/' . ltrim($row['file_bukti'], '/') : null,
+            ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
+          >Download PDF</button>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+      <?php if (empty($kegiatanBulan[$jenis])): ?>
+      <tr><td colspan="6" class="text-center text-muted">Tidak ada kegiatan.</td></tr>
+      <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+  <?php endforeach; ?>
+</section>
+<?php endforeach; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
