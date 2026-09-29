@@ -73,7 +73,20 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php if ($row['file_bukti']): ?><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($row['file_bukti']) ?>">Lihat file</a><?php else: ?>-<?php endif; ?>
   </td>
   <td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><?= $renderScoreModal($row['daftar_nilai'], 'modal-nilai-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
-    <td class="action-cell"><div class="dropdown mb-1"><button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown" title="Download pertanyaan" aria-label="Download pertanyaan"><i class="fas fa-download"></i></button><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&format=pdf"><i class="fas fa-file-pdf text-danger mr-2"></i>PDF</a><a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&format=csv"><i class="fas fa-file-csv text-success mr-2"></i>CSV</a></div></div><?php if ($row['id_wawancara']): ?><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><?php endif; ?></td>
+        <td class="action-cell">
+            <div class="d-inline-flex align-items-center justify-content-center">
+                <div class="dropdown mr-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download pertanyaan" aria-label="Download pertanyaan"><i class="fas fa-download"></i></button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&format=pdf"><i class="fas fa-file-pdf text-danger mr-2"></i>PDF</a>
+                        <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&format=csv"><i class="fas fa-file-csv text-success mr-2"></i>CSV</a>
+                    </div>
+                </div>
+                <?php if ($row['id_wawancara']): ?>
+                <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
+                <?php endif; ?>
+            </div>
+        </td>
 </tr>
 <?php endforeach; ?>
 <?php if (!$data): ?>
