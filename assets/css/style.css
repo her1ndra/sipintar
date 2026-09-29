@@ -169,6 +169,14 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
   background-color: #e7f3ec !important;
 }
 .table tbody td { vertical-align: middle; }
+.table.kegiatan-hakim-table tbody td:not(.action-cell) {
+  text-align: justify;
+  vertical-align: top;
+}
+.table.kegiatan-hakim-table tbody td.action-cell {
+  text-align: center;
+  vertical-align: middle;
+}
 
 /* Pencarian tabel ringkas dan berada di sisi kanan atas data. */
 .table-search-wrapper {

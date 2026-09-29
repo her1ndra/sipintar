@@ -83,7 +83,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <section class="mb-4">
   <h4 class="mb-3"><?= htmlspecialchars($group['label']) ?></h4>
   <div class="table-responsive">
-    <table class="table table-bordered bg-white pegawai-table">
+    <table class="table table-bordered bg-white pegawai-table kegiatan-hakim-table">
       <thead><tr><th>Hakim</th><th>Jenis kegiatan</th><th>Nama kegiatan</th><th>Penyelenggara</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
       <tbody>
       <?php foreach ($group['items'] as $row): ?>
@@ -94,7 +94,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <td><?= htmlspecialchars($row['penyelenggara'] ?: '-') ?></td>
         <td><?= htmlspecialchars($row['tanggal_mulai']) ?><?= $row['tanggal_selesai'] ? ' s.d. ' . htmlspecialchars($row['tanggal_selesai']) : '' ?></td>
         <td><?= htmlspecialchars($row['lokasi'] ?: '-') ?></td>
-        <td class="text-center text-nowrap">
+        <td class="text-center text-nowrap action-cell">
           <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
           <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')">
             <input type="hidden" name="id" value="<?= (int) $row['id_kegiatan'] ?>">
