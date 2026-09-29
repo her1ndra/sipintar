@@ -3,8 +3,15 @@ require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 $pdo = Database::getConnection();
 $data = $pdo->query(
-    "SELECT kd.*, p.nama_lengkap, j.nama_jabatan, d.nama_diklat,
-            g.gap_kompetensi
+        "SELECT kd.*, p.nama_lengkap, j.nama_jabatan, d.nama_diklat,
+          COALESCE(
+        NULLIF(g.gap_kompetensi, ''),
+        (SELECT g_latest.gap_kompetensi
+         FROM analisis_kesenjangan_kompetensi g_latest
+         WHERE g_latest.id_pegawai = kd.id_pegawai
+         ORDER BY g_latest.created_at DESC, g_latest.id_kesenjangan DESC
+         LIMIT 1)
+          ) AS gap_kompetensi
      FROM kebutuhan_diklat kd
      JOIN pegawai p ON p.id_pegawai = kd.id_pegawai
      JOIN jabatan j ON j.id_jabatan = p.id_jabatan
@@ -23,7 +30,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <tr>
   <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
   <td><?= htmlspecialchars($row['nama_jabatan']) ?></td>
-  <td><?= nl2br(htmlspecialchars($row['gap_kompetensi'] ?? '-')) ?></td>
+  <td class="text-justify"><?= nl2br(htmlspecialchars($row['gap_kompetensi'] ?? '-')) ?></td>
   <td><?= htmlspecialchars($row['diklat_lainnya'] ?: ($row['nama_diklat'] ?? '-')) ?></td>
   <td><?= htmlspecialchars($row['metode_pengembangan'] ?? '-') ?></td>
   <td class="text-center align-middle"><?= htmlspecialchars($row['prioritas']) ?></td>
