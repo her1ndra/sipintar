@@ -27,32 +27,30 @@ $attachmentUrl = $data['file_bukti'] ? BASE_URL . '/' . ltrim($data['file_bukti'
 $attachmentExtension = $data['file_bukti'] ? strtolower(pathinfo($data['file_bukti'], PATHINFO_EXTENSION)) : null;
 
 if (($_GET['format'] ?? '') === 'word') {
-  $escapeWord = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-  $tanggal = $data['tanggal_mulai'] . ($data['tanggal_selesai'] ? ' s.d. ' . $data['tanggal_selesai'] : '');
-  $details = [
-    'Nama' => $data['nama_lengkap'],
-    'Jenis kegiatan' => $data['jenis_kegiatan'],
-    'Nama kegiatan' => $data['nama_kegiatan'],
-    'Penyelenggara' => $data['penyelenggara'] ?: '-',
-    'Tanggal' => $tanggal,
-    'Tempat' => $data['lokasi'] ?: '-',
-  ];
-  $rows = '';
-  foreach ($details as $label => $value) {
-    $rows .= '<tr><th>' . $escapeWord($label) . '</th><td>' . $escapeWord($value) . '</td></tr>';
+  require_once __DIR__ . '/../../includes/kegiatan_hakim_word.php';
+  $projectRoot = realpath(__DIR__ . '/../..');
+  $attachmentPath = null;
+  $wordAttachmentUrl = null;
+  if ($data['file_bukti'] && $projectRoot !== false) {
+    $relativePath = ltrim(str_replace('\\', '/', $data['file_bukti']), '/');
+    if (preg_match('#^assets/uploads/kegiatan_hakim/[A-Za-z0-9._-]+$#D', $relativePath)) {
+      $uploadRoot = realpath($projectRoot . '/assets/uploads/kegiatan_hakim');
+      $resolvedPath = realpath($projectRoot . '/' . $relativePath);
+      if ($uploadRoot !== false && $resolvedPath !== false
+          && strpos($resolvedPath, $uploadRoot . DIRECTORY_SEPARATOR) === 0 && is_file($resolvedPath)) {
+        $attachmentPath = $resolvedPath;
+      }
+    }
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $encodedPath = implode('/', array_map('rawurlencode', explode('/', $relativePath)));
+    $wordAttachmentUrl = $scheme . '://' . $host . rtrim(BASE_URL, '/') . '/' . $encodedPath;
   }
-  $attachment = $attachmentUrl
-    ? '<p><a href="' . $escapeWord($attachmentUrl) . '">Buka lampiran surat tugas</a></p>'
-    : '<p>Tidak ada lampiran.</p>';
-  $wordDocument = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Data Kegiatan Hakim</title>'
-    . '<style>body{font-family:Arial,sans-serif;color:#222}h1{text-align:center;font-size:18pt}table{border-collapse:collapse;width:100%}'
-    . 'th,td{border:1px solid #777;padding:8px;text-align:left;vertical-align:top}th{width:28%;background:#eee}</style>'
-    . '</head><body><h1>DATA KEGIATAN HAKIM</h1><table>' . $rows . '</table><h3>Lampiran surat tugas</h3>' . $attachment . '</body></html>';
-
-  header('Content-Type: application/msword; charset=utf-8');
-  header('Content-Disposition: attachment; filename="kegiatan-hakim-' . (int) $data['id_kegiatan'] . '.doc"');
-  header('Content-Length: ' . (strlen($wordDocument) + 3));
-  echo "\xEF\xBB\xBF", $wordDocument;
+  $wordDocument = buatDokumenWordKegiatanHakim($data, $attachmentPath, $wordAttachmentUrl);
+  header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+  header('Content-Disposition: attachment; filename="kegiatan-hakim-' . (int) $data['id_kegiatan'] . '.docx"');
+  header('Content-Length: ' . strlen($wordDocument));
+  echo $wordDocument;
   exit;
 }
 ?>

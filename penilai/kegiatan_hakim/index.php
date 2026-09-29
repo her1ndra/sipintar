@@ -7,39 +7,86 @@ if ($user['role'] !== 'Admin' && ($user['role'] !== 'Penilai' || $user['nama_jab
     die('Akses kegiatan hakim hanya untuk Admin atau Ketua.');
 }
 $pdo = Database::getConnection();
-$data = $pdo->query(
+$periode = $_GET['periode'] ?? 'bulan';
+if (!in_array($periode, ['bulan', 'triwulan', 'tahun'], true)) {
+    $periode = 'bulan';
+}
+$tahunAkhir = (int) date('Y');
+$tahun = filter_input(INPUT_GET, 'tahun', FILTER_VALIDATE_INT);
+$tahun = $tahun && $tahun >= 2000 && $tahun <= $tahunAkhir + 1 ? $tahun : $tahunAkhir;
+
+$tanggalMulai = sprintf('%04d-01-01', $periode === 'tahun' ? $tahun - 4 : $tahun);
+$tanggalBatas = sprintf('%04d-01-01', $tahun + 1);
+$statement = $pdo->prepare(
     "SELECT kh.*, p.nama_lengkap
      FROM kegiatan_hakim kh
      JOIN pegawai p ON kh.id_pegawai = p.id_pegawai
      JOIN jabatan j ON p.id_jabatan = j.id_jabatan
      WHERE j.nama_jabatan LIKE '%Hakim%'
+       AND kh.tanggal_mulai >= ? AND kh.tanggal_mulai < ?
      ORDER BY kh.tanggal_mulai DESC"
-)->fetchAll();
+);
+$statement->execute([$tanggalMulai, $tanggalBatas]);
+$data = $statement->fetchAll();
 $namaBulan = [
     '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
     '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
     '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
 ];
-$dataPerBulan = [];
+$namaTriwulan = ['I', 'II', 'III', 'IV'];
+$dataPeriode = [];
 foreach ($data as $row) {
-    $bulan = substr($row['tanggal_mulai'], 0, 7);
-  $dataPerBulan[$bulan][] = $row;
+  $tahunData = substr($row['tanggal_mulai'], 0, 4);
+  if ($periode === 'bulan') {
+    $key = substr($row['tanggal_mulai'], 0, 7);
+    $labelPeriode = $namaBulan[substr($row['tanggal_mulai'], 5, 2)] . ' ' . $tahunData;
+  } elseif ($periode === 'triwulan') {
+    $triwulan = (int) ceil((int) substr($row['tanggal_mulai'], 5, 2) / 3);
+    $key = $tahunData . '-Q' . $triwulan;
+    $labelPeriode = 'Triwulan ' . $namaTriwulan[$triwulan - 1] . ' ' . $tahunData;
+  } else {
+    $key = $tahunData;
+    $labelPeriode = $tahunData;
+  }
+  $dataPeriode[$key]['label'] = $labelPeriode;
+  $dataPeriode[$key]['items'][] = $row;
 }
 $pageTitle = 'Tracing kegiatan hakim';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
+<form method="get" class="form-row align-items-end mb-4">
+  <div class="form-group col-sm-5 col-md-3">
+    <label for="periode">Periode</label>
+    <select name="periode" id="periode" class="form-control">
+      <option value="bulan" <?= $periode === 'bulan' ? 'selected' : '' ?>>Per bulan</option>
+      <option value="triwulan" <?= $periode === 'triwulan' ? 'selected' : '' ?>>Per triwulan</option>
+      <option value="tahun" <?= $periode === 'tahun' ? 'selected' : '' ?>>Per tahun</option>
+    </select>
+  </div>
+  <div class="form-group col-sm-4 col-md-2">
+    <label for="tahun">Tahun acuan</label>
+    <select name="tahun" id="tahun" class="form-control">
+      <?php for ($opsiTahun = $tahunAkhir + 1; $opsiTahun >= max(2000, $tahunAkhir - 10); $opsiTahun--): ?>
+      <option value="<?= $opsiTahun ?>" <?= $tahun === $opsiTahun ? 'selected' : '' ?>><?= $opsiTahun ?></option>
+      <?php endfor; ?>
+    </select>
+  </div>
+  <div class="form-group col-sm-3 col-md-2">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-filter mr-1" aria-hidden="true"></i>Tampilkan</button>
+  </div>
+</form>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Catat kegiatan</a>
 <?php if (!$data): ?>
 <div class="alert alert-info">Belum ada data kegiatan hakim.</div>
 <?php endif; ?>
-<?php foreach ($dataPerBulan as $bulan => $kegiatanBulan): ?>
+<?php foreach ($dataPeriode as $group): ?>
 <section class="mb-4">
-  <h4 class="mb-3"><?= htmlspecialchars($namaBulan[substr($bulan, 5, 2)] . ' ' . substr($bulan, 0, 4)) ?></h4>
+  <h4 class="mb-3"><?= htmlspecialchars($group['label']) ?></h4>
   <div class="table-responsive">
     <table class="table table-bordered bg-white pegawai-table">
       <thead><tr><th>Hakim</th><th>Jenis kegiatan</th><th>Nama kegiatan</th><th>Penyelenggara</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
       <tbody>
-      <?php foreach ($kegiatanBulan as $row): ?>
+      <?php foreach ($group['items'] as $row): ?>
       <tr>
         <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
         <td><?= htmlspecialchars($row['jenis_kegiatan']) ?></td>
