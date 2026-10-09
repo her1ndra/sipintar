@@ -3,23 +3,25 @@ require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 $pdo = Database::getConnection();
 $data = $pdo->query(
-        "SELECT p.id_pegawai, p.nip, p.nama_lengkap, j.nama_jabatan,
+        "SELECT p.id_pegawai, p.nip, p.nama_lengkap, p.status_aktif, j.nama_jabatan,
           (SELECT COUNT(*) FROM sertifikat_pegawai s WHERE s.id_pegawai = p.id_pegawai) AS jumlah_sertifikat
      FROM pegawai p JOIN jabatan j ON p.id_jabatan = j.id_jabatan
-     ORDER BY j.id_jabatan, p.nama_lengkap"
+    ORDER BY CASE WHEN p.status_aktif = 'Non-Aktif' THEN 1 ELSE 0 END,
+          j.id_jabatan, p.nama_lengkap"
 )->fetchAll();
 $pageTitle = 'Data pegawai';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah pegawai</a>
 <table class="table table-bordered bg-white pegawai-table">
-<thead><tr><th>Nama</th><th>NIP</th><th>Jabatan</th><th>Sertifikat</th><th>Aksi</th></tr></thead>
+<thead><tr><th>Nama</th><th>NIP</th><th>Jabatan</th><th>Status</th><th>Sertifikat</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
   <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
   <td><?= htmlspecialchars($row['nip']) ?></td>
   <td><?= htmlspecialchars($row['nama_jabatan']) ?></td>
+  <td><?= htmlspecialchars($row['status_aktif']) ?></td>
   <td><a href="../sertifikat/index.php?id_pegawai=<?= (int) $row['id_pegawai'] ?>" class="text-primary"><?= (int) $row['jumlah_sertifikat'] ?> sertifikat</a></td>
   <td class="text-center align-middle">
     <a href="edit.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
@@ -28,7 +30,7 @@ require_once __DIR__ . '/../../includes/header.php';
 </tr>
 <?php endforeach; ?>
 <?php if (!$data): ?>
-<tr><td colspan="5" class="text-center text-muted">Belum ada data pegawai.</td></tr>
+<tr><td colspan="6" class="text-center text-muted">Belum ada data pegawai.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>

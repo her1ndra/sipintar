@@ -84,7 +84,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php foreach ($data as $row): ?>
 <tr>
   <td><a class="font-weight-bold text-primary" href="index.php?id_pegawai=<?= (int) $row['id_pegawai'] ?>"><?= htmlspecialchars($row['nama_lengkap']) ?></a></td>
-  <td><?= htmlspecialchars($row['nip']) ?></td>
+  <td class="text-center"><?= htmlspecialchars($row['nip']) ?></td>
   <td class="text-center"><?= (int) $row['jumlah_sertifikat'] ?></td>
 </tr>
 <?php endforeach; ?>
