@@ -74,7 +74,7 @@ require_once __DIR__ . '/../../includes/header.php';
   </td>
   <td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><?= $renderScoreModal($row['daftar_nilai'], 'modal-nilai-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
         <td class="action-cell">
-            <div class="d-inline-flex align-items-center justify-content-center">
+            <div class="d-flex align-items-center justify-content-center w-100">
                 <div class="dropdown mr-1">
                     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download pertanyaan" aria-label="Download pertanyaan"><i class="fas fa-download"></i></button>
                     <div class="dropdown-menu dropdown-menu-right">
@@ -84,6 +84,10 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
                 <?php if ($row['id_wawancara']): ?>
                 <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
+                <form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus sesi kuesioner dan hasil penilaian ini?')">
+                    <input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>">
+                    <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus sesi" aria-label="Hapus sesi"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
+                </form>
                 <?php endif; ?>
             </div>
         </td>

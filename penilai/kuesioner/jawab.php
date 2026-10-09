@@ -7,7 +7,7 @@ $idWawancara = (int) ($_GET['id'] ?? 0);
 $jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
 $jabatanPlaceholders = $jabatanIds ? implode(',', array_fill(0, count($jabatanIds), '?')) : 'NULL';
 $stmt = $pdo->prepare(
-    "SELECT w.id_wawancara, p.nama_lengkap, k.judul_kuesioner, k.kompetensi
+    "SELECT w.id_wawancara, p.nama_lengkap, k.id_kuesioner, k.judul_kuesioner, k.kompetensi
      FROM wawancara w
      JOIN pegawai p ON p.id_pegawai = w.id_pegawai
      JOIN kuesioner k ON k.id_kuesioner = w.id_kuesioner
@@ -24,28 +24,58 @@ if (!$sesi) {
     header('Location: index.php');
     exit;
 }
-$questionCountStmt = $pdo->prepare('SELECT COUNT(*) FROM pertanyaan_kuesioner WHERE id_kuesioner = (SELECT id_kuesioner FROM wawancara WHERE id_wawancara = ?)');
-$questionCountStmt->execute([$idWawancara]);
-$questionCount = (int) $questionCountStmt->fetchColumn();
+$questionStmt = $pdo->prepare(
+    'SELECT id_pertanyaan, nomor_urut, teks_pertanyaan FROM pertanyaan_kuesioner
+     WHERE id_kuesioner = (SELECT id_kuesioner FROM wawancara WHERE id_wawancara = ?)
+     ORDER BY nomor_urut'
+);
+$questionStmt->execute([$idWawancara]);
+$pertanyaan = $questionStmt->fetchAll();
+$pertanyaanById = [];
+foreach ($pertanyaan as $item) {
+    $pertanyaanById[(int) $item['id_pertanyaan']] = $item;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $scores = $_POST['nilai'] ?? [];
     $questions = $_POST['pertanyaan'] ?? [];
+    $questionIds = $_POST['id_pertanyaan'] ?? [];
+    $submittedIds = [];
     $status = '';
     $file = $_FILES['file_bukti'] ?? null;
     $path = null;
     $canSave = true;
-    if (!$questions || count($scores) !== count($questions) || array_filter($scores, static function ($score) {
+    if (!is_array($scores) || !is_array($questions) || !is_array($questionIds)
+        || !$questions || count($scores) !== count($questions) || count($questionIds) !== count($questions)
+        || array_filter($scores, static function ($score) {
         return filter_var($score, FILTER_VALIDATE_INT) === false || (int) $score < 0 || (int) $score > 100;
     })) {
         setFlash('error', 'Semua pertanyaan wajib diisi dan diberi nilai 0 sampai 100.');
         $canSave = false;
-    } elseif (array_filter($questions, static function ($question) {
+    } else {
+        foreach ($questionIds as $questionId) {
+            if ($questionId === '') {
+                continue;
+            }
+            if (!ctype_digit((string) $questionId) || !isset($pertanyaanById[(int) $questionId])) {
+                $canSave = false;
+                break;
+            }
+            $submittedIds[] = (int) $questionId;
+        }
+        if (count(array_unique($submittedIds)) !== count($submittedIds)) {
+            $canSave = false;
+        }
+        if (!$canSave) {
+            setFlash('error', 'Daftar pertanyaan tidak valid. Muat ulang halaman dan coba lagi.');
+        }
+    }
+    if ($canSave && array_filter($questions, static function ($question) {
         return trim($question) === '';
     })) {
         setFlash('error', 'Semua pertanyaan wajib diisi.');
         $canSave = false;
-    } elseif ($file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
+    } elseif ($canSave && $file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
         $extensions = ['application/pdf' => 'pdf', 'image/jpeg' => 'jpg', 'image/png' => 'png'];
         if ($file['error'] !== UPLOAD_ERR_OK || !isset($extensions[$mime]) || $file['size'] > 5 * 1024 * 1024) {
@@ -66,6 +96,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($canSave && (!$file || $file['error'] === UPLOAD_ERR_NO_FILE || $path !== null)) {
         $average = array_sum(array_map('intval', $scores)) / count($scores);
         $status = $average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten');
+        $idKuesioner = (int) $sesi['id_kuesioner'];
+        $removedQuestions = array_values(array_filter($pertanyaan, static function ($item) use ($submittedIds) {
+            return !in_array((int) $item['id_pertanyaan'], $submittedIds, true);
+        }));
+        usort($removedQuestions, static function ($left, $right) {
+            return (int) $right['nomor_urut'] <=> (int) $left['nomor_urut'];
+        });
+
+        $pdo->beginTransaction();
+        if ($removedQuestions) {
+            $resultsStmt = $pdo->prepare(
+                'SELECT h.id_hasil, h.daftar_nilai
+                 FROM hasil_kuesioner h
+                 JOIN wawancara w ON w.id_wawancara = h.id_wawancara
+                 WHERE w.id_kuesioner = ?'
+            );
+            $resultsStmt->execute([$idKuesioner]);
+            $scoreRows = $resultsStmt->fetchAll();
+            foreach ($scoreRows as $scoreRow) {
+                $savedScores = json_decode($scoreRow['daftar_nilai'] ?? '', true);
+                if (!is_array($savedScores)) {
+                    continue;
+                }
+                foreach ($removedQuestions as $removedQuestion) {
+                    $scoreIndex = (int) $removedQuestion['nomor_urut'] - 1;
+                    if (array_key_exists($scoreIndex, $savedScores)) {
+                        array_splice($savedScores, $scoreIndex, 1);
+                    }
+                }
+                if ($savedScores) {
+                    $savedAverage = array_sum(array_map('intval', $savedScores)) / count($savedScores);
+                    $savedStatus = $savedAverage <= 30 ? 'Tidak Kompeten' : ($savedAverage <= 70 ? 'Cukup' : 'Kompeten');
+                    $pdo->prepare('UPDATE hasil_kuesioner SET daftar_nilai = ?, status_kompetensi = ? WHERE id_hasil = ?')
+                        ->execute([json_encode(array_values($savedScores)), $savedStatus, $scoreRow['id_hasil']]);
+                }
+            }
+            $deleteQuestion = $pdo->prepare('DELETE FROM pertanyaan_kuesioner WHERE id_pertanyaan = ? AND id_kuesioner = ?');
+            foreach ($removedQuestions as $removedQuestion) {
+                $deleteQuestion->execute([$removedQuestion['id_pertanyaan'], $idKuesioner]);
+            }
+        }
+
+        $updateQuestion = $pdo->prepare('UPDATE pertanyaan_kuesioner SET nomor_urut = ?, teks_pertanyaan = ? WHERE id_pertanyaan = ? AND id_kuesioner = ?');
+        $insertQuestion = $pdo->prepare('INSERT INTO pertanyaan_kuesioner (id_kuesioner, nomor_urut, teks_pertanyaan) VALUES (?, ?, ?)');
+        foreach (array_values($questions) as $index => $question) {
+            $questionId = $questionIds[$index];
+            if ($questionId === '') {
+                $insertQuestion->execute([$idKuesioner, $index + 1, trim($question)]);
+            } else {
+                $updateQuestion->execute([$index + 1, trim($question), (int) $questionId, $idKuesioner]);
+            }
+        }
         $pdo->prepare(
             'INSERT INTO hasil_kuesioner (id_wawancara, file_bukti, daftar_nilai, status_kompetensi)
              VALUES (?, ?, ?, ?)
@@ -73,15 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              daftar_nilai = VALUES(daftar_nilai),
              status_kompetensi = VALUES(status_kompetensi)'
         )->execute([$idWawancara, $path, json_encode(array_values($scores)), $status]);
-        $updateQuestions = $pdo->prepare('UPDATE pertanyaan_kuesioner SET teks_pertanyaan = ? WHERE id_kuesioner = (SELECT id_kuesioner FROM wawancara WHERE id_wawancara = ?) AND nomor_urut = ?');
-        foreach (array_values($questions) as $index => $question) {
-            if ($index < $questionCount) {
-                $updateQuestions->execute([trim($question), $idWawancara, $index + 1]);
-            } else {
-                $addQuestion = $pdo->prepare('INSERT INTO pertanyaan_kuesioner (id_kuesioner, nomor_urut, teks_pertanyaan) VALUES ((SELECT id_kuesioner FROM wawancara WHERE id_wawancara = ?), ?, ?)');
-                $addQuestion->execute([$idWawancara, $index + 1, trim($question)]);
-            }
-        }
+        $pdo->commit();
         setFlash('success', 'Data kuesioner berhasil disimpan.');
         header('Location: index.php');
         exit;
@@ -92,13 +166,6 @@ $stmt = $pdo->prepare('SELECT file_bukti, daftar_nilai, status_kompetensi FROM h
 $stmt->execute([$idWawancara]);
 $hasil = $stmt->fetch() ?: ['file_bukti' => null, 'daftar_nilai' => null, 'status_kompetensi' => 'Tidak Kompeten'];
 $nilaiTersimpan = $hasil['daftar_nilai'] ? json_decode($hasil['daftar_nilai'], true) : [];
-$stmt = $pdo->prepare(
-    'SELECT nomor_urut, teks_pertanyaan FROM pertanyaan_kuesioner
-     WHERE id_kuesioner = (SELECT id_kuesioner FROM wawancara WHERE id_wawancara = ?)
-     ORDER BY nomor_urut'
-);
-$stmt->execute([$idWawancara]);
-$pertanyaan = $stmt->fetchAll();
 $pageTitle = 'Isi kuesioner';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
@@ -111,9 +178,10 @@ require_once __DIR__ . '/../../includes/header.php';
     <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><div class="form-control bg-light"><?= htmlspecialchars($sesi['kompetensi']) ?></div></div>
     <div class="mb-3">
         <label class="form-label">Daftar Pertanyaan dan Nilai</label>
+        <small class="form-text text-muted mb-2">Menghapus pertanyaan akan menghapusnya dari kuesioner dan menyesuaikan nilai pada semua sesi terkait.</small>
         <div id="daftar-pertanyaan">
         <?php foreach ($pertanyaan as $item): ?>
-            <div class="question-row"><input name="pertanyaan[]" class="form-control mb-2 question-text" value="<?= htmlspecialchars($item['teks_pertanyaan']) ?>" required><input type="number" name="nilai[]" class="form-control" min="0" max="100" step="1" value="<?= isset($nilaiTersimpan[$item['nomor_urut'] - 1]) ? (int) $nilaiTersimpan[$item['nomor_urut'] - 1] : '' ?>" placeholder="Nilai 0-100" required><small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small></div>
+            <div class="question-row"><input type="hidden" name="id_pertanyaan[]" value="<?= (int) $item['id_pertanyaan'] ?>"><input name="pertanyaan[]" class="form-control mb-2 question-text" value="<?= htmlspecialchars($item['teks_pertanyaan']) ?>" required><input type="number" name="nilai[]" class="form-control mb-2" min="0" max="100" step="1" value="<?= isset($nilaiTersimpan[$item['nomor_urut'] - 1]) ? (int) $nilaiTersimpan[$item['nomor_urut'] - 1] : '' ?>" placeholder="Nilai 0-100" required><small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div>
         <?php endforeach; ?>
         </div>
         <button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button>
@@ -128,10 +196,29 @@ require_once __DIR__ . '/../../includes/header.php';
     <a href="index.php" class="btn btn-secondary">Kembali</a>
 </form>
 <script>
+var daftarPertanyaan = document.getElementById('daftar-pertanyaan');
+
+function perbaruiTombolHapus() {
+    var rows = daftarPertanyaan.querySelectorAll('.question-row');
+    rows.forEach(function (row) {
+        row.querySelector('.hapus-pertanyaan').disabled = rows.length <= 1;
+    });
+}
+
 document.getElementById('tambah-pertanyaan').addEventListener('click', function () {
     var row = document.querySelector('.question-row').cloneNode(true);
     row.querySelectorAll('input').forEach(function (input) { input.value = ''; });
-    document.getElementById('daftar-pertanyaan').appendChild(row);
+    daftarPertanyaan.appendChild(row);
+    perbaruiTombolHapus();
 });
+
+daftarPertanyaan.addEventListener('click', function (event) {
+    if (event.target.closest('.hapus-pertanyaan') && daftarPertanyaan.querySelectorAll('.question-row').length > 1) {
+        event.target.closest('.question-row').remove();
+        perbaruiTombolHapus();
+    }
+});
+
+perbaruiTombolHapus();
 </script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

@@ -41,7 +41,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <style>
 .gap-table { table-layout: fixed; }
 .gap-table thead th { text-align: center; vertical-align: middle; }
-.gap-table td, .gap-table .gap-preview, .gap-table .gap-preview li, .gap-table .modal-body { text-align: justify; vertical-align: top; word-wrap: break-word; }
+.table.gap-table tbody td, .gap-table .gap-preview, .gap-table .gap-preview li, .gap-table .modal-body { text-align: justify; vertical-align: top; word-wrap: break-word; }
 .gap-table .dampak-cell { text-align: justify; }
 </style>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Tambah analisis kesenjangan</a>

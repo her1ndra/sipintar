@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = trim($_POST['nama_sertifikat']);
     $penyelenggara = trim($_POST['penyelenggara']);
     $terbit = $_POST['tanggal_terbit'] ?: null;
-    $kadaluarsa = $_POST['tanggal_kadaluarsa'] ?: null;
   $filePath = null;
 
   if (!empty($_FILES['file_sertifikat']['name'])) {
@@ -40,10 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($filePath !== null || empty($_FILES['file_sertifikat']['name'])) {
     $stmt = $pdo->prepare(
-      'INSERT INTO sertifikat_pegawai (id_pegawai, nama_sertifikat, penyelenggara, tanggal_terbit, tanggal_kadaluarsa, file_sertifikat, dibuat_oleh)
-       VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO sertifikat_pegawai (id_pegawai, nama_sertifikat, penyelenggara, tanggal_terbit, file_sertifikat, dibuat_oleh)
+       VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$idPegawai, $nama, $penyelenggara, $terbit, $kadaluarsa, $filePath, currentUser()['id_user']]);
+     $stmt->execute([$idPegawai, $nama, $penyelenggara, $terbit, $filePath, currentUser()['id_user']]);
     setFlash('success', 'Sertifikat berhasil ditambahkan.');
     header('Location: index.php?id_pegawai=' . $idPegawai);
     exit;
@@ -76,10 +75,6 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="mb-3">
     <label class="form-label">Tanggal terbit</label>
     <input type="date" name="tanggal_terbit" class="form-control">
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Tanggal kadaluarsa</label>
-    <input type="date" name="tanggal_kadaluarsa" class="form-control">
   </div>
   <div class="mb-3">
     <label class="form-label">File sertifikat</label>
