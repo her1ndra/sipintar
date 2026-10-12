@@ -93,7 +93,7 @@ require_once __DIR__ . '/../../includes/header.php';
 .gap-form textarea, .gap-form input[name$="[]"] { text-align: justify; }
 </style>
 <?php if ($flash = getFlash()): ?><div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>"><?= htmlspecialchars($flash['message']) ?></div><?php endif; ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm gap-form" style="max-width:800px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm gap-form" style="max-width:800px;"><?= csrfField() ?>
   <input type="hidden" name="id_kesenjangan" value="<?= (int) $id ?>">
   <div class="mb-3"><label class="form-label" for="id_jabatan">Nama jabatan</label><select name="id_jabatan" id="id_jabatan" class="form-select" required><option value="">-- pilih jabatan --</option><?php foreach ($jabatanList as $jabatan): ?><option value="<?= $jabatan['id_jabatan'] ?>" <?= ((int) $gap['id_jabatan'] === (int) $jabatan['id_jabatan']) ? 'selected' : '' ?>><?= htmlspecialchars($jabatan['nama_jabatan']) ?></option><?php endforeach; ?></select></div>
   <div class="mb-3"><label class="form-label" for="id_pegawai">Pegawai</label><select name="id_pegawai" id="id_pegawai" class="form-select" required><option value="">-- pilih pegawai --</option><?php foreach ($pegawaiList as $pegawai): ?><option value="<?= $pegawai['id_pegawai'] ?>" data-jabatan="<?= $pegawai['id_jabatan'] ?>" <?= ((int) $gap['id_pegawai'] === (int) $pegawai['id_pegawai']) ? 'selected' : '' ?>><?= htmlspecialchars($pegawai['nama_lengkap']) ?></option><?php endforeach; ?></select></div>

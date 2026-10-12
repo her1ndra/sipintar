@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Buat kuesioner';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm">
+<form method="post" class="bg-white p-4 rounded shadow-sm"><?= csrfField() ?>
     <div class="mb-3"><label class="form-label">Nama pegawai yang dinilai</label>
         <select name="id_pegawai" class="form-select" required><option value="">-- pilih pegawai --</option>
         <?php foreach ($pegawaiList as $pegawai): ?><option value="<?= (int) $pegawai['id_pegawai'] ?>"><?= htmlspecialchars($pegawai['nama_lengkap']) ?></option><?php endforeach; ?>

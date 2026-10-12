@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireLogin();
+requireKegiatanHakimAccess();
 $user = currentUser();
-if ($user['role'] !== 'Admin' && ($user['role'] !== 'Penilai' || $user['nama_jabatan'] !== 'Ketua')) {
-    http_response_code(403);
-    die('Akses kegiatan hakim hanya untuk Admin atau Ketua.');
-}
 
 $id = (int) ($_GET['id'] ?? 0);
 $pdo = Database::getConnection();
@@ -23,7 +19,7 @@ if (!$data) {
     die('Data kegiatan hakim tidak ditemukan.');
 }
 
-$attachmentUrl = $data['file_bukti'] ? BASE_URL . '/' . ltrim($data['file_bukti'], '/') : null;
+$attachmentUrl = fileUrl($data['file_bukti']);
 $attachmentExtension = $data['file_bukti'] ? strtolower(pathinfo($data['file_bukti'], PATHINFO_EXTENSION)) : null;
 
 if (($_GET['format'] ?? '') === 'word') {
@@ -44,7 +40,7 @@ if (($_GET['format'] ?? '') === 'word') {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $encodedPath = implode('/', array_map('rawurlencode', explode('/', $relativePath)));
-    $wordAttachmentUrl = $scheme . '://' . $host . rtrim(BASE_URL, '/') . '/' . $encodedPath;
+    $wordAttachmentUrl = $scheme . '://' . $host . BASE_URL . '/file.php?f=' . rawurlencode($relativePath);
   }
   $wordDocument = buatDokumenWordKegiatanHakim($data, $attachmentPath, $wordAttachmentUrl);
   header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');

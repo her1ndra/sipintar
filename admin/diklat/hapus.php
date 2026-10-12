@@ -1,12 +1,10 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
-$id = (int) ($_GET['id'] ?? 0);
-if ($id > 0) {
-    $pdo = Database::getConnection();
-    $stmt = $pdo->prepare('DELETE FROM kebutuhan_diklat WHERE id_kebutuhan = ?');
-    $stmt->execute([$id]);
-    setFlash('success', 'Kebutuhan diklat berhasil dihapus.');
-}
-header('Location: index.php');
-exit;
+hapusDenganAman(
+    'DELETE FROM kebutuhan_diklat WHERE id_kebutuhan = ?',
+    (int) ($_POST['id'] ?? 0),
+    'Kebutuhan diklat berhasil dihapus.',
+    'hapus_kebutuhan_diklat',
+    'Hapus kebutuhan diklat'
+);

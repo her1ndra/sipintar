@@ -2,7 +2,7 @@
 // $pageTitle harus sudah diset sebelum include file ini
 $user = currentUser();
 $currentScript = $_SERVER['SCRIPT_NAME'] ?? ($_SERVER['PHP_SELF'] ?? '');
-$kegiatanHakimMenuAktif = strpos($currentScript, '/penilai/kegiatan_hakim/') !== false;
+$kegiatanHakimMenuAktif = strpos($currentScript, '/kegiatan_hakim/') !== false;
 
 /**
  * Menentukan apakah sebuah item menu sidebar sedang aktif,
@@ -123,8 +123,8 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
             <div id="collapseKegiatanHakimAdmin" class="collapse <?= $kegiatanHakimMenuAktif ? 'show' : '' ?>" data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/index.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">Data kegiatan</a>
-                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/statistik.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/statistik.php">Statistik kegiatan</a>
+                    <a class="collapse-item <?= siPintarMenuActive('/kegiatan_hakim/index.php', $currentScript) ?>" href="<?= BASE_URL ?>/admin/kegiatan_hakim/index.php">Data kegiatan</a>
+                    <a class="collapse-item <?= siPintarMenuActive('/kegiatan_hakim/statistik.php', $currentScript) ?>" href="<?= BASE_URL ?>/admin/kegiatan_hakim/statistik.php">Statistik kegiatan</a>
                 </div>
             </div>
         </li>
@@ -168,7 +168,7 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <?php if ($user['nama_jabatan'] === 'Ketua'): ?>
+        <?php if (in_array($user['nama_jabatan'] ?? '', JABATAN_KEGIATAN_HAKIM, true)): ?>
         <hr class="sidebar-divider">
         <div class="sidebar-heading">Pimpinan</div>
 
@@ -180,8 +180,8 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
             <div id="collapseKegiatanHakimKetua" class="collapse <?= $kegiatanHakimMenuAktif ? 'show' : '' ?>" data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/index.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">Data kegiatan</a>
-                    <a class="collapse-item <?= siPintarMenuActive('/penilai/kegiatan_hakim/statistik.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/statistik.php">Statistik kegiatan</a>
+                    <a class="collapse-item <?= siPintarMenuActive('/kegiatan_hakim/index.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/index.php">Data kegiatan</a>
+                    <a class="collapse-item <?= siPintarMenuActive('/kegiatan_hakim/statistik.php', $currentScript) ?>" href="<?= BASE_URL ?>/penilai/kegiatan_hakim/statistik.php">Statistik kegiatan</a>
                 </div>
             </div>
         </li>

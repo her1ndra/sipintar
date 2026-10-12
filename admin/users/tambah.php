@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Tambah akun user';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label">Role</label>
     <select name="role" id="role" class="form-select" required

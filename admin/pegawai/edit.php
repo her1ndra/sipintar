@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Edit pegawai';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label">NIP</label>
     <input type="text" name="nip" class="form-control" value="<?= htmlspecialchars($pegawai['nip']) ?>" required>

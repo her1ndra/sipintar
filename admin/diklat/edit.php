@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Edit kebutuhan diklat';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:600px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:600px;"><?= csrfField() ?>
 <input type="hidden" name="id_kebutuhan" value="<?= $id ?>">
 <?php
 $selected = static function (string $field, string $value) use ($data): string {

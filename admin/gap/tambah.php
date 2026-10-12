@@ -63,7 +63,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php if ($flash = getFlash()): ?>
   <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>"><?= htmlspecialchars($flash['message']) ?></div>
 <?php endif; ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm gap-form" style="max-width:800px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm gap-form" style="max-width:800px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label" for="id_jabatan">Nama jabatan</label>
     <select name="id_jabatan" id="id_jabatan" class="form-select" required>

@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Tentukan kebutuhan diklat';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:600px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:600px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label">Pegawai</label>
     <select name="id_pegawai" class="form-select" required>

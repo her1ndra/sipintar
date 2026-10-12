@@ -43,7 +43,7 @@ $pertanyaan = $stmt->fetchAll();
 $pageTitle = 'Kelola pertanyaan: ' . $kuesioner['judul_kuesioner'];
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-3 rounded shadow-sm mb-4 d-flex gap-2 align-items-start">
+<form method="post" class="bg-white p-3 rounded shadow-sm mb-4 d-flex gap-2 align-items-start"><?= csrfField() ?>
     <div class="flex-grow-1">
         <textarea name="teks_pertanyaan" class="form-control" placeholder="Tulis pertanyaan baru" required></textarea>
     </div>

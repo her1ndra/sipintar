@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
+requirePost();
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = (int) ($_POST['id'] ?? 0);
 $pdo = Database::getConnection();
 $stmt = $pdo->prepare('SELECT id_pegawai, file_sertifikat FROM sertifikat_pegawai WHERE id_sertifikat = ?');
 $stmt->execute([$id]);
@@ -11,16 +12,9 @@ $redirect = 'index.php';
 
 if ($sertifikat) {
     $redirect .= '?id_pegawai=' . (int) $sertifikat['id_pegawai'];
-    $delete = $pdo->prepare('DELETE FROM sertifikat_pegawai WHERE id_sertifikat = ?');
-    $delete->execute([$id]);
-
-    if (!empty($sertifikat['file_sertifikat'])) {
-        $filePath = __DIR__ . '/../../' . $sertifikat['file_sertifikat'];
-        if (is_file($filePath)) {
-            unlink($filePath);
-        }
-    }
-
+    $pdo->prepare('DELETE FROM sertifikat_pegawai WHERE id_sertifikat = ?')->execute([$id]);
+    hapusFileUpload($sertifikat['file_sertifikat']);
+    auditLog('hapus_sertifikat', 'Hapus sertifikat #' . $id);
     setFlash('success', 'Sertifikat berhasil dihapus.');
 }
 

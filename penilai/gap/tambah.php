@@ -2,8 +2,21 @@
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Penilai');
 $pdo = Database::getConnection();
-$jabatanList = $pdo->query('SELECT id_jabatan, nama_jabatan FROM jabatan ORDER BY nama_jabatan')->fetchAll();
-$pegawaiList = $pdo->query('SELECT id_pegawai, id_jabatan, nama_lengkap FROM pegawai ORDER BY nama_lengkap')->fetchAll();
+$user = currentUser();
+// Hanya jabatan & pegawai dalam wewenang penilai yang boleh dipilih.
+$jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
+$jabatanList = [];
+$pegawaiList = [];
+if ($jabatanIds) {
+    $placeholders = implode(',', array_fill(0, count($jabatanIds), '?'));
+    $stmt = $pdo->prepare("SELECT id_jabatan, nama_jabatan FROM jabatan WHERE id_jabatan IN ($placeholders) ORDER BY nama_jabatan");
+    $stmt->execute($jabatanIds);
+    $jabatanList = $stmt->fetchAll();
+    $stmt = $pdo->prepare("SELECT id_pegawai, id_jabatan, nama_lengkap FROM pegawai WHERE id_jabatan IN ($placeholders) ORDER BY nama_lengkap");
+    $stmt->execute($jabatanIds);
+    $pegawaiList = $stmt->fetchAll();
+}
+$jabatanPegawai = array_column($pegawaiList, 'id_jabatan', 'id_pegawai');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idJabatan = (int) ($_POST['id_jabatan'] ?? 0);
@@ -16,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($idJabatan <= 0 || $idPegawai <= 0 || $kompetensiJabatan === '' ||
         $kompetensiPegawai === '' || $gapKompetensi === '' || $dampak === '') {
         setFlash('error', 'Semua data analisis kesenjangan wajib diisi.');
+    } elseif (!isset($jabatanPegawai[$idPegawai]) || (int) $jabatanPegawai[$idPegawai] !== $idJabatan) {
+        setFlash('error', 'Pegawai atau jabatan yang dipilih berada di luar wewenang Anda.');
     } else {
         $stmt = $pdo->prepare(
             'INSERT INTO analisis_kesenjangan_kompetensi
@@ -48,7 +63,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <style>
 #dampak { text-align: justify; }
 </style>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:800px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:800px;"><?= csrfField() ?>
     <div class="mb-3">
         <label class="form-label" for="id_jabatan">Nama jabatan</label>
         <select name="id_jabatan" id="id_jabatan" class="form-select" required>

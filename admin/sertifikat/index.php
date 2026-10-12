@@ -43,33 +43,41 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="text-muted">NIP <?= htmlspecialchars($pegawaiTerpilih['nip']) ?></div>
 </div>
 <div class="table-responsive">
-<table class="table table-bordered table-striped bg-white" style="table-layout: fixed; min-width: 800px;">
+<table class="table table-bordered table-striped bg-white" style="table-layout: fixed; min-width: 1000px;">
 <colgroup>
-  <col style="width: 33%"><col style="width: 27%"><col style="width: 12%">
-  <col style="width: 18%"><col style="width: 10%">
+  <col style="width: 27%"><col style="width: 19%"><col style="width: 10%"><col style="width: 15%">
+  <col style="width: 10%"><col style="width: 9%"><col style="width: 10%">
 </colgroup>
-<thead><tr><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>File</th><th>Aksi</th></tr></thead>
+<thead><tr><th>Nama sertifikat</th><th>Penyelenggara</th><th>Terbit</th><th>No. / Jalur</th><th>Jenis / Status</th><th>File</th><th>Aksi</th></tr></thead>
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
   <td><?= htmlspecialchars($row['nama_sertifikat']) ?></td>
   <td><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></td>
   <td><?= htmlspecialchars($row['tanggal_terbit'] ?? '-') ?></td>
+  <td>
+    <div><?= htmlspecialchars($row['nomor_sertifikat'] ?: '-') ?></div>
+    <small class="text-muted"><?= htmlspecialchars($row['jalur_pelatihan'] ?: '-') ?></small>
+  </td>
+  <td>
+    <div><?= htmlspecialchars($row['jenis'] ?: '-') ?></div>
+    <small class="text-muted"><?= htmlspecialchars($row['status_validasi'] ?: 'Belum divalidasi') ?></small>
+  </td>
   <td class="text-center align-middle">
     <?php if (!empty($row['file_sertifikat'])): ?>
-      <a href="<?= BASE_URL . '/' . htmlspecialchars($row['file_sertifikat']) ?>" target="_blank" rel="noopener">Lihat file</a>
+      <a href="<?= htmlspecialchars(fileUrl($row['file_sertifikat'])) ?>" target="_blank" rel="noopener">Lihat file</a>
     <?php else: ?>
       -
     <?php endif; ?>
   </td>
   <td class="text-center align-middle">
     <a href="edit.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit sertifikat"><i class="fas fa-edit" aria-hidden="true"></i></a>
-    <a href="hapus.php?id=<?= (int) $row['id_sertifikat'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus sertifikat" onclick="return confirm('Hapus sertifikat ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
+    <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus sertifikat ini?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_sertifikat'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus sertifikat"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
   </td>
 </tr>
 <?php endforeach; ?>
 <?php if (!$data): ?>
-<tr><td colspan="5" class="text-center text-muted">Belum ada sertifikat untuk pegawai ini.</td></tr>
+<tr><td colspan="7" class="text-center text-muted">Belum ada sertifikat untuk pegawai ini.</td></tr>
 <?php endif; ?>
 </tbody>
 </table>

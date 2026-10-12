@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Ganti profil';
 require_once __DIR__ . '/../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width: 600px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width: 600px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label" for="nip">NIP</label>
     <input type="text" id="nip" class="form-control" value="<?= htmlspecialchars($profile['nip']) ?>" readonly>

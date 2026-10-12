@@ -1,0 +1,20 @@
+# Dipakai bila aplikasi berjalan di Apache (XAMPP / hosting). Untuk Nginx lihat README.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Folder internal tidak boleh dibuka lewat browser.
+    RewriteRule ^(database|vendor|includes|config|tests)(/|$) - [F,L,NC]
+    # File upload hanya lewat file.php (cek login & hak akses).
+    RewriteRule ^(assets/uploads|uploads)(/|$) - [F,L,NC]
+</IfModule>
+
+<FilesMatch "(?i)(\.sql|\.log|\.bak|\.lock|^composer\.json|^README\.md|^\.gitignore)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

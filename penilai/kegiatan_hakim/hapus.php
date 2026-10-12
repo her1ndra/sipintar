@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireLogin();
+requireKegiatanHakimAccess();
 $user = currentUser();
-if ($user['role'] !== 'Admin' && ($user['role'] !== 'Penilai' || $user['nama_jabatan'] !== 'Ketua')) {
-    http_response_code(403);
-    die('Akses kegiatan hakim hanya untuk Admin atau Ketua.');
-}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -28,12 +24,8 @@ if ($filePath === false) {
     setFlash('error', 'Data kegiatan hakim tidak ditemukan.');
 } else {
     $pdo->prepare('DELETE FROM kegiatan_hakim WHERE id_kegiatan = ?')->execute([$id]);
-    if ($filePath) {
-        $file = __DIR__ . '/../../' . ltrim($filePath, '/');
-        if (is_file($file)) {
-            unlink($file);
-        }
-    }
+    hapusFileUpload($filePath ?: null);
+    auditLog('hapus_kegiatan_hakim', 'Hapus kegiatan hakim #' . $id);
     setFlash('success', 'Kegiatan hakim berhasil dihapus.');
 }
 

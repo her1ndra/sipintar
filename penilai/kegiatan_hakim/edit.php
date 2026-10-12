@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireLogin();
+requireKegiatanHakimAccess();
 $user = currentUser();
-if ($user['role'] !== 'Admin' && ($user['role'] !== 'Penilai' || $user['nama_jabatan'] !== 'Ketua')) {
-    http_response_code(403);
-    die('Akses kegiatan hakim hanya untuk Admin atau Ketua.');
-}
 
 $pdo = Database::getConnection();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
@@ -69,38 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $file = $_FILES['surat_tugas'] ?? null;
     if ($canSave && $file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
-        $extensions = [
+        $upload = simpanUploadAman($file, 'kegiatan_hakim', [
             'application/pdf' => 'pdf',
             'application/msword' => 'doc',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
             'image/jpeg' => 'jpg',
-        ];
-        if ($file['error'] !== UPLOAD_ERR_OK || $file['size'] > 5 * 1024 * 1024) {
+        ]);
+        if ($upload['status'] === 'ok') {
+            $newFilePath = $upload['path'];
+            $filePath = $newFilePath;
+        } else {
             setFlash('error', 'Surat tugas harus berupa PDF, Word, atau JPG dengan ukuran maksimal 5 MB.');
             $canSave = false;
-        } else {
-            $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
-            if (!isset($extensions[$mime])) {
-                setFlash('error', 'Surat tugas harus berupa PDF, Word, atau JPG dengan ukuran maksimal 5 MB.');
-                $canSave = false;
-            }
-        }
-
-        if ($canSave) {
-            $directory = __DIR__ . '/../../assets/uploads/kegiatan_hakim';
-            if (!is_dir($directory) && !mkdir($directory, 0755, true)) {
-                setFlash('error', 'Folder penyimpanan surat tugas tidak dapat dibuat.');
-                $canSave = false;
-            } else {
-                $newFilePath = 'assets/uploads/kegiatan_hakim/' . bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
-                if (!move_uploaded_file($file['tmp_name'], __DIR__ . '/../../' . $newFilePath)) {
-                    $newFilePath = null;
-                    setFlash('error', 'Surat tugas gagal diunggah.');
-                    $canSave = false;
-                } else {
-                    $filePath = $newFilePath;
-                }
-            }
         }
     }
 
@@ -116,19 +92,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         )->execute([$idPegawai, $jenis, $nama, $penyelenggara ?: null, $mulai, $selesai ?: null, $tempat ?: null, $filePath, $id]);
 
         if ($data['file_bukti'] && $data['file_bukti'] !== $filePath) {
-            $oldFile = __DIR__ . '/../../' . ltrim($data['file_bukti'], '/');
-            if (is_file($oldFile)) {
-                unlink($oldFile);
-            }
+            hapusFileUpload($data['file_bukti']);
         }
         setFlash('success', 'Kegiatan hakim berhasil diperbarui.');
         header('Location: index.php');
         exit;
     }
 
-    if ($newFilePath && is_file(__DIR__ . '/../../' . $newFilePath)) {
-        unlink(__DIR__ . '/../../' . $newFilePath);
-    }
+    hapusFileUpload($newFilePath);
     $data = array_merge($data, $_POST);
     $data['file_bukti'] = $data['file_bukti'] ?? null;
 }
@@ -136,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Edit kegiatan hakim';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm" style="max-width:600px;">
+<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm" style="max-width:600px;"><?= csrfField() ?>
   <input type="hidden" name="id" value="<?= $id ?>">
   <div class="mb-3">
     <label class="form-label">Hakim</label>
@@ -168,7 +139,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="mb-3">
     <label class="form-label">Surat tugas</label>
     <?php if (!empty($data['file_bukti'])): ?>
-    <div class="mb-2"><a href="<?= htmlspecialchars(BASE_URL . '/' . ltrim($data['file_bukti'], '/')) ?>" target="_blank" rel="noopener">Lihat lampiran saat ini</a></div>
+    <div class="mb-2"><a href="<?= htmlspecialchars(fileUrl($data['file_bukti'])) ?>" target="_blank" rel="noopener">Lihat lampiran saat ini</a></div>
     <div class="form-check mb-2"><input type="checkbox" name="hapus_lampiran" value="1" class="form-check-input" id="hapus_lampiran"><label class="form-check-label" for="hapus_lampiran">Hapus lampiran saat ini</label></div>
     <?php endif; ?>
     <input type="file" name="surat_tugas" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg">

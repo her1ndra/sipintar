@@ -114,7 +114,7 @@ require_once __DIR__ . '/../../includes/header.php';
   text-align: justify;
 }
 </style>
-<form method="post" class="bg-white p-4 rounded shadow-sm analisis-tugas-form" style="max-width:800px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm analisis-tugas-form" style="max-width:800px;"><?= csrfField() ?>
   <input type="hidden" name="id_analisis_tugas" value="<?= (int) $id ?>">
   <div class="mb-3">
     <label class="form-label" for="id_jabatan">Nama jabatan</label>

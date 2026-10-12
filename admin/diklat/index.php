@@ -36,7 +36,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <td class="text-center align-middle"><?= htmlspecialchars($row['prioritas']) ?></td>
   <td class="text-center align-middle">
     <a href="edit.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
-    <a href="hapus.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus" onclick="return confirm('Hapus kebutuhan diklat ini?')"><i class="fas fa-trash-alt" aria-hidden="true"></i></a>
+    <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kebutuhan diklat ini?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_kebutuhan'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
   </td>
 </tr>
 <?php endforeach; ?>

@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireLogin();
+requireKegiatanHakimAccess();
 $user = currentUser();
-if ($user['role'] !== 'Admin' && ($user['role'] !== 'Penilai' || $user['nama_jabatan'] !== 'Ketua')) {
-    http_response_code(403);
-    die('Akses kegiatan hakim hanya untuk Admin atau Ketua.');
-}
 $pdo = Database::getConnection();
 $jenisKegiatan = $pdo->query('SELECT nama_jenis FROM jenis_kegiatan_hakim ORDER BY nama_jenis')->fetchAll(PDO::FETCH_COLUMN);
 $hakimList = $pdo->query(
@@ -49,39 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $file = $_FILES['surat_tugas'] ?? null;
     if ($canSave && $file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
-        $extensions = [
+        $upload = simpanUploadAman($file, 'kegiatan_hakim', [
             'application/pdf' => 'pdf',
             'application/msword' => 'doc',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
             'image/jpeg' => 'jpg',
-        ];
-        if (
-            $file['error'] !== UPLOAD_ERR_OK
-            || $file['size'] > 5 * 1024 * 1024
-        ) {
+        ]);
+        if ($upload['status'] === 'ok') {
+            $filePath = $upload['path'];
+        } else {
             setFlash('error', 'Surat tugas harus berupa PDF, Word, atau JPG dengan ukuran maksimal 5 MB.');
             $canSave = false;
-        } else {
-            $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
-            if (!isset($extensions[$mime])) {
-                setFlash('error', 'Surat tugas harus berupa PDF, Word, atau JPG dengan ukuran maksimal 5 MB.');
-                $canSave = false;
-            }
-        }
-
-        if ($canSave) {
-            $directory = __DIR__ . '/../../assets/uploads/kegiatan_hakim';
-            if (!is_dir($directory) && !mkdir($directory, 0755, true)) {
-                setFlash('error', 'Folder penyimpanan surat tugas tidak dapat dibuat.');
-                $canSave = false;
-            } else {
-                $filePath = 'assets/uploads/kegiatan_hakim/' . bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
-                if (!move_uploaded_file($file['tmp_name'], __DIR__ . '/../../' . $filePath)) {
-                    $filePath = null;
-                    setFlash('error', 'Surat tugas gagal diunggah.');
-                    $canSave = false;
-                }
-            }
         }
     }
 
@@ -97,15 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: index.php');
         exit;
     } else {
-        if ($filePath !== null && is_file(__DIR__ . '/../../' . $filePath)) {
-            unlink(__DIR__ . '/../../' . $filePath);
-        }
+        hapusFileUpload($filePath);
     }
 }
 $pageTitle = 'Catat kegiatan hakim';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;">
+<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label">Hakim</label>
     <select name="id_pegawai" class="form-select" required>

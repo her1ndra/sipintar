@@ -70,7 +70,7 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['kompetensi']) ?></td>
   <td class="question-cell"><?= $renderQuestions($row['daftar_pertanyaan'], 'modal-kuesioner-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
   <td class="evidence-cell">
-    <?php if ($row['file_bukti']): ?><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($row['file_bukti']) ?>">Lihat file</a><?php else: ?>-<?php endif; ?>
+    <?php if ($row['file_bukti']): ?><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($row['file_bukti'])) ?>">Lihat file</a><?php else: ?>-<?php endif; ?>
   </td>
   <td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><?= $renderScoreModal($row['daftar_nilai'], 'modal-nilai-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
         <td class="action-cell">
@@ -84,7 +84,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
                 <?php if ($row['id_wawancara']): ?>
                 <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
-                <form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus sesi kuesioner dan hasil penilaian ini?')">
+                <form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus sesi kuesioner dan hasil penilaian ini?')"><?= csrfField() ?>
                     <input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>">
                     <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus sesi" aria-label="Hapus sesi"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
                 </form>

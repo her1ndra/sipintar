@@ -48,7 +48,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php if ($flash = getFlash()): ?>
   <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>"><?= htmlspecialchars($flash['message']) ?></div>
 <?php endif; ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;">
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;"><?= csrfField() ?>
   <input type="hidden" name="id_user" value="<?= (int) $akun['id_user'] ?>">
   <div class="mb-3">
     <label class="form-label">NIP</label>

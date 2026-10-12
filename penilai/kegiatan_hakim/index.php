@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
-requireLogin();
+requireKegiatanHakimAccess();
 $user = currentUser();
-if ($user['role'] !== 'Admin' && ($user['role'] !== 'Penilai' || $user['nama_jabatan'] !== 'Ketua')) {
-    http_response_code(403);
-    die('Akses kegiatan hakim hanya untuk Admin atau Ketua.');
-}
 $pdo = Database::getConnection();
 $periode = $_GET['periode'] ?? 'bulan';
 if (!in_array($periode, ['bulan', 'triwulan', 'tahun'], true)) {
@@ -96,7 +92,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <td><?= htmlspecialchars($row['lokasi'] ?: '-') ?></td>
         <td class="text-center text-nowrap action-cell">
           <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
-          <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')">
+          <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')"><?= csrfField() ?>
             <input type="hidden" name="id" value="<?= (int) $row['id_kegiatan'] ?>">
             <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
           </form>
@@ -116,7 +112,8 @@ require_once __DIR__ . '/../../includes/header.php';
                 'penyelenggara' => $row['penyelenggara'] ?: '-',
                 'tanggal' => $row['tanggal_mulai'] . ($row['tanggal_selesai'] ? ' s.d. ' . $row['tanggal_selesai'] : ''),
                 'tempat' => $row['lokasi'] ?: '-',
-                'lampiran' => $row['file_bukti'] ? BASE_URL . '/' . ltrim($row['file_bukti'], '/') : null,
+                'lampiran' => fileUrl($row['file_bukti']),
+                'lampiran_ext' => $row['file_bukti'] ? strtolower(pathinfo($row['file_bukti'], PATHINFO_EXTENSION)) : '',
             ], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>"
               ><i class="fas fa-file-pdf text-danger mr-2" aria-hidden="true"></i>PDF</button>
               <a class="dropdown-item" href="cetak.php?id=<?= (int) $row['id_kegiatan'] ?>&amp;format=word"><i class="fas fa-file-word text-primary mr-2" aria-hidden="true"></i>Word</a>
@@ -174,9 +171,7 @@ document.querySelectorAll('.download-pdf').forEach(function (button) {
       });
       var y = rowY;
 
-      var attachmentExtension = data.lampiran
-        ? data.lampiran.split('?')[0].split('.').pop().toLowerCase()
-        : '';
+      var attachmentExtension = data.lampiran ? (data.lampiran_ext || '') : '';
       if (data.lampiran && ['jpg', 'jpeg'].includes(attachmentExtension)) {
         var imageResponse = await fetch(data.lampiran);
         var imageBlob = await imageResponse.blob();

@@ -228,7 +228,8 @@ unset($_SESSION['login_error']);
             </div>
         <?php endif; ?>
 
-        <form method="post" action="<?= BASE_URL ?>/auth/proses_login.php" class="form-content">
+        <form method="post" action="<?= BASE_URL ?>/auth/proses_login.php" class="form-content" autocomplete="off">
+            <?= csrfField() ?>
 
             <div>
                 <label class="form-label" for="nip">NIP</label>

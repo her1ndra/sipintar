@@ -31,6 +31,18 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+function kirimLogout(action) {
+    var f = document.createElement('form');
+    f.method = 'post';
+    f.action = action;
+    var t = document.createElement('input');
+    t.type = 'hidden';
+    t.name = '_csrf';
+    t.value = <?= json_encode(csrfToken()) ?>;
+    f.appendChild(t);
+    document.body.appendChild(f);
+    f.submit();
+}
 document.addEventListener('DOMContentLoaded', function () {
     ['tombol-logout-sidebar', 'tombol-logout-topbar'].forEach(function (id) {
         var btn = document.getElementById(id);
@@ -49,10 +61,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     confirmButtonText: 'Ya, Keluar',
                     cancelButtonText: 'Batal'
                 }).then(function (result) {
-                    if (result.isConfirmed) { window.location.href = href; }
+                    if (result.isConfirmed) { kirimLogout(href); }
                 });
             } else if (confirm('Yakin ingin keluar dari sistem?')) {
-                window.location.href = href;
+                kirimLogout(href);
             }
         });
     });

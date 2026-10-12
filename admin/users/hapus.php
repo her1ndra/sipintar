@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
+requirePost();
 
-$idUser = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 0;
+$idUser = filter_var($_POST['id'] ?? 0, FILTER_VALIDATE_INT) ?: 0;
 if ($idUser <= 0) {
     setFlash('error', 'Akun tidak valid.');
     header('Location: index.php');
@@ -51,6 +52,7 @@ if ((int) $account['jumlah_kuesioner'] > 0 || (int) $account['jumlah_penilaian']
 try {
     $delete = $pdo->prepare('DELETE FROM users WHERE id_user = ?');
     $delete->execute([$idUser]);
+    auditLog('hapus_user', 'Hapus akun NIP ' . $account['nip']);
     setFlash('success', 'Akun user berhasil dihapus.');
 } catch (PDOException $exception) {
     if ($exception->getCode() === '23000') {

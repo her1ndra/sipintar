@@ -15,13 +15,28 @@ if ($jabatanIds) {
 $diklatList = $pdo->query('SELECT id_diklat, nama_diklat FROM diklat ORDER BY nama_diklat')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idPegawai = (int) $_POST['id_pegawai'];
+    $idPegawai = (int) ($_POST['id_pegawai'] ?? 0);
   $pilihanDiklat = $_POST['id_diklat'] ?? '';
   $idDiklat = $pilihanDiklat !== '' && $pilihanDiklat !== 'lainnya' ? (int) $pilihanDiklat : null;
   $diklatLainnya = $pilihanDiklat === 'lainnya' ? trim($_POST['diklat_lainnya'] ?? '') : '';
-    $prioritas = $_POST['prioritas'];
-    $tahun = (int) $_POST['tahun_rencana'];
-    $catatan = trim($_POST['catatan']);
+    $prioritas = $_POST['prioritas'] ?? '';
+    $tahun = (int) ($_POST['tahun_rencana'] ?? 0);
+    $catatan = trim($_POST['catatan'] ?? '');
+
+    // Validasi sisi server: pegawai harus dalam wewenang penilai, prioritas & tahun harus valid.
+    $pegawaiValid = in_array($idPegawai, array_map('intval', array_column($pegawaiList, 'id_pegawai')), true);
+    $prioritasValid = in_array($prioritas, ['Sangat Tinggi', 'Tinggi', 'Sedang', 'Rendah'], true);
+    $diklatValid = true;
+    if ($idDiklat !== null) {
+        $cekDiklat = $pdo->prepare('SELECT 1 FROM diklat WHERE id_diklat = ?');
+        $cekDiklat->execute([$idDiklat]);
+        $diklatValid = (bool) $cekDiklat->fetchColumn();
+    }
+    if (!$pegawaiValid || !$prioritasValid || $tahun < 2000 || $tahun > 2100 || !$diklatValid) {
+        setFlash('error', 'Data usulan tidak valid. Periksa pegawai, diklat, prioritas, dan tahun rencana.');
+        header('Location: tambah.php');
+        exit;
+    }
 
     if ($pilihanDiklat === 'lainnya' && $diklatLainnya !== '') {
       $masterDiklatStmt = $pdo->prepare('SELECT id_diklat FROM diklat WHERE nama_diklat = ? LIMIT 1');
@@ -44,7 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Ajukan kebutuhan diklat';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;">
+<?php if ($flash = getFlash()): ?>
+  <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>"><?= htmlspecialchars($flash['message']) ?></div>
+<?php endif; ?>
+<form method="post" class="bg-white p-4 rounded shadow-sm" style="max-width:500px;"><?= csrfField() ?>
   <div class="mb-3">
     <label class="form-label">Pegawai</label>
     <select name="id_pegawai" class="form-select" required>

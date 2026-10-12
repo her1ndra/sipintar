@@ -47,26 +47,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlash('error', 'Nilai harus berupa angka 0 sampai 100.');
         $canSave = false;
     } elseif ($files && is_array($files['name'])) {
-        $extensions = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
         foreach ($files['name'] as $index => $name) {
-            if ($files['error'][$index] === UPLOAD_ERR_NO_FILE) {
+            $single = [
+                'name'     => $files['name'][$index],
+                'type'     => $files['type'][$index],
+                'tmp_name' => $files['tmp_name'][$index],
+                'error'    => $files['error'][$index],
+                'size'     => $files['size'][$index],
+            ];
+            $upload = simpanUploadAman($single, 'wawancara', ['image/jpeg' => 'jpg', 'image/png' => 'png']);
+            if ($upload['status'] === 'none') {
                 continue;
             }
-            $mime = (new finfo(FILEINFO_MIME_TYPE))->file($files['tmp_name'][$index]);
-            if ($files['error'][$index] !== UPLOAD_ERR_OK || !isset($extensions[$mime]) || $files['size'][$index] > 5 * 1024 * 1024) {
+            if ($upload['status'] === 'error') {
                 setFlash('error', 'Setiap bukti harus JPG/PNG dan maksimal 5 MB.');
                 $canSave = false;
                 break;
             }
-            $directory = __DIR__ . '/../../assets/uploads/wawancara';
-            if (!is_dir($directory)) mkdir($directory, 0755, true);
-            $path = 'assets/uploads/wawancara/' . bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
-            if (!move_uploaded_file($files['tmp_name'][$index], __DIR__ . '/../../' . $path)) {
-                setFlash('error', 'Bukti gagal diunggah.');
-                $canSave = false;
-                break;
-            }
-            $uploadedPaths[] = $path;
+            $uploadedPaths[] = $upload['path'];
         }
     }
     if ($canSave) {
@@ -130,7 +128,7 @@ $pageTitle = 'Isi wawancara';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 <h2 class="h4 mb-3">Wawancara: <?= htmlspecialchars($sesi['nama_lengkap']) ?></h2>
-<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
+<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm"><?= csrfField() ?>
     <div class="mb-3">
         <label class="form-label">Kompetensi / Jabatan</label>
         <div class="form-control bg-light"><?= htmlspecialchars($details[0]['kompetensi'] ?? '-') ?></div>
@@ -145,8 +143,8 @@ require_once __DIR__ . '/../../includes/header.php';
         <label class="form-label">Bukti Kompetensi</label>
         <input type="file" name="file_bukti[]" class="form-control" accept=".jpg,.jpeg,.png" multiple>
         <small class="text-muted">Bisa memilih beberapa file JPG/PNG, masing-masing maksimal 5 MB.</small>
-        <?php if ($hasil['file_bukti']): ?><div><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($hasil['file_bukti']) ?>">Lihat file saat ini</a></div><?php endif; ?>
-        <?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($bukti) ?>">Lihat bukti</a></div><?php endforeach; ?>
+        <?php if ($hasil['file_bukti']): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($hasil['file_bukti'])) ?>">Lihat file saat ini</a></div><?php endif; ?>
+        <?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($bukti)) ?>">Lihat bukti</a></div><?php endforeach; ?>
     </div>
     <button class="btn btn-primary">Simpan data</button> <a href="index.php" class="btn btn-secondary">Kembali</a>
 </form>

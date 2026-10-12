@@ -1,63 +1,94 @@
 # SI PINTAR - Pengembangan Kompetensi Aparatur
 
-Kerangka aplikasi web PHP native (tanpa framework) + MySQL (PDO) untuk penilaian
-kompetensi pegawai, sesuai ERD/DFD yang sudah dirancang sebelumnya.
+Aplikasi web PHP native (tanpa framework) + MySQL/MariaDB (PDO) untuk penilaian kompetensi
+pegawai: analisis tugas, kuesioner, wawancara, analisis kesenjangan, kebutuhan diklat,
+sertifikat, dan kegiatan hakim.
+
+Kebutuhan: PHP >= 8.1 dengan ekstensi `pdo_mysql`, `fileinfo`, `mbstring`, `zip`, `dom`
+(lihat `composer.json`). Tidak ada dependensi Composer; `vendor/` tidak diperlukan.
 
 ## Setup
 
-1. Buat database MySQL dan import `database/si_pintar_schema.sql`.
-  Untuk database yang sudah digunakan, jalankan `database/migration_jenis_kegiatan_hakim.sql` agar pilihan jenis kegiatan hakim dapat disimpan.
-2. Sesuaikan kredensial database di `config/database.php` (host, nama db, user, password).
-3. Karena hanya Admin yang boleh membuat akun lain lewat aplikasi, buat akun Admin
-   pertama secara manual lewat SQL:
+1. Buat database dan impor dump terbaru:
+   ```
+   mysql -u root -e "CREATE DATABASE si_pintar CHARACTER SET utf8mb4"
+   mysql -u root si_pintar < database/si_pintar.sql
+   ```
+2. Terapkan migrasi yang belum ada di dump (tabel `audit_log`):
+   ```
+   php database/migrate.php            # tambahkan --status untuk melihat status
+   ```
+3. Konfigurasi koneksi. Salin `config/local.example.php` menjadi `config/local.php` lalu isi.
+   Semua nilai juga dapat diberikan lewat environment variable `SIPINTAR_<NAMA>`
+   (mis. `SIPINTAR_DB_PASS`). `config/local.php` tidak di-commit.
+   - Pengembangan (XAMPP): isi `'env' => 'development'` (error ditampilkan).
+   - Produksi: `'env' => 'production'` (default; error hanya dicatat di log), gunakan
+     user database khusus dengan hak terbatas, **bukan `root`**, dan beri password kuat.
+4. Akun Admin pertama (jika database kosong) dibuat lewat SQL:
    ```sql
-   INSERT INTO users (username, password, role) VALUES ('admin', '<hash>', 'Admin');
+   INSERT INTO users (nip, password, role) VALUES ('<nip angka>', '<hash>', 'Admin');
    ```
-   Buat hash password lewat terminal:
-   ```
-   php -r "echo password_hash('rahasia', PASSWORD_DEFAULT);"
-   ```
-4. Jalankan dengan PHP built-in server dari folder proyek:
-   ```
-   php -S localhost:8000
-   ```
-5. Untuk mengaktifkan ekspor PDF dengan format yang sama seperti Word, instal dependency:
-  ```
-  composer install
-  ```
-6. Buka `http://localhost:8000/auth/login.php`
+   Hash: `php -r "echo password_hash('rahasia-kuat', PASSWORD_DEFAULT);"`
+5. Jalankan:
+   - Apache/XAMPP: letakkan folder di `htdocs`; pastikan `AllowOverride All` agar `.htaccess` aktif.
+   - Pengembangan cepat: `php -S localhost:8000 router.php`  
+     (**wajib memakai `router.php`**; built-in server mengabaikan `.htaccess`).
+6. Buka `/auth/login.php`.
+
+### Nginx (produksi)
+```nginx
+location ~ ^/(database|includes|config|tests|vendor)/ { deny all; }
+location ~ ^/(assets/uploads|uploads)/              { deny all; }
+location ~* \.(sql|log|bak|lock|md)$                { deny all; }
+```
+Untuk HTTPS di belakang reverse proxy, set `'trust_proxy' => true` di `config/local.php`.
+
+## Keamanan (ringkas)
+
+- **CSRF**: semua request POST wajib membawa token (`csrfField()` di form, divalidasi global di
+  `config/config.php`). Aksi hapus dan logout hanya lewat POST.
+- **Sesi**: cookie `HttpOnly` + `SameSite=Lax` (+ `Secure` bila HTTPS), ID sesi diganti saat login,
+  logout menghapus cookie, sesi berakhir setelah tidak aktif (`session_idle`, default 2 jam),
+  akun yang dinonaktifkan langsung kehilangan akses.
+- **File upload**: tidak bisa dibuka langsung. Semua lewat `file.php?f=...` yang mengecek login,
+  keberadaan file di database, dan hak akses (Admin; Penilai hanya untuk pegawai dalam wewenangnya;
+  Ketua/Wakil Ketua untuk kegiatan hakim). Validasi upload terpusat di `includes/upload.php`
+  (MIME asli via `finfo`, ukuran, nama acak).
+- **Otorisasi penilai**: modul gap dan usulan diklat dibatasi sesuai `wewenang_penilaian`.
+  Modul Kegiatan Hakim untuk Admin, Ketua, dan Wakil Ketua (`canAccessKegiatanHakim()`).
+- **Audit log**: login/logout, hapus data, perubahan sertifikat tercatat di `audit_log`.
+- **Error**: tidak ditampilkan di produksi; kredensial tidak ada di kode.
 
 ## Struktur folder
 
-- `config/` - koneksi database (`database.php`) & konfigurasi aplikasi (`config.php`)
-- `includes/` - middleware otorisasi (`auth.php`: requireLogin, requireRole,
-  getJabatanWewenang), layout `header.php`/`footer.php`
-- `auth/` - login, proses login, logout
-- `admin/` - modul khusus role Admin: pegawai (CRUD lengkap), jabatan (master,
-  read-only), sertifikat, wewenang penilaian, akun user
-  wewenang), kuesioner (buat kuesioner + pertanyaan sendiri), wawancara, analisis
-  kesenjangan, kebutuhan diklat, kegiatan hakim (khusus Ketua/Wakil Ketua)
-- `admin/laporan/` - laporan TNA 2026 untuk Admin, dapat difilter bulanan/tahunan dan diunduh dalam format Word atau PDF dari data aplikasi.
-  `assets/vendor/`, logo & foto gedung PN Yogyakarta di `assets/img/`, `assets/css/style.css`
-  berisi override tema hijau-emas PN Yogyakarta agar selaras dengan SI-APIC)
-- `database/` - file skema SQL
+- `config/` - bootstrap (`config.php`), koneksi (`database.php`), konfigurasi lokal (`local.php`).
+- `includes/` - `auth.php` (requireLogin/requireRole/wewenang), `security.php` (CSRF,
+  audit, hapus aman), `upload.php`, `sertifikat_form.php`, layout `header.php`/`footer.php`.
+- `auth/` - login, proses login, logout, profil. `file.php` - pengiriman file upload terproteksi.
+- `admin/`, `penilai/` - modul per role (Kegiatan Hakim: Admin lewat `admin/kegiatan_hakim/`, Ketua/Wakil Ketua lewat `penilai/kegiatan_hakim/`, isi halaman dipakai bersama). `admin/laporan/` - laporan TNA (Word).
+- `database/` - `si_pintar.sql` (dump terbaru), `migrations/` + `migrate.php`, `legacy/` (arsip migrasi
+  lama yang sudah tergabung di dump).
+- `tests/smoke.php` - tes end-to-end (lihat di bawah).
+
+## Tes
+
+Jalankan **hanya pada database uji** (tes menulis dan menghapus data):
+```
+php -S 127.0.0.1:8000 router.php &
+SMOKE_ADMIN_NIP=.. SMOKE_ADMIN_PASS=.. SMOKE_KETUA_NIP=.. SMOKE_KETUA_PASS=.. \
+SMOKE_PANITERA_NIP=.. SMOKE_PANITERA_PASS=.. php tests/smoke.php
+```
+Butuh ekstensi `curl`, dan data uji berupa akun Admin, Ketua, dan Panitera (jabatan id 6) seperti pada dump.
 
 ## Alur otorisasi
 
-Setiap Penilai hanya bisa melihat dan menilai pegawai yang jabatannya termasuk dalam
-wewenangnya, dicek lewat fungsi `getJabatanWewenang()` yang membaca tabel
-`wewenang_penilaian`. Contoh: user dengan jabatan Panitera hanya akan melihat pegawai
-berjabatan Panitera Muda, Panitera Pengganti, Jurusita, Jurusita Pengganti, dan Staf
-Kepaniteraan di dashboard serta form-form penilaiannya.
+Penilai hanya melihat dan menilai pegawai yang jabatannya ada di `wewenang_penilaian`
+(`getJabatanWewenang()`, `penilaiBerwenangAtasPegawai()`).
 
-## Yang masih perlu dikembangkan (kerangka dasar)
+## Yang masih perlu dikembangkan
 
-- Modul wawancara: baru sebatas penjadwalan; pengisian `jawaban_wawancara`
-  per pertanyaan belum ada form-nya.
-- Modul penilaian: upload bukti dokumentasi (`bukti_dokumentasi`) belum ada form upload
-  file - tinggal tambahkan `<input type="file">` + proses `move_uploaded_file()`.
-- Modul gap: `analisis_gap` masih diisi manual/lewat SQL - idealnya dibuat proses
-  otomatis yang membandingkan `standar_kompetensi_jabatan` dengan
-  `penilaian_kompetensi` setiap kali penilaian baru disimpan.
-- Validasi input sisi server masih minim (baru cek field kosong) - tambahkan validasi
-  lebih ketat sesuai kebutuhan.
+- Analisis kesenjangan masih diisi manual (belum otomatis membandingkan standar vs hasil penilaian).
+- `admin/jawab.php` dan `penilai/jawab.php` (kuesioner, wawancara) masih dua file terpisah dengan tampilan
+  mirip; logika upload dan otorisasi sudah dipusatkan, tetapi templatenya belum digabung.
+- Hapus pegawai menghapus berantai (FK `ON DELETE CASCADE`) data sertifikat, penilaian, dll. File fisik
+  terkait tidak ikut dibersihkan.

@@ -28,13 +28,23 @@ $renderGapField = static function (?string $value, string $modalId, string $titl
 };
 
 $pdo = Database::getConnection();
-$data = $pdo->query(
-    "SELECT g.*, j.nama_jabatan, p.nama_lengkap
-     FROM analisis_kesenjangan_kompetensi g
-     JOIN jabatan j ON g.id_jabatan = j.id_jabatan
-     JOIN pegawai p ON g.id_pegawai = p.id_pegawai
-     ORDER BY g.created_at DESC"
-)->fetchAll();
+$user = currentUser();
+// Penilai hanya melihat analisis kesenjangan pegawai yang jabatannya berada dalam wewenangnya.
+$jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
+$data = [];
+if ($jabatanIds) {
+    $placeholders = implode(',', array_fill(0, count($jabatanIds), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT g.*, j.nama_jabatan, p.nama_lengkap
+         FROM analisis_kesenjangan_kompetensi g
+         JOIN jabatan j ON g.id_jabatan = j.id_jabatan
+         JOIN pegawai p ON g.id_pegawai = p.id_pegawai
+         WHERE p.id_jabatan IN ($placeholders)
+         ORDER BY g.created_at DESC"
+    );
+    $stmt->execute($jabatanIds);
+    $data = $stmt->fetchAll();
+}
 $pageTitle = 'Analisis kesenjangan kompetensi';
 require_once __DIR__ . '/../../includes/header.php';
 ?>

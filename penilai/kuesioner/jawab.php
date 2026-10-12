@@ -76,21 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlash('error', 'Semua pertanyaan wajib diisi.');
         $canSave = false;
     } elseif ($canSave && $file && $file['error'] !== UPLOAD_ERR_NO_FILE) {
-        $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
-        $extensions = ['application/pdf' => 'pdf', 'image/jpeg' => 'jpg', 'image/png' => 'png'];
-        if ($file['error'] !== UPLOAD_ERR_OK || !isset($extensions[$mime]) || $file['size'] > 5 * 1024 * 1024) {
+        $upload = simpanUploadAman($file, 'kuesioner', UPLOAD_PDF_GAMBAR);
+        if ($upload['status'] === 'ok') {
+            $path = $upload['path'];
+        } else {
             setFlash('error', 'Bukti harus PDF/JPG/PNG dan maksimal 5 MB.');
             $canSave = false;
-        } else {
-            $directory = __DIR__ . '/../../assets/uploads/kuesioner';
-            if (!is_dir($directory)) {
-                mkdir($directory, 0755, true);
-            }
-            $path = 'assets/uploads/kuesioner/' . bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
-            if (!move_uploaded_file($file['tmp_name'], __DIR__ . '/../../' . $path)) {
-                $path = null;
-                setFlash('error', 'Bukti gagal diunggah.');
-            }
         }
     }
     if ($canSave && (!$file || $file['error'] === UPLOAD_ERR_NO_FILE || $path !== null)) {
@@ -174,7 +165,7 @@ require_once __DIR__ . '/../../includes/header.php';
 .kuesioner-form .question-text { font-size: 1rem; line-height: 1.6; }
 </style>
 <h2 class="h4 mb-3">Kuesioner: <?= htmlspecialchars($sesi['nama_lengkap']) ?></h2>
-<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm kuesioner-form">
+<form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm kuesioner-form"><?= csrfField() ?>
     <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><div class="form-control bg-light"><?= htmlspecialchars($sesi['kompetensi']) ?></div></div>
     <div class="mb-3">
         <label class="form-label">Daftar Pertanyaan dan Nilai</label>
@@ -190,7 +181,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <label class="form-label">Bukti Kompetensi</label>
         <input type="file" name="file_bukti" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
         <small class="text-muted">Satu file PDF/JPG/PNG, maksimal 5 MB.</small>
-        <?php if ($hasil['file_bukti']): ?><div><a target="_blank" rel="noopener" href="<?= BASE_URL . '/' . htmlspecialchars($hasil['file_bukti']) ?>">Lihat file saat ini</a></div><?php endif; ?>
+        <?php if ($hasil['file_bukti']): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($hasil['file_bukti'])) ?>">Lihat file saat ini</a></div><?php endif; ?>
     </div>
     <button class="btn btn-primary">Simpan data</button>
     <a href="index.php" class="btn btn-secondary">Kembali</a>
