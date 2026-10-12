@@ -1,4 +1,4 @@
-/config/local.php
+
 /vendor/
 /assets/uploads/*
 !/assets/uploads/.htaccess
