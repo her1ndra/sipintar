@@ -47,6 +47,8 @@ function siPintarMenuActive(string $needle, string $path): string
 
     <?php if ($user['role'] === 'Admin'): ?>
 
+        <div class="sidebar-heading">Menu Utama</div>
+
         <li class="nav-item <?= siPintarMenuActive('/admin/dashboard.php', $currentScript) ?>">
             <a class="nav-link" href="<?= BASE_URL ?>/admin/dashboard.php">
                 <i class="fas fa-fw fa-tachometer-alt"></i>
@@ -61,26 +63,13 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <div class="sidebar-heading">Kepegawaian</div>
+        <hr class="sidebar-divider">
+        <div class="sidebar-heading">Data Kepegawaian</div>
 
         <li class="nav-item <?= siPintarMenuActive('/admin/pegawai/', $currentScript) ?>">
             <a class="nav-link" href="<?= BASE_URL ?>/admin/pegawai/index.php">
                 <i class="fas fa-fw fa-users"></i>
                 <span>Data Pegawai</span>
-            </a>
-        </li>
-
-        <li class="nav-item <?= siPintarMenuActive('/admin/analisis_tugas/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/analisis_tugas/index.php">
-                <i class="fas fa-fw fa-tasks"></i>
-                <span>Analisis Tugas</span>
-            </a>
-        </li>
-
-        <li class="nav-item <?= siPintarMenuActive('/admin/gap/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/gap/index.php">
-                <i class="fas fa-fw fa-chart-bar"></i>
-                <span>Analisis Kesenjangan</span>
             </a>
         </li>
 
@@ -92,7 +81,21 @@ function siPintarMenuActive(string $needle, string $path): string
         </li>
 
         <hr class="sidebar-divider">
-        <div class="sidebar-heading">Penilaian Kompetensi</div>
+        <div class="sidebar-heading">Analisis dan Pengembangan</div>
+
+        <li class="nav-item <?= siPintarMenuActive('/admin/analisis_tugas/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/analisis_tugas/index.php">
+                <i class="fas fa-fw fa-tasks"></i>
+                <span>Analisis Tugas</span>
+            </a>
+        </li>
+
+        <li class="nav-item <?= siPintarMenuActive('/admin/wawancara/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/wawancara/index.php">
+                <i class="fas fa-fw fa-comments"></i>
+                <span>Wawancara</span>
+            </a>
+        </li>
 
         <li class="nav-item <?= siPintarMenuActive('/admin/kuesioner/', $currentScript) ?>">
             <a class="nav-link" href="<?= BASE_URL ?>/admin/kuesioner/index.php">
@@ -101,10 +104,10 @@ function siPintarMenuActive(string $needle, string $path): string
             </a>
         </li>
 
-        <li class="nav-item <?= siPintarMenuActive('/admin/wawancara/', $currentScript) ?>">
-            <a class="nav-link" href="<?= BASE_URL ?>/admin/wawancara/index.php">
-                <i class="fas fa-fw fa-comments"></i>
-                <span>Wawancara</span>
+        <li class="nav-item <?= siPintarMenuActive('/admin/gap/', $currentScript) ?>">
+            <a class="nav-link" href="<?= BASE_URL ?>/admin/gap/index.php">
+                <i class="fas fa-fw fa-chart-bar"></i>
+                <span>Analisis Kesenjangan</span>
             </a>
         </li>
 
@@ -189,16 +192,16 @@ function siPintarMenuActive(string $needle, string $path): string
 
     <?php endif; ?>
 
-    <hr class="sidebar-divider">
-
     <?php if ($user['role'] === 'Admin'): ?>
-    <div class="sidebar-heading">Administrasi</div>
+    <hr class="sidebar-divider">
+    <div class="sidebar-heading">Akun</div>
     <li class="nav-item <?= siPintarMenuActive('/admin/users/', $currentScript) ?>">
         <a class="nav-link" href="<?= BASE_URL ?>/admin/users/index.php">
             <i class="fas fa-fw fa-user-cog"></i>
             <span>Akun User</span>
         </a>
     </li>
+    <?php else: ?>
     <hr class="sidebar-divider">
     <?php endif; ?>
 

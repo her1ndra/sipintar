@@ -14,7 +14,7 @@ Kebutuhan: PHP >= 8.1 dengan ekstensi `pdo_mysql`, `fileinfo`, `mbstring`, `zip`
    mysql -u root -e "CREATE DATABASE si_pintar CHARACTER SET utf8mb4"
    mysql -u root si_pintar < database/si_pintar.sql
    ```
-2. Terapkan migrasi yang belum ada di dump (termasuk tabel `audit_log`):
+2. Terapkan migrasi yang belum ada di dump (termasuk tabel `audit_log` dan kolom jawaban wawancara):
    ```
    php database/migrate.php            # tambahkan --status untuk melihat status
    ```
