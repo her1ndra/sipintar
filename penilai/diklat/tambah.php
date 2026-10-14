@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cekDiklat->execute([$idDiklat]);
         $diklatValid = (bool) $cekDiklat->fetchColumn();
     }
-    if (!$pegawaiValid || !$prioritasValid || $tahun < 2000 || $tahun > 2100 || !$diklatValid) {
+    if (!$pegawaiValid || !$prioritasValid || $tahun < (int) date('Y') || $tahun > 2100 || !$diklatValid) {
         setFlash('error', 'Data usulan tidak valid. Periksa pegawai, diklat, prioritas, dan tahun rencana.');
         header('Location: tambah.php');
         exit;
@@ -97,7 +97,7 @@ require_once __DIR__ . '/../../includes/header.php';
   </div>
   <div class="mb-3">
     <label class="form-label">Tahun rencana</label>
-    <input type="number" name="tahun_rencana" class="form-control" value="<?= date('Y') + 1 ?>" required>
+    <input type="number" name="tahun_rencana" class="form-control" min="<?= date('Y') ?>" value="<?= date('Y') + 1 ?>" required>
   </div>
   <div class="mb-3">
     <label class="form-label">Catatan</label>

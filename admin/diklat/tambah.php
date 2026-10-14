@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gapValid = $gap && (int) $gap['id_pegawai'] === $idPegawai;
     }
     $diklatValid = $pilihanDiklat === 'lainnya' ? $diklatLainnya !== '' : $diklatValid;
-    if (!$pegawaiStmt->fetch() || !$diklatValid || !$gapValid || $metode === '' || !in_array($prioritas, ['Sangat Tinggi', 'Tinggi', 'Sedang', 'Rendah'], true) || $tahun < 2000) {
+    if (!$pegawaiStmt->fetch() || !$diklatValid || !$gapValid || $metode === '' || !in_array($prioritas, ['Sangat Tinggi', 'Tinggi', 'Sedang', 'Rendah'], true) || $tahun < (int) date('Y')) {
         setFlash('error', 'Pegawai, diklat, prioritas, dan tahun rencana harus diisi dengan benar.');
     } else {
       if ($pilihanDiklat === 'lainnya') {
@@ -123,7 +123,7 @@ require_once __DIR__ . '/../../includes/header.php';
   </div>
   <div class="mb-3">
     <label class="form-label">Tahun rencana</label>
-    <input type="number" name="tahun_rencana" class="form-control" min="2000" value="<?= date('Y') + 1 ?>" required>
+    <input type="number" name="tahun_rencana" class="form-control" min="<?= date('Y') ?>" value="<?= date('Y') + 1 ?>" required>
   </div>
   <div class="mb-3">
     <label class="form-label">Catatan</label>

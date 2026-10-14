@@ -27,7 +27,7 @@ $data = $pdo->query(
     "SELECT a.*, j.nama_jabatan
      FROM analisis_tugas a
      JOIN jabatan j ON a.id_jabatan = j.id_jabatan
-     ORDER BY j.nama_jabatan, a.created_at DESC"
+    ORDER BY j.id_jabatan, a.created_at DESC, a.id_analisis_tugas"
 )->fetchAll();
 $renderKegiatan = static function (?string $value, string $modalId): string {
     $items = parseKegiatanItems($value);
