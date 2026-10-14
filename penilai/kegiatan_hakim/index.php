@@ -77,7 +77,7 @@ require_once __DIR__ . '/../../includes/header.php';
 </form>
 <?php if ($data): ?>
 <div class="form-group mb-3" style="max-width:420px">
-  <label for="filter-kegiatan-hakim">Filter berdasarkan nama hakim atau kegiatan</label>
+  <label for="filter-kegiatan-hakim">Filter berdasarkan nama hakim atau jenis kegiatan</label>
   <select id="filter-kegiatan-hakim" class="form-control">
     <option value="">Semua data</option>
     <optgroup label="Nama hakim">
@@ -93,6 +93,9 @@ require_once __DIR__ . '/../../includes/header.php';
   </select>
 </div>
 <?php endif; ?>
+<button id="unduh-laporan-kegiatan-hakim" type="button" class="btn btn-primary mb-3 mr-2">
+  <i class="fas fa-file-pdf mr-1" aria-hidden="true"></i>Unduh laporan
+</button>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Catat kegiatan</a>
 <?php if (!$data): ?>
 <div class="alert alert-info">Belum ada data kegiatan hakim.</div>
@@ -248,9 +251,9 @@ document.querySelectorAll('.download-pdf').forEach(function (button) {
 <script>
 (function () {
   var filter = document.getElementById('filter-kegiatan-hakim');
-  if (!filter) return;
+  var downloadButton = document.getElementById('unduh-laporan-kegiatan-hakim');
 
-  filter.addEventListener('change', function () {
+  if (filter) filter.addEventListener('change', function () {
     var pilihan = filter.value;
     var pemisah = pilihan.indexOf(':');
     var jenis = pemisah === -1 ? '' : pilihan.slice(0, pemisah);
@@ -273,6 +276,73 @@ document.querySelectorAll('.download-pdf').forEach(function (button) {
         });
       }
     });
+  });
+
+  downloadButton.addEventListener('click', function () {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert('Library PDF belum tersedia.');
+      return;
+    }
+
+    var pdf = new window.jspdf.jsPDF();
+    var margin = 14;
+    var pageWidth = pdf.internal.pageSize.getWidth();
+    var pageHeight = pdf.internal.pageSize.getHeight();
+    var labelWidth = 43;
+    var valueWidth = pageWidth - margin * 2 - labelWidth;
+    var periode = document.getElementById('periode');
+    var tahun = document.getElementById('tahun');
+    var labelFilter = filter && filter.value ? filter.options[filter.selectedIndex].text : 'Semua data';
+    var barisTampil = Array.from(document.querySelectorAll('.kegiatan-hakim-table tbody tr')).filter(function (baris) {
+      return baris.style.display !== 'none' && !baris.hidden;
+    });
+
+    pdf.setFontSize(16);
+    pdf.text('LAPORAN KEGIATAN HAKIM', margin, 18);
+    pdf.setFontSize(10);
+    pdf.text('Filter: ' + labelFilter, margin, 26);
+    pdf.text('Periode: ' + periode.options[periode.selectedIndex].text + ' - Tahun acuan: ' + tahun.value, margin, 32);
+
+    var y = 40;
+    var kolom = ['Nama hakim', 'Jenis kegiatan', 'Nama kegiatan', 'Penyelenggara', 'Tanggal', 'Tempat'];
+    if (!barisTampil.length) {
+      pdf.text('Tidak ada data sesuai filter.', margin, y);
+    }
+
+    barisTampil.forEach(function (baris) {
+      var cells = Array.from(baris.cells);
+      kolom.forEach(function (label, index) {
+        var nilai = (cells[index].textContent || '').trim() || '-';
+        var barisTeks = pdf.splitTextToSize(nilai, valueWidth - 8);
+        var tinggi = Math.max(9, barisTeks.length * 4.5 + 4);
+
+        if (y + tinggi > pageHeight - margin) {
+          pdf.addPage();
+          y = margin;
+          pdf.setFontSize(10);
+          pdf.text('LAPORAN KEGIATAN HAKIM (lanjutan)', margin, y);
+          y += 6;
+        }
+
+        pdf.rect(margin, y, labelWidth, tinggi);
+        pdf.rect(margin + labelWidth, y, valueWidth, tinggi);
+        pdf.setFont(undefined, 'bold');
+        pdf.text(label, margin + 3, y + 5.5);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(barisTeks, margin + labelWidth + 3, y + 5.5);
+        y += tinggi;
+      });
+      y += 4;
+    });
+
+    var jumlahHalaman = pdf.internal.getNumberOfPages();
+    for (var nomorHalaman = 1; nomorHalaman <= jumlahHalaman; nomorHalaman++) {
+      pdf.setPage(nomorHalaman);
+      pdf.setFontSize(8);
+      pdf.text('Halaman ' + nomorHalaman + ' dari ' + jumlahHalaman, pageWidth - margin, pageHeight - 6, { align: 'right' });
+    }
+
+    pdf.save('laporan-kegiatan-hakim-' + tahun.value + '.pdf');
   });
 })();
 </script>
