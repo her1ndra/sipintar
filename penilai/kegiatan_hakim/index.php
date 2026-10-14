@@ -24,6 +24,10 @@ $statement = $pdo->prepare(
 );
 $statement->execute([$tanggalMulai, $tanggalBatas]);
 $data = $statement->fetchAll();
+$daftarNamaHakim = array_values(array_unique(array_column($data, 'nama_lengkap')));
+$daftarJenisKegiatan = array_values(array_unique(array_column($data, 'jenis_kegiatan')));
+sort($daftarNamaHakim, SORT_NATURAL | SORT_FLAG_CASE);
+sort($daftarJenisKegiatan, SORT_NATURAL | SORT_FLAG_CASE);
 $namaBulan = [
     '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
     '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
@@ -71,6 +75,24 @@ require_once __DIR__ . '/../../includes/header.php';
     <button type="submit" class="btn btn-primary"><i class="fas fa-filter mr-1" aria-hidden="true"></i>Tampilkan</button>
   </div>
 </form>
+<?php if ($data): ?>
+<div class="form-group mb-3" style="max-width:420px">
+  <label for="filter-kegiatan-hakim">Filter berdasarkan nama hakim atau kegiatan</label>
+  <select id="filter-kegiatan-hakim" class="form-control">
+    <option value="">Semua data</option>
+    <optgroup label="Nama hakim">
+      <?php foreach ($daftarNamaHakim as $namaHakim): ?>
+      <option value="hakim:<?= htmlspecialchars(rawurlencode($namaHakim), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($namaHakim) ?></option>
+      <?php endforeach; ?>
+    </optgroup>
+    <optgroup label="Jenis kegiatan">
+      <?php foreach ($daftarJenisKegiatan as $jenisKegiatan): ?>
+      <option value="jenis:<?= htmlspecialchars(rawurlencode($jenisKegiatan), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($jenisKegiatan) ?></option>
+      <?php endforeach; ?>
+    </optgroup>
+  </select>
+</div>
+<?php endif; ?>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Catat kegiatan</a>
 <?php if (!$data): ?>
 <div class="alert alert-info">Belum ada data kegiatan hakim.</div>
@@ -83,7 +105,7 @@ require_once __DIR__ . '/../../includes/header.php';
       <thead><tr><th>Hakim</th><th>Jenis kegiatan</th><th>Nama kegiatan</th><th>Penyelenggara</th><th>Tanggal</th><th>Tempat</th><th>Aksi</th></tr></thead>
       <tbody>
       <?php foreach ($group['items'] as $row): ?>
-      <tr>
+      <tr data-nama-hakim="<?= htmlspecialchars(rawurlencode($row['nama_lengkap']), ENT_QUOTES, 'UTF-8') ?>" data-jenis-kegiatan="<?= htmlspecialchars(rawurlencode($row['jenis_kegiatan']), ENT_QUOTES, 'UTF-8') ?>">
         <td><?= htmlspecialchars($row['nama_lengkap']) ?></td>
         <td><?= htmlspecialchars($row['jenis_kegiatan']) ?></td>
         <td><?= htmlspecialchars($row['nama_kegiatan']) ?></td>
@@ -222,5 +244,36 @@ document.querySelectorAll('.download-pdf').forEach(function (button) {
     }
   });
 });
+</script>
+<script>
+(function () {
+  var filter = document.getElementById('filter-kegiatan-hakim');
+  if (!filter) return;
+
+  filter.addEventListener('change', function () {
+    var pilihan = filter.value;
+    var pemisah = pilihan.indexOf(':');
+    var jenis = pemisah === -1 ? '' : pilihan.slice(0, pemisah);
+    var nilai = pemisah === -1 ? '' : pilihan.slice(pemisah + 1);
+
+    document.querySelectorAll('.kegiatan-hakim-table tbody tr').forEach(function (baris) {
+      var atribut = {
+        hakim: 'namaHakim',
+        jenis: 'jenisKegiatan'
+      }[jenis];
+      var cocok = !jenis || baris.dataset[atribut] === nilai;
+      baris.style.display = cocok ? '' : 'none';
+    });
+
+    document.querySelectorAll('.kegiatan-hakim-table').forEach(function (tabel) {
+      var bagian = tabel.closest('section');
+      if (bagian) {
+        bagian.hidden = !Array.from(tabel.tBodies[0].rows).some(function (baris) {
+          return baris.style.display !== 'none';
+        });
+      }
+    });
+  });
+})();
 </script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
