@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Penilai');
+require_once __DIR__ . '/../../includes/penilaian_delete.php';
+require_once __DIR__ . '/../../includes/kuesioner_dokumentasi.php';
 $pdo = Database::getConnection();
 $user = currentUser();
 $idWawancara = (int) ($_GET['id'] ?? 0);
@@ -43,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submittedIds = [];
     $status = '';
     $file = $_FILES['file_bukti'] ?? null;
+    $hapusDokumentasi = ($_POST['hapus_dokumentasi'] ?? '') === '1';
+    $dokumentasiPaths = [];
     $path = null;
     $canSave = true;
     if (!is_array($scores) || !is_array($questions) || !is_array($questionIds)
@@ -84,6 +88,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $canSave = false;
         }
     }
+    if ($canSave && isset($_POST['hapus_dokumentasi'])
+        && !in_array($_POST['hapus_dokumentasi'], ['', '1'], true)) {
+        setFlash('error', 'Pilihan penghapusan dokumentasi tidak valid.');
+        $canSave = false;
+    }
+    if ($canSave) {
+        $uploadDokumentasi = unggahFotoDokumentasiKuesioner($_FILES['foto_dokumentasi'] ?? null);
+        if ($uploadDokumentasi['error'] !== null) {
+            setFlash('error', $uploadDokumentasi['error']);
+            $canSave = false;
+        } else {
+            $dokumentasiPaths = $uploadDokumentasi['paths'];
+        }
+    }
+    if (!$canSave) {
+        hapusFileBuktiPenilaian($dokumentasiPaths);
+        if ($path !== null) {
+            hapusFileBuktiPenilaian([$path]);
+        }
+    }
     if ($canSave && (!$file || $file['error'] === UPLOAD_ERR_NO_FILE || $path !== null)) {
         $average = array_sum(array_map('intval', $scores)) / count($scores);
         $status = $average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten');
@@ -95,7 +119,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return (int) $right['nomor_urut'] <=> (int) $left['nomor_urut'];
         });
 
+        $dokumentasiDihapus = [];
+        try {
         $pdo->beginTransaction();
+        if ($hapusDokumentasi) {
+            $documentationStmt = $pdo->prepare('SELECT file_dokumentasi FROM dokumentasi_kuesioner WHERE id_wawancara = ?');
+            $documentationStmt->execute([$idWawancara]);
+            $dokumentasiDihapus = $documentationStmt->fetchAll(PDO::FETCH_COLUMN);
+            $pdo->prepare('DELETE FROM dokumentasi_kuesioner WHERE id_wawancara = ?')->execute([$idWawancara]);
+        }
         if ($removedQuestions) {
             $resultsStmt = $pdo->prepare(
                 'SELECT h.id_hasil, h.daftar_nilai
@@ -146,7 +178,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              daftar_nilai = VALUES(daftar_nilai),
              status_kompetensi = VALUES(status_kompetensi)'
         )->execute([$idWawancara, $path, json_encode(array_values($scores)), $status]);
+        $insertDocumentation = $pdo->prepare(
+            'INSERT INTO dokumentasi_kuesioner (id_wawancara, file_dokumentasi)
+             VALUES (?, ?)'
+        );
+        foreach ($dokumentasiPaths as $documentationPath) {
+            $insertDocumentation->execute([$idWawancara, $documentationPath]);
+        }
         $pdo->commit();
+        } catch (Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            hapusFileBuktiPenilaian(array_merge($dokumentasiPaths, $path ? [$path] : []));
+            throw $exception;
+        }
+        hapusFileBuktiPenilaian($dokumentasiDihapus);
         setFlash('success', 'Data kuesioner berhasil disimpan.');
         header('Location: index.php');
         exit;
@@ -156,6 +203,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->prepare('SELECT file_bukti, daftar_nilai, status_kompetensi FROM hasil_kuesioner WHERE id_wawancara = ?');
 $stmt->execute([$idWawancara]);
 $hasil = $stmt->fetch() ?: ['file_bukti' => null, 'daftar_nilai' => null, 'status_kompetensi' => 'Tidak Kompeten'];
+$documentationStmt = $pdo->prepare(
+    'SELECT id_dokumentasi, file_dokumentasi FROM dokumentasi_kuesioner
+     WHERE id_wawancara = ? ORDER BY id_dokumentasi'
+);
+$documentationStmt->execute([$idWawancara]);
+$dokumentasi = $documentationStmt->fetchAll();
 $nilaiTersimpan = $hasil['daftar_nilai'] ? json_decode($hasil['daftar_nilai'], true) : [];
 $pageTitle = 'Isi kuesioner';
 require_once __DIR__ . '/../../includes/header.php';
@@ -176,6 +229,17 @@ require_once __DIR__ . '/../../includes/header.php';
         <?php endforeach; ?>
         </div>
         <button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Dokumentasi (foto)</label>
+        <input type="file" name="foto_dokumentasi[]" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple>
+        <small class="text-muted">Foto JPG/PNG, maksimal 5 MB per foto dan 10 foto per unggahan.</small>
+        <?php foreach ($dokumentasi as $foto): ?>
+            <div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($foto['file_dokumentasi'])) ?>">Lihat foto dokumentasi</a></div>
+        <?php endforeach; ?>
+        <?php if ($dokumentasi): ?>
+            <div class="form-check mt-2"><input type="checkbox" name="hapus_dokumentasi" value="1" class="form-check-input" id="hapus-dokumentasi"><label class="form-check-label" for="hapus-dokumentasi">Hapus semua foto dokumentasi saat disimpan</label></div>
+        <?php endif; ?>
     </div>
     <div class="mb-3">
         <label class="form-label">Bukti Kompetensi</label>

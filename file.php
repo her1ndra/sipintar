@@ -76,6 +76,31 @@ foreach (['hasil_kuesioner', 'hasil_wawancara', 'bukti_wawancara'] as $tabel) {
     }
 }
 
+$dokumentasiSql = "SELECT p.id_jabatan AS id_jabatan_pegawai,
+                          p_target.id_jabatan AS id_jabatan_target,
+                          k.id_jabatan_dinilai
+                   FROM dokumentasi_kuesioner d
+                   JOIN wawancara w ON w.id_wawancara = d.id_wawancara
+                   JOIN pegawai p ON p.id_pegawai = w.id_pegawai
+                   LEFT JOIN kuesioner k ON k.id_kuesioner = w.id_kuesioner
+                   LEFT JOIN pegawai p_target ON p_target.id_pegawai = k.id_jabatan_dinilai
+                   WHERE d.file_dokumentasi = ?";
+$s = $pdo->prepare($dokumentasiSql);
+$s->execute([$path]);
+foreach ($s->fetchAll() as $row) {
+    $ditemukan = true;
+    if ($isAdmin) {
+        $diizinkan = true;
+    } elseif ($user['role'] === 'Penilai') {
+        $wewenang = $wewenang ?? array_map('intval', getJabatanWewenang($pdo, (int) $user['id_jabatan']));
+        if (in_array((int) $row['id_jabatan_pegawai'], $wewenang, true)
+            || ($row['id_jabatan_target'] !== null && in_array((int) $row['id_jabatan_target'], $wewenang, true))
+            || ($row['id_jabatan_dinilai'] !== null && in_array((int) $row['id_jabatan_dinilai'], $wewenang, true))) {
+            $diizinkan = true;
+        }
+    }
+}
+
 // Tidak dibedakan antara "tidak ada" dan "tidak berhak" agar keberadaan file tidak bocor.
 if (!$ditemukan || !$diizinkan) {
     fileNotFound();
