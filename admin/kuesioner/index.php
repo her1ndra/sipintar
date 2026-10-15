@@ -151,10 +151,10 @@ require_once __DIR__ . '/../../includes/header.php';
                 <td class="action-cell">
                     <div class="d-flex align-items-center justify-content-center w-100">
                         <div class="dropdown mr-1">
-                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download pertanyaan" aria-label="Download pertanyaan"><i class="fas fa-download"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download kuesioner" aria-label="Download kuesioner"><i class="fas fa-download" aria-hidden="true"></i></button>
                             <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&format=pdf"><i class="fas fa-file-pdf text-danger mr-2"></i>PDF</a>
-                                <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&format=csv"><i class="fas fa-file-csv text-success mr-2"></i>CSV</a>
+                                <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&amp;format=pdf"><i class="fas fa-file-pdf text-danger mr-2" aria-hidden="true"></i>PDF</a>
+                                <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&amp;format=word"><i class="fas fa-file-word text-primary mr-2" aria-hidden="true"></i>Word</a>
                             </div>
                         </div>
                         <?php if ($row['id_wawancara']): ?>

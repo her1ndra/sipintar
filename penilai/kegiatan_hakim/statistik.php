@@ -39,13 +39,13 @@ if ($periode === 'bulan') {
         $labels[sprintf('%04d-Q%d', $tahun, $triwulan)] = 'Triwulan ' . ['I', 'II', 'III', 'IV'][$triwulan - 1];
     }
 } else {
-    $judulPeriode = 'Tahunan';
-    $tahunMulai = $tahun - 4;
-    $tanggalMulai = sprintf('%04d-01-01', $tahunMulai);
+    $judulPeriode = 'Bulanan tahun ' . $tahun;
+    $tanggalMulai = sprintf('%04d-01-01', $tahun);
     $tanggalBatas = sprintf('%04d-01-01', $tahun + 1);
-    $groupExpression = 'YEAR(kh.tanggal_mulai)';
-    for ($tahunGrafik = $tahunMulai; $tahunGrafik <= $tahun; $tahunGrafik++) {
-        $labels[(string) $tahunGrafik] = (string) $tahunGrafik;
+    $groupExpression = "DATE_FORMAT(kh.tanggal_mulai, '%Y-%m')";
+    for ($bulan = 1; $bulan <= 12; $bulan++) {
+        $key = sprintf('%04d-%02d', $tahun, $bulan);
+        $labels[$key] = $namaBulan[sprintf('%02d', $bulan)];
     }
 }
 
@@ -57,7 +57,7 @@ foreach ($labels as $key => $label) {
 // Kunci periode sebuah tanggal, sama dengan kunci pada $labels.
 $kunciPeriode = static function (string $tanggal) use ($periode): string {
     $ts = strtotime($tanggal);
-    if ($periode === 'bulan') {
+    if ($periode === 'bulan' || $periode === 'tahun') {
         return date('Y-m', $ts);
     }
     if ($periode === 'triwulan') {
@@ -109,19 +109,36 @@ foreach ($hakimPerPeriode as $key => $hakimSet) {
 }
 
 // Periode yang dirinci: dari pilihan pengguna, atau periode berjalan, atau periode terakhir yang berisi data.
-$rincian = $_GET['rincian'] ?? '';
-if (!is_string($rincian) || !array_key_exists($rincian, $labels)) {
-    $rincian = $kunciPeriode(date('Y-m-d'));
-    if (!array_key_exists($rincian, $labels)) {
-        $berisi = array_keys(array_filter($jumlahKegiatan));
-        $rincian = $berisi ? end($berisi) : (string) array_key_last($labels);
+$kegiatanRincian = [];
+if ($periode === 'tahun') {
+    $rincian = (string) $tahun;
+    $labelRincian = 'Tahun ' . $tahun;
+    foreach ($kegiatanPerPeriode as $kegiatanBulan) {
+        $kegiatanRincian = array_merge($kegiatanRincian, $kegiatanBulan);
     }
-}
-$labelRincian = $labels[$rincian];
-if ($periode === 'bulan') {
+    $labelsTampilan = $labels;
+    $jumlahKegiatanTampilan = $jumlahKegiatan;
+    $jumlahHakimTampilan = $jumlahHakim;
+    $matriksJenisTampilan = $matriksJenis;
+} else {
+    $rincian = $_GET['rincian'] ?? '';
+    if (!is_string($rincian) || !array_key_exists($rincian, $labels)) {
+        $rincian = $kunciPeriode(date('Y-m-d'));
+        if (!array_key_exists($rincian, $labels)) {
+            $berisi = array_keys(array_filter($jumlahKegiatan));
+            $rincian = $berisi ? end($berisi) : (string) array_key_last($labels);
+        }
+    }
+    $labelRincian = $labels[$rincian];
     $labelRincian .= ' ' . $tahun;
-} elseif ($periode === 'triwulan') {
-    $labelRincian .= ' ' . $tahun;
+    $labelsTampilan = [$rincian => $labelRincian];
+    $jumlahKegiatanTampilan = [$rincian => $jumlahKegiatan[$rincian]];
+    $jumlahHakimTampilan = [$rincian => $jumlahHakim[$rincian]];
+    $matriksJenisTampilan = [];
+    foreach ($matriksJenis as $jenis => $perPeriode) {
+        $matriksJenisTampilan[$jenis] = [$rincian => $perPeriode[$rincian]];
+    }
+    $kegiatanRincian = $kegiatanPerPeriode[$rincian] ?? [];
 }
 
 // Rincian per jenis untuk periode terpilih.
@@ -129,7 +146,7 @@ $rincianJenis = [];
 foreach ($daftarJenis as $jenis) {
     $rincianJenis[$jenis] = ['kegiatan' => [], 'hakim' => []];
 }
-foreach ($kegiatanPerPeriode[$rincian] ?? [] as $row) {
+foreach ($kegiatanRincian as $row) {
     $rincianJenis[$row['jenis_kegiatan']]['kegiatan'][] = $row;
     $nama = $row['nama_lengkap'];
     $rincianJenis[$row['jenis_kegiatan']]['hakim'][$nama] = ($rincianJenis[$row['jenis_kegiatan']]['hakim'][$nama] ?? 0) + 1;
@@ -161,6 +178,7 @@ require_once __DIR__ . '/../../includes/header.php';
       <?php endfor; ?>
     </select>
   </div>
+  <?php if ($periode !== 'tahun'): ?>
   <div class="form-group col-sm-6 col-md-3">
     <label for="rincian">Rincian periode</label>
     <select name="rincian" id="rincian" class="form-control">
@@ -169,6 +187,7 @@ require_once __DIR__ . '/../../includes/header.php';
       <?php endforeach; ?>
     </select>
   </div>
+  <?php endif; ?>
   <div class="form-group col-sm-3 col-md-2">
     <button type="submit" class="btn btn-primary"><i class="fas fa-filter mr-1" aria-hidden="true"></i>Tampilkan</button>
   </div>
@@ -192,12 +211,12 @@ require_once __DIR__ . '/../../includes/header.php';
         <thead>
           <tr>
             <th>Jenis kegiatan</th>
-            <?php foreach ($labels as $label): ?><th class="text-center"><?= e($label) ?></th><?php endforeach; ?>
+            <?php foreach ($labelsTampilan as $label): ?><th class="text-center"><?= e($label) ?></th><?php endforeach; ?>
             <th class="text-center">Total</th>
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($matriksJenis as $jenis => $perPeriode): ?>
+          <?php foreach ($matriksJenisTampilan as $jenis => $perPeriode): ?>
           <tr>
             <td><?= e($jenis) ?></td>
             <?php foreach ($perPeriode as $nilai): ?><td class="text-center"><?= $nilai ?: '-' ?></td><?php endforeach; ?>
@@ -206,8 +225,8 @@ require_once __DIR__ . '/../../includes/header.php';
           <?php endforeach; ?>
           <tr class="font-weight-bold bg-light">
             <td>Semua jenis</td>
-            <?php foreach ($jumlahKegiatan as $nilai): ?><td class="text-center"><?= $nilai ?></td><?php endforeach; ?>
-            <td class="text-center"><?= array_sum($jumlahKegiatan) ?></td>
+            <?php foreach ($jumlahKegiatanTampilan as $nilai): ?><td class="text-center"><?= $nilai ?></td><?php endforeach; ?>
+            <td class="text-center"><?= array_sum($jumlahKegiatanTampilan) ?></td>
           </tr>
         </tbody>
       </table>
@@ -218,7 +237,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <div class="card shadow-sm mb-4">
   <div class="card-header bg-white font-weight-bold">Rincian kegiatan: <?= e($labelRincian) ?></div>
   <div class="card-body">
-    <?php if (!($kegiatanPerPeriode[$rincian] ?? [])): ?>
+    <?php if (!$kegiatanRincian): ?>
       <p class="text-muted mb-0">Tidak ada kegiatan hakim pada periode ini.</p>
     <?php else: ?>
       <div class="row mb-3">
@@ -269,13 +288,13 @@ require_once __DIR__ . '/../../includes/header.php';
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 const chartElement = document.getElementById('statistikKegiatanChart');
-const chartLabels = <?= json_encode(array_values($labels), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
-const kegiatanValues = <?= json_encode(array_values($jumlahKegiatan)) ?>;
-const hakimValues = <?= json_encode(array_values($jumlahHakim)) ?>;
+const chartLabels = <?= json_encode(array_values($labelsTampilan), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+const kegiatanValues = <?= json_encode(array_values($jumlahKegiatanTampilan)) ?>;
+const hakimValues = <?= json_encode(array_values($jumlahHakimTampilan)) ?>;
 const jenisPalet = <?= json_encode($paletJenis) ?>;
 const jenisDatasets = <?= json_encode(array_map(static function ($jenis, $perPeriode) {
     return ['label' => $jenis, 'data' => array_values($perPeriode)];
-}, array_keys($matriksJenis), array_values($matriksJenis)), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+}, array_keys($matriksJenisTampilan), array_values($matriksJenisTampilan)), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 jenisDatasets.forEach(function (d, i) {
   d.backgroundColor = jenisPalet[i % jenisPalet.length];
   d.borderRadius = 2;
