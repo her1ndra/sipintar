@@ -76,6 +76,25 @@ foreach (['hasil_kuesioner', 'hasil_wawancara', 'bukti_wawancara'] as $tabel) {
     }
 }
 
+$wawancaraDocumentationSql = "SELECT p.id_jabatan AS id_jabatan_pegawai
+                              FROM dokumentasi_wawancara d
+                              JOIN wawancara w ON w.id_wawancara = d.id_wawancara
+                              JOIN pegawai p ON p.id_pegawai = w.id_pegawai
+                              WHERE d.file_dokumentasi = ?";
+$s = $pdo->prepare($wawancaraDocumentationSql);
+$s->execute([$path]);
+foreach ($s->fetchAll() as $row) {
+    $ditemukan = true;
+    if ($isAdmin) {
+        $diizinkan = true;
+    } elseif ($user['role'] === 'Penilai') {
+        $wewenang = $wewenang ?? array_map('intval', getJabatanWewenang($pdo, (int) $user['id_jabatan']));
+        if (in_array((int) $row['id_jabatan_pegawai'], $wewenang, true)) {
+            $diizinkan = true;
+        }
+    }
+}
+
 $dokumentasiSql = "SELECT p.id_jabatan AS id_jabatan_pegawai,
                           p_target.id_jabatan AS id_jabatan_target,
                           k.id_jabatan_dinilai

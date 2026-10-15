@@ -12,13 +12,27 @@ if (!$idWawancara || $idWawancara < 1) {
 $pdo = Database::getConnection();
 $statement = $pdo->prepare(
     'SELECT w.tanggal_wawancara, p.nama_lengkap AS nama_di_wawancarai,
-            j.nama_jabatan, penilai.nama_lengkap AS nama_pewawancara,
-            u.NIP AS nip_pewawancara, h.kompetensi, h.isi_penilaian, h.jawaban
+            j.nama_jabatan,
+            COALESCE((
+                SELECT GROUP_CONCAT(
+                    DISTINCT CASE
+                        WHEN penilai.nama_lengkap IS NULL THEN jabatan_penilai.nama_jabatan
+                        ELSE CONCAT(penilai.nama_lengkap, \' (\', jabatan_penilai.nama_jabatan, \')\')
+                    END
+                    ORDER BY jabatan_penilai.id_jabatan
+                    SEPARATOR \', \'
+                )
+                FROM wewenang_penilaian wp
+                JOIN jabatan jabatan_penilai ON jabatan_penilai.id_jabatan = wp.id_jabatan_penilai
+                LEFT JOIN pegawai penilai
+                    ON penilai.id_jabatan = jabatan_penilai.id_jabatan
+                   AND penilai.status_aktif = \'Aktif\'
+                WHERE wp.id_jabatan_dinilai = p.id_jabatan
+            ), \'-\') AS nama_pewawancara,
+            h.kompetensi, h.isi_penilaian, h.jawaban
      FROM wawancara w
      JOIN pegawai p ON p.id_pegawai = w.id_pegawai
      JOIN jabatan j ON j.id_jabatan = p.id_jabatan
-     LEFT JOIN users u ON u.id_user = w.id_user_penilai
-     LEFT JOIN pegawai penilai ON penilai.id_pegawai = u.id_pegawai
      LEFT JOIN hasil_wawancara h ON h.id_wawancara = w.id_wawancara
      WHERE w.id_wawancara = ? AND w.id_kuesioner IS NULL
      ORDER BY h.id_hasil'
@@ -44,8 +58,7 @@ $hari = [
     'Saturday' => 'Sabtu',
 ][$tanggal->format('l')];
 $tanggalLabel = $hari . ', ' . $tanggal->format('d-m-Y');
-$pewawancara = $interview['nama_pewawancara']
-    ?: ($interview['nip_pewawancara'] ? 'NIP ' . $interview['nip_pewawancara'] : '-');
+$pewawancara = $interview['nama_pewawancara'];
 $diwawancarai = $interview['nama_di_wawancarai'] . ' (' . $interview['nama_jabatan'] . ')';
 
 $xmlText = static function (?string $value): string {
@@ -58,7 +71,7 @@ $paragraph = static function (string $label, string $value) use ($xmlText): stri
         . $xmlText($value) . '</w:t></w:r></w:p>';
 };
 $tableCell = static function (string $value, int $width, bool $header = false) use ($xmlText): string {
-    $properties = '<w:tcW w:w="' . $width . '" w:type="dxa"/>';
+    $properties = '<w:tcW w:w="' . $width . '" w:type="dxa"/><w:vAlign w:val="top"/>';
     if ($header) {
         $properties .= '<w:shd w:fill="D9EAF7"/>';
     }
@@ -70,11 +83,11 @@ $tableCell = static function (string $value, int $width, bool $header = false) u
         }
         $textRuns .= '<w:t xml:space="preserve">' . $xmlText($line) . '</w:t>';
     }
-    return '<w:tc><w:tcPr>' . $properties . '</w:tcPr><w:p><w:pPr><w:spacing w:after="80"/></w:pPr><w:r>'
+    return '<w:tc><w:tcPr>' . $properties . '</w:tcPr><w:p><w:pPr><w:spacing w:after="100"/></w:pPr><w:r>'
         . $runProperties . $textRuns . '</w:r></w:p></w:tc>';
 };
 
-$columnWidths = [500, 1600, 1800, 2600, 2500];
+$columnWidths = [600, 1600, 1800, 1900, 4206];
 $tableRow = static function (array $values, bool $header = false) use ($columnWidths, $tableCell): string {
     $cells = '';
     foreach ($columnWidths as $index => $width) {
@@ -115,7 +128,9 @@ $documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     . $paragraph('Yang mewawancarai:', $pewawancara)
     . $paragraph('Yang diwawancarai:', $diwawancarai)
     . '<w:p><w:pPr><w:spacing w:after="100"/></w:pPr></w:p>'
-    . '<w:tbl><w:tblPr><w:tblW w:w="9000" w:type="dxa"/><w:tblLayout w:type="fixed"/>'
+    . '<w:tbl><w:tblPr><w:tblW w:w="10106" w:type="dxa"/><w:tblLayout w:type="fixed"/>'
+    . '<w:tblCellMar><w:top w:w="100" w:type="dxa"/><w:left w:w="110" w:type="dxa"/>'
+    . '<w:bottom w:w="100" w:type="dxa"/><w:right w:w="110" w:type="dxa"/></w:tblCellMar>'
     . '<w:tblBorders><w:top w:val="single" w:sz="4" w:color="808080"/>'
     . '<w:left w:val="single" w:sz="4" w:color="808080"/><w:bottom w:val="single" w:sz="4" w:color="808080"/>'
     . '<w:right w:val="single" w:sz="4" w:color="808080"/><w:insideH w:val="single" w:sz="4" w:color="808080"/>'

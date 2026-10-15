@@ -7,6 +7,9 @@ function hapusSesiPenilaian(PDO $pdo, int $idWawancara): array
         $statement->execute([$idWawancara]);
         $filePaths = array_merge($filePaths, $statement->fetchAll(PDO::FETCH_COLUMN));
     }
+    $statement = $pdo->prepare('SELECT file_dokumentasi FROM dokumentasi_wawancara WHERE id_wawancara = ?');
+    $statement->execute([$idWawancara]);
+    $filePaths = array_merge($filePaths, $statement->fetchAll(PDO::FETCH_COLUMN));
     $statement = $pdo->prepare('SELECT file_dokumentasi FROM dokumentasi_kuesioner WHERE id_wawancara = ?');
     $statement->execute([$idWawancara]);
     $filePaths = array_merge($filePaths, $statement->fetchAll(PDO::FETCH_COLUMN));

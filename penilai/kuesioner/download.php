@@ -11,10 +11,12 @@ $jabatanIds = getJabatanWewenang($pdo, (int) $user['id_jabatan']);
 $placeholders = $jabatanIds ? implode(',', array_fill(0, count($jabatanIds), '?')) : 'NULL';
 $stmt = $pdo->prepare(
     "SELECT k.judul_kuesioner, k.tahun_periode, k.kompetensi,
+            p_target.nama_lengkap AS nama_pegawai, j_target.nama_jabatan,
             q.nomor_urut, q.teks_pertanyaan
      FROM kuesioner k
     JOIN pertanyaan_kuesioner q ON q.id_kuesioner = k.id_kuesioner
     LEFT JOIN pegawai p_target ON p_target.id_pegawai = k.id_jabatan_dinilai
+    LEFT JOIN jabatan j_target ON j_target.id_jabatan = p_target.id_jabatan
     WHERE k.id_kuesioner = ?
       AND (p_target.id_jabatan IN ($placeholders) OR k.id_jabatan_dinilai IN ($placeholders))
     ORDER BY q.nomor_urut"
@@ -38,12 +40,13 @@ header('Content-Disposition: attachment; filename="' . $filename . '"');
 echo "\xEF\xBB\xBF";
 $output = fopen('php://output', 'wb');
 fputcsv($output, ['Judul kuesioner', $rows[0]['judul_kuesioner']], ';');
-fputcsv($output, ['Tahun periode', $rows[0]['tahun_periode']], ';');
-fputcsv($output, ['Kompetensi / jabatan', $rows[0]['kompetensi']], ';');
+fputcsv($output, ['Nama pegawai', $rows[0]['nama_pegawai']], ';');
+fputcsv($output, ['Jabatan', $rows[0]['nama_jabatan']], ';');
+fputcsv($output, ['Kompetensi jabatan', $rows[0]['kompetensi']], ';');
 fputcsv($output, []);
-fputcsv($output, ['No', 'Pertanyaan'], ';');
+fputcsv($output, ['Pertanyaan', 'Jawaban'], ';');
 foreach ($rows as $row) {
-    fputcsv($output, [$row['nomor_urut'], $row['teks_pertanyaan']], ';');
+    fputcsv($output, [$row['teks_pertanyaan'], ''], ';');
 }
 fclose($output);
 exit;

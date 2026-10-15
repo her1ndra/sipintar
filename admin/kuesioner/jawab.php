@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $canSave = false;
     }
     if ($canSave) {
-        $uploadDokumentasi = unggahFotoDokumentasiKuesioner($_FILES['foto_dokumentasi'] ?? null);
+        $uploadDokumentasi = unggahFotoDokumentasi($_FILES['foto_dokumentasi'] ?? null, 'kuesioner');
         if ($uploadDokumentasi['error'] !== null) {
             setFlash('error', $uploadDokumentasi['error']);
             $canSave = false;

@@ -31,6 +31,7 @@ if ($jabatanIds) {
             GROUP_CONCAT(CONCAT(d.nomor_pertanyaan, '. ', COALESCE(d.nilai, '-'))
                 ORDER BY d.nomor_pertanyaan SEPARATOR '<br>') AS daftar_nilai,
             bw.bukti_banyak,
+            wd.foto_banyak,
             CASE
                 WHEN AVG(d.nilai) <= 30 THEN 'Tidak Kompeten'
                 WHEN AVG(d.nilai) <= 70 THEN 'Cukup'
@@ -54,6 +55,12 @@ if ($jabatanIds) {
          FROM bukti_wawancara
          GROUP BY id_wawancara
      ) bw ON bw.id_wawancara = w.id_wawancara
+     LEFT JOIN (
+         SELECT id_wawancara,
+                GROUP_CONCAT(file_dokumentasi ORDER BY id_dokumentasi SEPARATOR '||') AS foto_banyak
+         FROM dokumentasi_wawancara
+         GROUP BY id_wawancara
+     ) wd ON wd.id_wawancara = w.id_wawancara
      WHERE w.id_kuesioner IS NULL
        AND p.id_jabatan IN ($jabatanPlaceholders)
      GROUP BY w.id_wawancara, p.nama_lengkap, p.id_jabatan, j.nama_jabatan,
@@ -85,7 +92,7 @@ if ($interviewIds) {
         $evidenceByInterview[(int) $evidence['id_wawancara']][] = $evidence;
     }
 }
-$renderEvidence = static function (int $idWawancara, ?string $kompetensi, ?string $legacyFiles, string $modalId) use ($evidenceByInterview): string {
+$renderEvidence = static function (int $idWawancara, ?string $kompetensi, ?string $legacyFiles, ?string $photoFiles, string $modalId) use ($evidenceByInterview): string {
     $items = [];
     $textAnswers = [];
     $index = 0;
@@ -107,6 +114,10 @@ $renderEvidence = static function (int $idWawancara, ?string $kompetensi, ?strin
     foreach (array_filter(explode('||', (string) $legacyFiles)) as $file) {
         $items[] = '<div class="mb-2"><a class="btn btn-link btn-sm p-0" target="_blank" rel="noopener" href="'
             . htmlspecialchars(fileUrl($file)) . '">Lihat file jawaban</a></div>';
+    }
+    foreach (array_filter(explode('||', (string) $photoFiles)) as $photo) {
+        $items[] = '<div class="mb-2"><a class="btn btn-link btn-sm p-0" target="_blank" rel="noopener" href="'
+            . htmlspecialchars(fileUrl($photo)) . '">Lihat foto dokumentasi</a></div>';
     }
     if ($textAnswers) {
         $items[] = '<button type="button" class="btn btn-link btn-sm p-0" data-toggle="modal" data-target="#' . $modalId . '">Lihat jawaban</button>'
@@ -174,7 +185,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <a href="tambah.php" class="btn btn-primary mb-3">+ Jadwalkan wawancara</a>
 <div class="table-responsive">
 <table class="table table-bordered table-hover bg-white align-middle wawancara-table"><thead class="table-light"><tr><th class="text-center col-no">No</th><th class="col-nama">Nama Pegawai/Jabatan</th><th class="col-kompetensi">Kompetensi Jabatan</th><th class="col-pertanyaan">Daftar pertanyaan</th><th class="col-bukti">Bukti kompetensi</th><th class="col-status">Status</th><th class="text-center col-aksi">Aksi</th></tr></thead><tbody>
-<?php foreach ($data as $index => $row): ?><tr><td class="text-center"><?= $index + 1 ?></td><td><?= htmlspecialchars($row['nama_lengkap']) ?><br>(<?= htmlspecialchars($row['nama_jabatan']) ?>)</td><td><?= htmlspecialchars($row['kompetensi'] ?: '-') ?></td><td class="question-cell"><?= $renderList($row['daftar_pertanyaan'], 'modal-pertanyaan-' . (int) $row['id_wawancara']) ?></td><td class="evidence-cell"><?= $renderEvidence((int) $row['id_wawancara'], $row['kompetensi'], $row['bukti_banyak'], 'modal-jawaban-' . (int) $row['id_wawancara'] . '-' . substr(sha1((string) $row['kompetensi']), 0, 10)) ?></td><td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?></td><td class="text-center text-nowrap"><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus wawancara beserta hasil dan bukti terkait?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus wawancara" aria-label="Hapus wawancara"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form></td></tr><?php endforeach; ?>
+<?php foreach ($data as $index => $row): ?><tr><td class="text-center"><?= $index + 1 ?></td><td><?= htmlspecialchars($row['nama_lengkap']) ?><br>(<?= htmlspecialchars($row['nama_jabatan']) ?>)</td><td><?= htmlspecialchars($row['kompetensi'] ?: '-') ?></td><td class="question-cell"><?= $renderList($row['daftar_pertanyaan'], 'modal-pertanyaan-' . (int) $row['id_wawancara']) ?></td><td class="evidence-cell"><?= $renderEvidence((int) $row['id_wawancara'], $row['kompetensi'], $row['bukti_banyak'], $row['foto_banyak'], 'modal-jawaban-' . (int) $row['id_wawancara'] . '-' . substr(sha1((string) $row['kompetensi']), 0, 10)) ?></td><td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?></td><td class="text-center text-nowrap"><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus wawancara beserta hasil dan bukti terkait?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus wawancara" aria-label="Hapus wawancara"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form></td></tr><?php endforeach; ?>
 <?php if (!$data): ?><tr><td colspan="7" class="text-center text-muted">Belum ada data wawancara.</td></tr><?php endif; ?>
 </tbody></table>
 </div>
