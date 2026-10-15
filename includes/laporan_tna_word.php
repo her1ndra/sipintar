@@ -326,6 +326,114 @@ function laporanWordEnsureImageType(DOMDocument $contentTypes, string $extension
     $contentTypes->documentElement->appendChild($default);
 }
 
+function laporanWordAddPageNumberFooter(
+    DOMDocument $document,
+    ZipArchive $zip,
+    DOMDocument $relationships,
+    DOMDocument $contentTypes
+): void {
+    $relationshipsXpath = new DOMXPath($relationships);
+    $relationshipsXpath->registerNamespace('rel', 'http://schemas.openxmlformats.org/package/2006/relationships');
+    $nextId = 1;
+    foreach ($relationshipsXpath->query('/rel:Relationships/rel:Relationship/@Id') as $id) {
+        if (preg_match('/^rId(\d+)$/', $id->nodeValue, $match)) {
+            $nextId = max($nextId, (int) $match[1] + 1);
+        }
+    }
+    $relationshipId = 'rId' . $nextId;
+    $relationship = $relationships->createElementNS(
+        'http://schemas.openxmlformats.org/package/2006/relationships',
+        'Relationship'
+    );
+    $relationship->setAttribute('Id', $relationshipId);
+    $relationship->setAttribute('Type', LAPORAN_REL_NS . '/footer');
+    $relationship->setAttribute('Target', 'footer1.xml');
+    $relationships->documentElement->appendChild($relationship);
+
+    $footer = new DOMDocument('1.0', 'UTF-8');
+    $footer->formatOutput = false;
+    $root = $footer->createElementNS(LAPORAN_WORD_NS, 'w:ftr');
+    $root->setAttributeNS(
+        'http://www.w3.org/2000/xmlns/',
+        'xmlns:r',
+        LAPORAN_REL_NS
+    );
+    $footer->appendChild($root);
+    $paragraph = $footer->createElementNS(LAPORAN_WORD_NS, 'w:p');
+    $paragraphProperties = $footer->createElementNS(LAPORAN_WORD_NS, 'w:pPr');
+    $alignment = $footer->createElementNS(LAPORAN_WORD_NS, 'w:jc');
+    $alignment->setAttributeNS(LAPORAN_WORD_NS, 'w:val', 'center');
+    $paragraphProperties->appendChild($alignment);
+    $paragraph->appendChild($paragraphProperties);
+    $run = $footer->createElementNS(LAPORAN_WORD_NS, 'w:r');
+    $runProperties = $footer->createElementNS(LAPORAN_WORD_NS, 'w:rPr');
+    $font = $footer->createElementNS(LAPORAN_WORD_NS, 'w:rFonts');
+    $font->setAttributeNS(LAPORAN_WORD_NS, 'w:ascii', 'Century Gothic');
+    $font->setAttributeNS(LAPORAN_WORD_NS, 'w:hAnsi', 'Century Gothic');
+    $runProperties->appendChild($font);
+    $fontSize = $footer->createElementNS(LAPORAN_WORD_NS, 'w:sz');
+    $fontSize->setAttributeNS(LAPORAN_WORD_NS, 'w:val', '18');
+    $runProperties->appendChild($fontSize);
+    $run->appendChild($runProperties);
+
+    foreach ([
+        ['begin', null],
+        ['instruction', ' PAGE '],
+        ['separate', null],
+        ['result', '1'],
+        ['end', null],
+    ] as [$type, $value]) {
+        if ($type === 'instruction') {
+            $instruction = $footer->createElementNS(LAPORAN_WORD_NS, 'w:instrText');
+            $instruction->setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
+            $instruction->appendChild($footer->createTextNode($value));
+            $run->appendChild($instruction);
+        } elseif ($type === 'result') {
+            $text = $footer->createElementNS(LAPORAN_WORD_NS, 'w:t');
+            $text->appendChild($footer->createTextNode($value));
+            $run->appendChild($text);
+        } else {
+            $field = $footer->createElementNS(LAPORAN_WORD_NS, 'w:fldChar');
+            $field->setAttributeNS(LAPORAN_WORD_NS, 'w:fldCharType', $type);
+            $run->appendChild($field);
+        }
+    }
+    $paragraph->appendChild($run);
+    $root->appendChild($paragraph);
+    $footerXml = $footer->saveXML();
+    if ($footerXml === false || $zip->addFromString('word/footer1.xml', $footerXml) !== true) {
+        throw new RuntimeException('Footer nomor halaman laporan TNA gagal dibuat.');
+    }
+
+    $typesXpath = new DOMXPath($contentTypes);
+    $typesXpath->registerNamespace('ct', 'http://schemas.openxmlformats.org/package/2006/content-types');
+    if ($typesXpath->query('/ct:Types/ct:Override[@PartName="/word/footer1.xml"]')->length === 0) {
+        $override = $contentTypes->createElementNS(
+            'http://schemas.openxmlformats.org/package/2006/content-types',
+            'Override'
+        );
+        $override->setAttribute('PartName', '/word/footer1.xml');
+        $override->setAttribute('ContentType', 'application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml');
+        $contentTypes->documentElement->appendChild($override);
+    }
+
+    $documentXpath = new DOMXPath($document);
+    $documentXpath->registerNamespace('w', LAPORAN_WORD_NS);
+    $section = $documentXpath->query('//w:body/w:sectPr')->item(0);
+    if (!$section instanceof DOMElement) {
+        throw new RuntimeException('Pengaturan halaman dokumen TNA tidak ditemukan.');
+    }
+    $footerReference = $document->createElementNS(LAPORAN_WORD_NS, 'w:footerReference');
+    $footerReference->setAttributeNS(LAPORAN_WORD_NS, 'w:type', 'default');
+    $footerReference->setAttributeNS(LAPORAN_REL_NS, 'r:id', $relationshipId);
+    $pageSize = $documentXpath->query('./w:pgSz', $section)->item(0);
+    if ($pageSize) {
+        $section->insertBefore($footerReference, $pageSize);
+    } else {
+        $section->insertBefore($footerReference, $section->firstChild);
+    }
+}
+
 function laporanWordSetParagraphStyle(DOMElement $paragraph, string $styleId): void
 {
     $document = $paragraph->ownerDocument;
@@ -346,89 +454,20 @@ function laporanWordSetParagraphStyle(DOMElement $paragraph, string $styleId): v
     $xpath = new DOMXPath($document);
     $xpath->registerNamespace('w', LAPORAN_WORD_NS);
     $style = $xpath->query('./w:pStyle', $properties)->item(0);
+    $existingStyleId = $style instanceof DOMElement
+        ? $style->getAttributeNS(LAPORAN_WORD_NS, 'val')
+        : '';
     if (!$style instanceof DOMElement) {
         $style = $document->createElementNS(LAPORAN_WORD_NS, 'w:pStyle');
         $properties->insertBefore($style, $properties->firstChild);
     }
     $style->setAttributeNS(LAPORAN_WORD_NS, 'w:val', $styleId);
-    $numbering = $xpath->query('./w:numPr', $properties)->item(0);
-    if ($numbering) {
-        $properties->removeChild($numbering);
-    }
-}
-
-function laporanWordAddBookmark(DOMDocument $document, DOMElement $paragraph, string $name, int $bookmarkId): void
-{
-    laporanWordSetParagraphStyle($paragraph, 'Heading1');
-    $xpath = new DOMXPath($document);
-    $xpath->registerNamespace('w', LAPORAN_WORD_NS);
-    $properties = $xpath->query('./w:pPr', $paragraph)->item(0);
-    $start = $document->createElementNS(LAPORAN_WORD_NS, 'w:bookmarkStart');
-    $start->setAttributeNS(LAPORAN_WORD_NS, 'w:id', (string) $bookmarkId);
-    $start->setAttributeNS(LAPORAN_WORD_NS, 'w:name', $name);
-    $firstContent = $properties ? $properties->nextSibling : $paragraph->firstChild;
-    if ($firstContent) {
-        $paragraph->insertBefore($start, $firstContent);
-    } else {
-        $paragraph->appendChild($start);
-    }
-    $end = $document->createElementNS(LAPORAN_WORD_NS, 'w:bookmarkEnd');
-    $end->setAttributeNS(LAPORAN_WORD_NS, 'w:id', (string) $bookmarkId);
-    $paragraph->appendChild($end);
-}
-
-function laporanWordContentsEntry(DOMDocument $document, string $title, string $bookmarkName): DOMElement
-{
-    $paragraph = $document->createElementNS(LAPORAN_WORD_NS, 'w:p');
-    $properties = $document->createElementNS(LAPORAN_WORD_NS, 'w:pPr');
-    $spacing = $document->createElementNS(LAPORAN_WORD_NS, 'w:spacing');
-    $spacing->setAttributeNS(LAPORAN_WORD_NS, 'w:after', '100');
-    $properties->appendChild($spacing);
-    $tabs = $document->createElementNS(LAPORAN_WORD_NS, 'w:tabs');
-    $tab = $document->createElementNS(LAPORAN_WORD_NS, 'w:tab');
-    $tab->setAttributeNS(LAPORAN_WORD_NS, 'w:val', 'right');
-    $tab->setAttributeNS(LAPORAN_WORD_NS, 'w:leader', 'dot');
-    $tab->setAttributeNS(LAPORAN_WORD_NS, 'w:pos', '9000');
-    $tabs->appendChild($tab);
-    $properties->appendChild($tabs);
-    $paragraph->appendChild($properties);
-
-    $titleRun = $document->createElementNS(LAPORAN_WORD_NS, 'w:r');
-    $titleRun->appendChild($document->createElementNS(LAPORAN_WORD_NS, 'w:rPr'));
-    $text = $document->createElementNS(LAPORAN_WORD_NS, 'w:t');
-    $text->appendChild($document->createTextNode($title));
-    $titleRun->appendChild($text);
-    $paragraph->appendChild($titleRun);
-
-    $tabRun = $document->createElementNS(LAPORAN_WORD_NS, 'w:r');
-    $tabRun->appendChild($document->createElementNS(LAPORAN_WORD_NS, 'w:tab'));
-    $paragraph->appendChild($tabRun);
-
-    foreach ([
-        ['begin', null],
-        ['instruction', ' PAGEREF ' . $bookmarkName . ' \\h '],
-        ['separate', null],
-        ['result', '1'],
-        ['end', null],
-    ] as [$type, $value]) {
-        $run = $document->createElementNS(LAPORAN_WORD_NS, 'w:r');
-        if ($type === 'instruction') {
-            $instruction = $document->createElementNS(LAPORAN_WORD_NS, 'w:instrText');
-            $instruction->setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
-            $instruction->appendChild($document->createTextNode($value));
-            $run->appendChild($instruction);
-        } elseif ($type === 'result') {
-            $result = $document->createElementNS(LAPORAN_WORD_NS, 'w:t');
-            $result->appendChild($document->createTextNode($value));
-            $run->appendChild($result);
-        } else {
-            $field = $document->createElementNS(LAPORAN_WORD_NS, 'w:fldChar');
-            $field->setAttributeNS(LAPORAN_WORD_NS, 'w:fldCharType', $type);
-            $run->appendChild($field);
+    if ($existingStyleId !== $styleId) {
+        $numbering = $xpath->query('./w:numPr', $properties)->item(0);
+        if ($numbering) {
+            $properties->removeChild($numbering);
         }
-        $paragraph->appendChild($run);
     }
-    return $paragraph;
 }
 
 function laporanWordAddContents(DOMDocument $document, ZipArchive $zip): void
@@ -445,14 +484,8 @@ function laporanWordAddContents(DOMDocument $document, ZipArchive $zip): void
     ];
     $xpath = new DOMXPath($document);
     $xpath->registerNamespace('w', LAPORAN_WORD_NS);
-    $paragraphs = $xpath->query('//w:body/w:p');
-    $contentsTitle = null;
-    $bookmarks = [];
-    $bookmarkId = 1;
-    foreach ($xpath->query('//w:bookmarkStart/@w:id') as $id) {
-        $bookmarkId = max($bookmarkId, (int) $id->nodeValue + 1);
-    }
-    foreach ($paragraphs as $paragraph) {
+    $foundTitles = [];
+    foreach ($xpath->query('//w:body/w:p') as $paragraph) {
         $text = '';
         $textNodes = $xpath->query('.//w:t', $paragraph);
         foreach ($textNodes as $part) {
@@ -464,28 +497,30 @@ function laporanWordAddContents(DOMDocument $document, ZipArchive $zip): void
             $text = 'DAFTAR ISI';
         }
         if (in_array($text, $titles, true)) {
-            $bookmarkName = '_TnaContents' . count($bookmarks);
-            laporanWordAddBookmark($document, $paragraph, $bookmarkName, $bookmarkId++);
-            $bookmarks[] = [$text, $bookmarkName];
-        } elseif ($text === 'DAFTAR ISI') {
-            $contentsTitle = $paragraph;
+            laporanWordSetParagraphStyle($paragraph, 'Heading1');
+            $foundTitles[] = $text;
         }
     }
-    if (!$contentsTitle instanceof DOMElement) {
-        throw new RuntimeException('Judul daftar isi tidak ditemukan pada template TNA.');
-    }
-    $foundTitles = array_column($bookmarks, 0);
     foreach ($titles as $title) {
         if (!in_array($title, $foundTitles, true)) {
             throw new RuntimeException('Bagian "' . $title . '" tidak ditemukan untuk daftar isi TNA.');
         }
     }
-    $anchor = $contentsTitle;
-    foreach ($bookmarks as [$title, $bookmarkName]) {
-        $entry = laporanWordContentsEntry($document, $title, $bookmarkName);
-        $anchor->parentNode->insertBefore($entry, $anchor->nextSibling);
-        $anchor = $entry;
+    $tocInstruction = $xpath->query('//w:instrText[contains(., "TOC ")]')->item(0);
+    if (!$tocInstruction instanceof DOMElement) {
+        throw new RuntimeException('Field daftar isi otomatis tidak ditemukan pada template TNA.');
     }
+    $instructionRun = $tocInstruction->parentNode;
+    $fieldRun = $instructionRun ? $instructionRun->previousSibling : null;
+    while ($fieldRun && !($fieldRun instanceof DOMElement && $fieldRun->localName === 'r'
+        && $xpath->query('./w:fldChar[@w:fldCharType="begin"]', $fieldRun)->length > 0)) {
+        $fieldRun = $fieldRun->previousSibling;
+    }
+    if (!$fieldRun instanceof DOMElement) {
+        throw new RuntimeException('Penanda field daftar isi TNA tidak valid.');
+    }
+    $fieldBegin = $xpath->query('./w:fldChar[@w:fldCharType="begin"]', $fieldRun)->item(0);
+    $fieldBegin->setAttributeNS(LAPORAN_WORD_NS, 'w:dirty', 'true');
 
     $settingsXml = $zip->getFromName('word/settings.xml');
     $settings = new DOMDocument();
@@ -760,6 +795,7 @@ function laporanWordAddAppendices(
     }
 
     laporanWordAddContents($document, $zip);
+    laporanWordAddPageNumberFooter($document, $zip, $relationships, $contentTypes);
     if ($zip->addFromString('word/_rels/document.xml.rels', $relationships->saveXML()) !== true
         || $zip->addFromString('[Content_Types].xml', $contentTypes->saveXML()) !== true) {
         throw new RuntimeException('Lampiran dokumen TNA gagal disimpan.');
