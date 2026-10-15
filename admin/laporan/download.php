@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 require_once __DIR__ . '/data.php';
+require_once __DIR__ . '/../../includes/laporan_tna_word.php';
 
 [$mode, $year, $month, $start, $end] = laporanPeriode($_GET);
 $data = laporanAmbilData(Database::getConnection(), $start, $end);
@@ -159,7 +160,7 @@ function laporanTemplateRows(PDO $pdo, array $data, DateTimeImmutable $start, Da
     return [1 => $analisis, 2 => $wawancara, 3 => $kuesioner, 4 => $gap, 5 => $diklat];
 }
 
-function laporanWordTemplate(PDO $pdo, array $data, DateTimeImmutable $start, DateTimeImmutable $end): string
+function laporanWordTemplate(PDO $pdo, array $data, DateTimeImmutable $start, DateTimeImmutable $end, string $chairName): string
 {
     $template = __DIR__ . '/../../database/DOKUMEN TRAINING NEED ANALYSIS 2026.docx';
     if (!is_file($template)) {
@@ -186,6 +187,8 @@ function laporanWordTemplate(PDO $pdo, array $data, DateTimeImmutable $start, Da
             wordFillTable($document, $tables->item($tableNumber - 1), $rows);
         }
     }
+    $signatureParagraph = null;
+    $dateParagraph = null;
     foreach ($xpath->query('//w:body/w:p') as $paragraph) {
         $text = '';
         foreach ($xpath->query('.//w:t', $paragraph) as $part) {
@@ -193,23 +196,86 @@ function laporanWordTemplate(PDO $pdo, array $data, DateTimeImmutable $start, Da
         }
         if (preg_match('/^Yogyakarta,\s*\d+\s+\w+\s*\d{4}$/u', trim($text))) {
             wordSetParagraph($document, $paragraph, laporanTanggalDownload());
+            $dateParagraph = $paragraph;
         } elseif (trim($text) === 'Ketua') {
-            wordSetParagraph($document, $paragraph, '');
+            $signatureParagraph = $paragraph;
         }
     }
+    if (!$signatureParagraph instanceof DOMElement || !$dateParagraph instanceof DOMElement) {
+        throw new RuntimeException('Bagian tanggal dan nama Ketua tidak ditemukan pada template TNA.');
+    }
+    wordSetParagraph($document, $signatureParagraph, $chairName);
+    $blankParagraph = $dateParagraph->cloneNode(true);
+    wordSetParagraph($document, $blankParagraph, '');
+    $signatureParagraph->parentNode->insertBefore($blankParagraph, $signatureParagraph);
+    $extraBlankParagraph = $dateParagraph->cloneNode(true);
+    wordSetParagraph($document, $extraBlankParagraph, '');
+    $signatureParagraph->parentNode->insertBefore($extraBlankParagraph, $signatureParagraph);
+    $body = $signatureParagraph->parentNode;
+    $nextParagraph = $signatureParagraph->nextSibling;
+    while ($nextParagraph instanceof DOMElement && $nextParagraph->localName === 'p') {
+        $nextText = '';
+        foreach ($xpath->query('.//w:t', $nextParagraph) as $part) {
+            $nextText .= $part->nodeValue;
+        }
+        if (trim($nextText) !== '') {
+            break;
+        }
+        $followingParagraph = $nextParagraph->nextSibling;
+        $body->removeChild($nextParagraph);
+        $nextParagraph = $followingParagraph;
+    }
     $output = tempnam(sys_get_temp_dir(), 'tna-word-');
+    if ($output === false) {
+        throw new RuntimeException('File sementara laporan TNA tidak dapat dibuat.');
+    }
     $zip->close();
-    copy($template, $output);
+    if (!copy($template, $output)) {
+        unlink($output);
+        throw new RuntimeException('Template laporan TNA gagal disalin.');
+    }
     $result = new ZipArchive();
-    $result->open($output);
-    $result->addFromString('word/document.xml', $document->saveXML());
-    $result->close();
-    $content = file_get_contents($output);
-    unlink($output);
+    if ($result->open($output) !== true) {
+        unlink($output);
+        throw new RuntimeException('Dokumen laporan TNA hasil salinan tidak dapat dibuka.');
+    }
+    $resultClosed = false;
+    try {
+        laporanWordAddAppendices($document, $result, $pdo, $start, $end, $chairName);
+        $documentXml = $document->saveXML();
+        if ($documentXml === false || $result->addFromString('word/document.xml', $documentXml) !== true) {
+            throw new RuntimeException('Isi dokumen laporan TNA gagal disimpan.');
+        }
+        if (!$result->close()) {
+            throw new RuntimeException('Dokumen laporan TNA gagal diselesaikan.');
+        }
+        $resultClosed = true;
+        $content = file_get_contents($output);
+    } finally {
+        if (!$resultClosed) {
+            $result->close();
+        }
+        if (is_file($output)) {
+            unlink($output);
+        }
+    }
+    if ($content === false) {
+        throw new RuntimeException('Dokumen laporan TNA gagal dibaca setelah disusun.');
+    }
     return $content;
 }
 
-$word = laporanWordTemplate(Database::getConnection(), $data, $start, $end);
+$pdo = Database::getConnection();
+$chairStatement = $pdo->query(
+    "SELECT p.nama_lengkap
+     FROM pegawai p
+     JOIN jabatan j ON j.id_jabatan = p.id_jabatan
+     WHERE j.nama_jabatan = 'Ketua' AND p.status_aktif = 'Aktif'
+     ORDER BY p.id_pegawai DESC
+     LIMIT 1"
+);
+$chairName = trim((string) $chairStatement->fetchColumn()) ?: 'Syafrizal';
+$word = laporanWordTemplate($pdo, $data, $start, $end, $chairName);
 header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
 header('Content-Disposition: attachment; filename="laporan-tna-' . $safePeriod . '.docx"');
 header('Content-Length: ' . strlen($word));
