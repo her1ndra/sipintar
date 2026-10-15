@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../config/config.php';
 requireRole('Admin');
 
 $idKuesioner = (int) ($_GET['id'] ?? 0);
-$format = $_GET['format'] ?? 'pdf';
+$format = strtolower((string) ($_GET['format'] ?? 'pdf'));
 $pdo = Database::getConnection();
 $stmt = $pdo->prepare(
     'SELECT k.judul_kuesioner, k.tahun_periode, k.kompetensi,
@@ -54,19 +54,12 @@ if ($format === 'pdf') {
         'nama_jabatan' => $rows[0]['jabatan_penilai'],
     ]);
 }
-$filename = 'kuesioner-' . $idKuesioner . '.csv';
-header('Content-Type: text/csv; charset=UTF-8');
-header('Content-Disposition: attachment; filename="' . $filename . '"');
-echo "\xEF\xBB\xBF";
-$output = fopen('php://output', 'wb');
-fputcsv($output, ['Judul kuesioner', $rows[0]['judul_kuesioner']], ';');
-fputcsv($output, ['Nama pegawai', $rows[0]['nama_pegawai']], ';');
-fputcsv($output, ['Jabatan', $rows[0]['nama_jabatan']], ';');
-fputcsv($output, ['Kompetensi jabatan', $rows[0]['kompetensi']], ';');
-fputcsv($output, []);
-fputcsv($output, ['Pertanyaan', 'Jawaban'], ';');
-foreach ($rows as $row) {
-    fputcsv($output, [$row['teks_pertanyaan'], ''], ';');
+if ($format === 'word') {
+    require_once __DIR__ . '/../../includes/kuesioner_word.php';
+    downloadKuesionerWord($idKuesioner, $rows, [
+        'nama' => $rows[0]['nama_penilai'],
+        'nama_jabatan' => $rows[0]['jabatan_penilai'],
+    ]);
 }
-fclose($output);
-exit;
+http_response_code(400);
+exit('Format unduhan kuesioner tidak valid.');

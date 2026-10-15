@@ -21,7 +21,7 @@ if (!is_string($filterType) || !in_array($filterType, ['', 'hakim', 'jenis'], tr
     exit('Filter laporan tidak valid.');
 }
 
-$tanggalMulai = sprintf('%04d-01-01', $periode === 'tahun' ? $tahun - 4 : $tahun);
+$tanggalMulai = sprintf('%04d-01-01', $tahun);
 $tanggalBatas = sprintf('%04d-01-01', $tahun + 1);
 $sql = "SELECT p.nama_lengkap, kh.jenis_kegiatan, kh.nama_kegiatan, kh.penyelenggara,
                kh.tanggal_mulai, kh.tanggal_selesai, kh.lokasi
