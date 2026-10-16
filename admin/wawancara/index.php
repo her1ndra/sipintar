@@ -85,7 +85,71 @@ if ($interviewIds) {
         $evidenceByInterview[(int) $evidence['id_wawancara']][] = $evidence;
     }
 }
-$renderEvidence = static function (int $idWawancara, ?string $kompetensi, ?string $legacyFiles, ?string $photoFiles, string $modalId) use ($evidenceByInterview): string {
+$pemeriksaanByFile = [];
+$pemeriksaanJawaban = [];
+if ($interviewIds) {
+    $reviewStmt = $pdo->prepare(
+        "SELECT r.id_wawancara, r.file_bukti, COALESCE(p.nama_lengkap, u.NIP) AS nama_penilai, r.diperiksa_at
+         FROM pemeriksaan_bukti_wawancara r
+         JOIN users u ON u.id_user = r.id_user_penilai
+         LEFT JOIN pegawai p ON p.id_pegawai = u.id_pegawai
+         WHERE r.id_wawancara IN ($placeholders)
+         ORDER BY r.diperiksa_at DESC"
+    );
+    $reviewStmt->execute($interviewIds);
+    foreach ($reviewStmt->fetchAll() as $review) {
+        $pemeriksaanByFile[(int) $review['id_wawancara']][(string) $review['file_bukti']][] = $review;
+    }
+    $answerReviewStmt = $pdo->prepare(
+        "SELECT h.id_wawancara, COALESCE(p.nama_lengkap, u.NIP) AS nama_penilai,
+                MAX(r.diperiksa_at) AS diperiksa_at
+         FROM pemeriksaan_jawaban_wawancara r
+         JOIN hasil_wawancara h ON h.id_hasil = r.id_hasil
+         JOIN users u ON u.id_user = r.id_user_penilai
+         LEFT JOIN pegawai p ON p.id_pegawai = u.id_pegawai
+         WHERE h.id_wawancara IN ($placeholders)
+           AND TRIM(h.jawaban) <> ''
+           AND r.jawaban_hash = SHA2(h.jawaban, 256)
+         GROUP BY h.id_wawancara, r.id_user_penilai, nama_penilai
+         HAVING COUNT(DISTINCT h.id_hasil) = (
+             SELECT COUNT(*)
+             FROM hasil_wawancara current_h
+             WHERE current_h.id_wawancara = h.id_wawancara
+               AND current_h.jawaban IS NOT NULL
+               AND TRIM(current_h.jawaban) <> ''
+         )
+         ORDER BY diperiksa_at DESC"
+    );
+    $answerReviewStmt->execute($interviewIds);
+    foreach ($answerReviewStmt->fetchAll() as $review) {
+        $pemeriksaanJawaban[(int) $review['id_wawancara']][] = $review;
+    }
+}
+$renderReviewStatus = static function (int $idWawancara, string $file) use ($pemeriksaanByFile): string {
+    $reviews = $pemeriksaanByFile[$idWawancara][$file] ?? [];
+    if (!$reviews) {
+        return '';
+    }
+    $details = array_map(static function ($review) {
+        $tanggal = date('d-m-Y H:i', strtotime($review['diperiksa_at']));
+        return $review['nama_penilai'] . ' (' . $tanggal . ')';
+    }, $reviews);
+    $info = htmlspecialchars('Sudah diperiksa oleh: ' . implode(', ', $details), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    return '<div class="mt-1"><button type="button" class="btn btn-link text-success p-0 review-check" data-toggle="popover" data-trigger="focus" data-placement="top" title="Status pemeriksaan" data-content="' . $info . '" aria-label="Lihat informasi pemeriksaan"><i class="fas fa-check-circle" aria-hidden="true"></i><span class="sr-only">Sudah diperiksa</span></button></div>';
+};
+$renderAnswerReviewStatus = static function (int $idWawancara) use ($pemeriksaanJawaban): string {
+    $reviews = $pemeriksaanJawaban[$idWawancara] ?? [];
+    if (!$reviews) {
+        return '';
+    }
+    $details = array_map(static function ($review) {
+        $tanggal = date('d-m-Y H:i', strtotime($review['diperiksa_at']));
+        return $review['nama_penilai'] . ' (' . $tanggal . ')';
+    }, $reviews);
+    $info = htmlspecialchars('Sudah diperiksa oleh: ' . implode(', ', $details), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    return '<button type="button" class="btn btn-link text-success p-0 review-check" data-toggle="popover" data-trigger="focus" data-placement="top" title="Status pemeriksaan" data-content="' . $info . '" aria-label="Lihat informasi pemeriksaan"><i class="fas fa-check-circle" aria-hidden="true"></i><span class="sr-only">Sudah diperiksa</span></button>';
+};
+$renderEvidence = static function (int $idWawancara, ?string $kompetensi, ?string $legacyFiles, ?string $photoFiles, string $modalId) use ($evidenceByInterview, $renderReviewStatus, $renderAnswerReviewStatus): string {
     $items = [];
     $textAnswers = [];
     $index = 0;
@@ -96,24 +160,29 @@ $renderEvidence = static function (int $idWawancara, ?string $kompetensi, ?strin
         $index++;
         if (trim((string) $evidence['jawaban']) !== '') {
             $textAnswers[] = '<li class="mb-2" value="' . (int) $evidence['nomor_pertanyaan'] . '">'
-                . nl2br(htmlspecialchars($evidence['jawaban'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
+                . '<strong>' . htmlspecialchars($evidence['isi_penilaian'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong><br>'
+                . 'Jawaban: ' . nl2br(htmlspecialchars($evidence['jawaban'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
                 . '</li>';
         }
         if ($evidence['file_bukti']) {
             $items[] = '<div class="mb-2"><strong>File bukti ' . $index . ':</strong> '
-                . '<a class="btn btn-link btn-sm p-0" target="_blank" rel="noopener" href="' . htmlspecialchars(fileUrl($evidence['file_bukti'])) . '">Lihat file</a></div>';
+                . '<a class="btn btn-link btn-sm p-0" target="_blank" rel="noopener" href="' . htmlspecialchars(fileUrl($evidence['file_bukti'])) . '">Lihat file</a>'
+                . $renderReviewStatus($idWawancara, (string) $evidence['file_bukti']) . '</div>';
         }
     }
     foreach (array_filter(explode('||', (string) $legacyFiles)) as $file) {
         $items[] = '<div class="mb-2"><a class="btn btn-link btn-sm p-0" target="_blank" rel="noopener" href="'
-            . htmlspecialchars(fileUrl($file)) . '">Lihat file jawaban</a></div>';
+            . htmlspecialchars(fileUrl($file)) . '">Lihat file jawaban</a>'
+            . $renderReviewStatus($idWawancara, $file) . '</div>';
     }
     foreach (array_filter(explode('||', (string) $photoFiles)) as $photo) {
         $items[] = '<div class="mb-2"><a class="btn btn-link btn-sm p-0" target="_blank" rel="noopener" href="'
             . htmlspecialchars(fileUrl($photo)) . '">Lihat foto dokumentasi</a></div>';
     }
     if ($textAnswers) {
+        $statusId = 'status-jawaban-' . $modalId;
         $items[] = '<button type="button" class="btn btn-link btn-sm p-0" data-toggle="modal" data-target="#' . $modalId . '">Lihat jawaban</button>'
+            . '<div id="' . $statusId . '" class="small text-success mt-1 d-block">' . $renderAnswerReviewStatus($idWawancara) . '</div>'
             . '<div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content">'
             . '<div class="modal-header"><h5 class="modal-title">Jawaban wawancara</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div>'
             . '<div class="modal-body"><ol class="mb-0 pl-3" style="text-align: justify;">' . implode('', $textAnswers) . '</ol></div>'
@@ -154,17 +223,17 @@ $renderInfoModal = static function (array $row, string $modalId): string {
         . '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
 };
 $tableStyle = '<style>
-.wawancara-table { table-layout: fixed; min-width: 1250px; }
+.wawancara-table { table-layout: fixed; width: 100%; min-width: 1000px; }
 .wawancara-table thead th { height: 64px; text-align: center; vertical-align: middle; }
 .wawancara-table tbody td { vertical-align: top; word-wrap: break-word; }
-.wawancara-table .col-no { width: 50px; }
-.wawancara-table .col-nama { width: 180px; }
-.wawancara-table .col-kompetensi { width: 140px; }
-.wawancara-table .col-pertanyaan { width: 430px; }
-.wawancara-table .col-nilai { width: 100px; }
-.wawancara-table .col-bukti { width: 150px; }
-.wawancara-table .col-status { width: 130px; }
-.wawancara-table .col-aksi { width: 160px; }
+.wawancara-table .col-no { width: 4.1%; }
+.wawancara-table .col-nama { width: 14.8%; }
+.wawancara-table .col-kompetensi { width: 11.6%; }
+.wawancara-table .col-pertanyaan { width: 35.5%; }
+.wawancara-table .col-nilai { width: 8%; }
+.wawancara-table .col-bukti { width: 12.5%; }
+.wawancara-table .col-status { width: 10.6%; }
+.wawancara-table .col-aksi { width: 10.9%; }
 .wawancara-table .action-buttons { display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: .25rem; white-space: nowrap; }
 .wawancara-table .action-buttons form { display: flex; margin: 0; }
 .wawancara-table .action-status { display: block; margin-bottom: .4rem; }
@@ -173,6 +242,7 @@ $tableStyle = '<style>
 .wawancara-table .question-preview { max-height: 8rem; overflow: hidden; }
 .wawancara-table .score-cell { font-size: 1.2rem; line-height: 1.6; }
 .wawancara-table .evidence-cell, .wawancara-table .status-cell { text-align: center; }
+.wawancara-table .review-check { font-size: 1.35rem; line-height: 1; vertical-align: middle; }
 </style>';
 $pageTitle = 'Wawancara';
 require_once __DIR__ . '/../../includes/header.php';
@@ -181,8 +251,13 @@ require_once __DIR__ . '/../../includes/header.php';
 <a href="tambah.php" class="btn btn-primary mb-3">+ Jadwalkan wawancara</a>
 <div class="table-responsive">
 <table class="table table-bordered table-hover bg-white align-middle wawancara-table"><thead class="table-light"><tr><th class="text-center col-no">No</th><th class="col-nama">Nama Pegawai/Jabatan</th><th class="col-kompetensi">Kompetensi Jabatan</th><th class="col-pertanyaan">Daftar pertanyaan</th><th class="col-bukti">Bukti kompetensi</th><th class="col-status">Status</th><th class="text-center col-aksi">Aksi</th></tr></thead><tbody>
-<?php foreach ($data as $index => $row): $sudahDinilai = (int) $row['jumlah_pertanyaan'] > 0 && (int) $row['jumlah_dinilai'] === (int) $row['jumlah_pertanyaan']; ?><tr><td class="text-center"><?= $index + 1 ?></td><td><?= htmlspecialchars($row['nama_lengkap']) ?><br>(<?= htmlspecialchars($row['nama_jabatan']) ?>)</td><td><?= htmlspecialchars($row['kompetensi'] ?: '-') ?></td><td class="question-cell"><?= $renderList($row['daftar_pertanyaan'], 'modal-pertanyaan-' . (int) $row['id_wawancara']) ?></td><td class="evidence-cell"><?= $renderEvidence((int) $row['id_wawancara'], $row['kompetensi'], $row['bukti_banyak'], $row['foto_banyak'], 'modal-jawaban-' . (int) $row['id_wawancara'] . '-' . substr(sha1((string) $row['kompetensi']), 0, 10)) ?></td><td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?></td><td class="text-center"><span class="badge badge-<?= $sudahDinilai ? 'success' : 'secondary' ?> action-status"><?= $sudahDinilai ? 'Sudah dinilai' : 'Belum dinilai' ?></span><div class="action-buttons"><a href="download.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-outline-secondary table-action-btn" title="Download data wawancara Word" aria-label="Download data wawancara Word"><i class="fas fa-download" aria-hidden="true"></i></a><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus wawancara beserta hasil dan bukti terkait?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus wawancara" aria-label="Hapus wawancara"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form></div></td></tr><?php endforeach; ?>
+<?php foreach ($data as $index => $row): ?><tr><td class="text-center"><?= $index + 1 ?></td><td><?= htmlspecialchars($row['nama_lengkap']) ?><br>(<?= htmlspecialchars($row['nama_jabatan']) ?>)</td><td><?= htmlspecialchars($row['kompetensi'] ?: '-') ?></td><td class="question-cell"><?= $renderList($row['daftar_pertanyaan'], 'modal-pertanyaan-' . (int) $row['id_wawancara']) ?></td><td class="evidence-cell"><?= $renderEvidence((int) $row['id_wawancara'], $row['kompetensi'], $row['bukti_banyak'], $row['foto_banyak'], 'modal-jawaban-' . (int) $row['id_wawancara'] . '-' . substr(sha1((string) $row['kompetensi']), 0, 10)) ?></td><td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?></td><td class="text-center"><div class="action-buttons"><a href="download.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-outline-secondary table-action-btn" title="Download data wawancara Word" aria-label="Download data wawancara Word"><i class="fas fa-download" aria-hidden="true"></i></a><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus wawancara beserta hasil dan bukti terkait?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus wawancara" aria-label="Hapus wawancara"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form></div></td></tr><?php endforeach; ?>
 <?php if (!$data): ?><tr><td colspan="7" class="text-center text-muted">Belum ada data wawancara.</td></tr><?php endif; ?>
 </tbody></table>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('[data-toggle="popover"]').popover({ trigger: 'focus' });
+});
+</script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

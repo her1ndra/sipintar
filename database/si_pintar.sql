@@ -178,7 +178,8 @@ CREATE TABLE `hasil_kuesioner` (
   `status_kompetensi` enum('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `daftar_nilai` text DEFAULT NULL
+  `daftar_nilai` text DEFAULT NULL,
+  `daftar_jawaban` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

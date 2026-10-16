@@ -28,7 +28,8 @@ $stmt = $pdo->prepare(
             ), '-') AS nama_penilai,
             GROUP_CONCAT(CONCAT(q.nomor_urut, '. ', q.teks_pertanyaan)
                 ORDER BY q.nomor_urut SEPARATOR '<br>') AS daftar_pertanyaan,
-            hk.file_bukti, hk.daftar_nilai, hk.status_kompetensi,
+            GROUP_CONCAT(q.id_pertanyaan ORDER BY q.nomor_urut SEPARATOR ',') AS daftar_id_pertanyaan,
+            hk.file_bukti, hk.daftar_nilai, hk.daftar_jawaban, hk.status_kompetensi,
             dk.dokumentasi_banyak
      FROM kuesioner k
      JOIN pertanyaan_kuesioner q ON q.id_kuesioner = k.id_kuesioner
@@ -49,11 +50,57 @@ $stmt = $pdo->prepare(
         OR k.id_jabatan_dinilai IN ($jabatanPlaceholders)
      GROUP BY k.id_kuesioner, w.id_wawancara, w.tanggal_wawancara, p.id_jabatan, p.nama_lengkap, p_target.nama_lengkap,
               j.nama_jabatan, j_target.nama_jabatan, k.kompetensi,
-              hk.file_bukti, hk.daftar_nilai, hk.status_kompetensi, dk.dokumentasi_banyak
+              hk.file_bukti, hk.daftar_nilai, hk.daftar_jawaban, hk.status_kompetensi,
+              dk.dokumentasi_banyak
      ORDER BY k.id_kuesioner ASC, w.id_wawancara DESC"
 );
 $stmt->execute(array_merge($jabatanIds, $jabatanIds, $jabatanIds));
 $data = $stmt->fetchAll();
+$interviewIds = array_values(array_unique(array_filter(array_map(
+    static function ($row) { return (int) $row['id_wawancara']; },
+    $data
+))));
+$proofReviews = [];
+$answerReviews = [];
+if ($interviewIds) {
+    $placeholders = implode(',', array_fill(0, count($interviewIds), '?'));
+    $reviewStmt = $pdo->prepare(
+        "SELECT r.id_wawancara, r.file_bukti, COALESCE(p.nama_lengkap, u.NIP) AS nama_penilai, r.diperiksa_at
+         FROM pemeriksaan_bukti_kuesioner r
+         JOIN users u ON u.id_user = r.id_user_penilai
+         LEFT JOIN pegawai p ON p.id_pegawai = u.id_pegawai
+         WHERE r.id_wawancara IN ($placeholders)
+         ORDER BY r.diperiksa_at DESC"
+    );
+    $reviewStmt->execute($interviewIds);
+    foreach ($reviewStmt->fetchAll() as $review) {
+        $proofReviews[(int) $review['id_wawancara']][(string) $review['file_bukti']][] = $review;
+    }
+    $answerReviewStmt = $pdo->prepare(
+        "SELECT h.id_wawancara, COALESCE(p.nama_lengkap, u.NIP) AS nama_penilai, r.diperiksa_at
+         FROM pemeriksaan_jawaban_kuesioner r
+         JOIN hasil_kuesioner h ON h.id_hasil = r.id_hasil
+         JOIN users u ON u.id_user = r.id_user_penilai
+         LEFT JOIN pegawai p ON p.id_pegawai = u.id_pegawai
+         WHERE h.id_wawancara IN ($placeholders)
+           AND r.jawaban_hash = SHA2(CONCAT(COALESCE(h.daftar_nilai, ''), '|', COALESCE(h.daftar_jawaban, ''), '|', COALESCE(h.file_bukti, '')), 256)
+         ORDER BY r.diperiksa_at DESC"
+    );
+    $answerReviewStmt->execute($interviewIds);
+    foreach ($answerReviewStmt->fetchAll() as $review) {
+        $answerReviews[(int) $review['id_wawancara']][] = $review;
+    }
+}
+$renderReviewIcon = static function (array $reviews): string {
+    if (!$reviews) {
+        return '';
+    }
+    $details = array_map(static function ($review) {
+        return $review['nama_penilai'] . ' (' . date('d-m-Y H:i', strtotime($review['diperiksa_at'])) . ')';
+    }, $reviews);
+    $info = htmlspecialchars('Sudah diperiksa oleh: ' . implode(', ', $details), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    return '<button type="button" class="btn btn-link text-success p-0 ml-1 review-check" data-toggle="popover" data-trigger="focus" data-placement="top" title="Status pemeriksaan" data-content="' . $info . '" aria-label="Lihat informasi pemeriksaan"><i class="fas fa-check-circle" aria-hidden="true"></i><span class="sr-only">Sudah diperiksa</span></button>';
+};
 $renderQuestions = static function (?string $value, string $modalId): string {
     $items = $value ? explode('<br>', $value) : [];
     if (!$items) return '-';
@@ -62,31 +109,52 @@ $renderQuestions = static function (?string $value, string $modalId): string {
     if (count($items) <= 3) return $html;
     return $html . '<button type="button" class="btn btn-link btn-sm p-0 mt-2 question-more" data-toggle="modal" data-target="#' . $modalId . '">Lihat selengkapnya</button><div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Daftar pertanyaan lengkap</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div><div class="modal-body">' . implode('<br>', array_map('htmlspecialchars', $items)) . '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
 };
-$renderAnswerModal = static function (array $row, string $modalId): string {
+$renderAnswerModal = static function (array $row, string $modalId) use ($proofReviews, $answerReviews, $renderReviewIcon): string {
     $questions = $row['daftar_pertanyaan'] ? explode('<br>', $row['daftar_pertanyaan']) : [];
-    $scores = $row['daftar_nilai'] ? json_decode($row['daftar_nilai'], true) : [];
-    if (!is_array($scores)) {
-        $scores = [];
+    $savedAnswers = $row['daftar_jawaban'] ? json_decode($row['daftar_jawaban'], true) : [];
+    if (!is_array($savedAnswers)) {
+        $savedAnswers = [];
     }
+    $questionIds = $row['daftar_id_pertanyaan'] ? explode(',', $row['daftar_id_pertanyaan']) : [];
     $answers = [];
     foreach ($questions as $index => $question) {
-        $score = isset($scores[$index]) ? (int) $scores[$index] : '-';
-        $answers[] = '<div class="mb-3"><strong>' . htmlspecialchars($question, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-            . '</strong><br>Nilai: ' . htmlspecialchars((string) $score, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</div>';
+        $questionId = $questionIds[$index] ?? '';
+        $typedAnswer = $savedAnswers[(string) $questionId] ?? '';
+        $hasAnswer = is_string($typedAnswer) && trim($typedAnswer) !== '';
+        if (!$hasAnswer) {
+            continue;
+        }
+        $questionText = preg_replace('/^\d+\.\s*/', '', $question);
+        $answers[] = '<li value="' . ($index + 1) . '" class="mb-3"><strong>'
+            . htmlspecialchars($questionText, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+            . '</strong><br>Jawaban: '
+            . nl2br(htmlspecialchars($typedAnswer, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</li>';
     }
+    $evidence = '';
     if ($row['file_bukti']) {
-        $answers[] = '<div><a target="_blank" rel="noopener" href="' . htmlspecialchars(fileUrl($row['file_bukti'])) . '">Lihat file bukti kompetensi</a></div>';
+        $reviews = $proofReviews[(int) $row['id_wawancara']][(string) $row['file_bukti']] ?? [];
+        $fileUrl = htmlspecialchars(fileUrl($row['file_bukti']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $extension = strtolower(pathinfo($row['file_bukti'], PATHINFO_EXTENSION));
+        $evidence = '<div class="mt-1"><a target="_blank" rel="noopener" href="' . $fileUrl . '">Lihat file jawaban</a>'
+            . '<br> ' . $renderReviewIcon($reviews) . '</div>';
     }
-    return '<button type="button" class="btn btn-link btn-sm p-0" data-toggle="modal" data-target="#' . $modalId . '">Lihat jawaban</button>'
-        . '<div class="modal fade" id="' . $modalId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content">'
-        . '<div class="modal-header"><h5 class="modal-title">Jawaban kuesioner</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div>'
-        . '<div class="modal-body">' . ($answers ? implode('', $answers) : '-') . '</div>'
-        . '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
+    $answerModal = '';
+    if ($answers) {
+        $statusId = 'status-jawaban-' . $modalId;
+        $answerStatus = $renderReviewIcon($answerReviews[(int) $row['id_wawancara']] ?? []);
+        $answerModal = '<button type="button" class="btn btn-link btn-sm p-0" data-toggle="modal" data-target="#' . $modalId . '">Lihat jawaban</button>'
+            . '<div id="' . $statusId . '" class="mt-1 d-block">' . $answerStatus . '</div>'
+            . '<div class="modal fade answer-review-modal" id="' . $modalId . '" data-wawancara-id="' . (int) $row['id_wawancara'] . '" data-status-id="' . $statusId . '" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document"><div class="modal-content">'
+            . '<div class="modal-header"><h5 class="modal-title">Jawaban kuesioner</h5><button type="button" class="close" data-dismiss="modal" aria-label="Tutup"><span aria-hidden="true">&times;</span></button></div>'
+            . '<div class="modal-body"><ol class="mb-0 pl-3" style="text-align: justify;">' . implode('', $answers) . '</ol></div>'
+            . '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
+    }
+    return $answerModal . $evidence;
 };
 $renderDocumentationModal = static function (?string $files, string $modalId): string {
     $items = array_values(array_filter(explode('||', (string) $files)));
     if (!$items) {
-        return '-';
+        return '';
     }
     $links = [];
     foreach ($items as $index => $file) {
@@ -104,7 +172,7 @@ $renderInfoModal = static function (array $row, string $modalId): string {
     $scores = $row['daftar_nilai'] ? json_decode($row['daftar_nilai'], true) : [];
     $nilai = is_array($scores) && $scores
         ? implode('<br>', array_map(static function ($index, $score) {
-            return ($index + 1) . '. ' . (int) $score;
+            return ($index + 1) . '. ' . ($score === null || $score === '' ? '-' : (int) $score);
         }, array_keys(array_values($scores)), array_values($scores)))
         : '-';
     return '<button type="button" class="btn btn-link btn-sm p-0" data-toggle="modal" data-target="#' . $modalId . '">Lihat informasi</button>'
@@ -117,15 +185,16 @@ $renderInfoModal = static function (array $row, string $modalId): string {
         . '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button></div></div></div></div>';
 };
 $tableStyle = '<style>
-.kuesioner-table { table-layout: fixed; min-width: 1250px; }
+.kuesioner-table { table-layout: fixed; width: 100%; min-width: 1000px; }
 .kuesioner-table thead th { height: 64px; text-align: center; vertical-align: middle; }
 .kuesioner-table tbody td { vertical-align: top; word-wrap: break-word; }
-.kuesioner-table .col-no { width: 50px; } .kuesioner-table .col-nama { width: 140px; } .kuesioner-table .col-kompetensi { width: 140px; } .kuesioner-table .col-pertanyaan { width: 430px; } .kuesioner-table .col-bukti { width: 180px; } .kuesioner-table .col-status { width: 130px; } .kuesioner-table .col-aksi { width: 110px; }
+.kuesioner-table .col-no { width: 4.1%; } .kuesioner-table .col-nama { width: 14.8%; } .kuesioner-table .col-kompetensi { width: 11.6%; } .kuesioner-table .col-pertanyaan { width: 35.5%; } .kuesioner-table .col-bukti { width: 12.5%; } .kuesioner-table .col-status { width: 10.6%; } .kuesioner-table .col-aksi { width: 10.9%; }
 .kuesioner-table .question-cell { text-align: justify; font-size: 1.1rem; line-height: 1.6; }
 .kuesioner-table .question-preview { max-height: 8rem; overflow: hidden; font-size: .95rem; }
 .kuesioner-table .modal-body { font-size: .95rem; line-height: 1.6; }
 .kuesioner-table .score-modal-list { font-size: 1rem; line-height: 1.6; }
 .kuesioner-table .evidence-cell, .kuesioner-table .status-cell, .kuesioner-table .action-cell { text-align: center; }
+.kuesioner-table .review-check { font-size: 1.35rem; line-height: 1; vertical-align: middle; }
 </style>';
 $pageTitle = 'Kuesioner';
 require_once __DIR__ . '/../../includes/header.php';
@@ -137,15 +206,28 @@ require_once __DIR__ . '/../../includes/header.php';
 <tbody>
 <?php foreach ($data as $row): ?>
 <tr>
+  <?php
+  $answerContent = $row['id_wawancara']
+      ? $renderAnswerModal($row, 'modal-jawaban-' . (int) $row['id_wawancara'])
+      : '';
+  $documentationContent = $row['id_wawancara']
+      ? $renderDocumentationModal($row['dokumentasi_banyak'], 'modal-dokumentasi-' . (int) $row['id_wawancara'])
+      : '';
+  ?>
   <td class="text-center"><?= (int) $row['id_kuesioner'] ?></td>
   <td><?= htmlspecialchars($row['nama_lengkap'] ? $row['nama_lengkap'] . ($row['nama_jabatan'] ? ' (' . $row['nama_jabatan'] . ')' : '') : 'Sesi belum dibuat') ?></td>
   <td><?= htmlspecialchars($row['kompetensi']) ?></td>
   <td class="question-cell"><?= $renderQuestions($row['daftar_pertanyaan'], 'modal-kuesioner-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
-  <td class="evidence-cell">
-    <?= $row['id_wawancara'] ? $renderAnswerModal($row, 'modal-jawaban-' . (int) $row['id_wawancara']) : '-' ?>
-    <?php if ($row['id_wawancara']): ?><br><?= $renderDocumentationModal($row['dokumentasi_banyak'], 'modal-dokumentasi-' . (int) $row['id_wawancara']) ?><?php endif; ?>
-  </td>
-  <td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><?php if ($row['id_wawancara']): ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?php endif; ?></td>
+  <td class="evidence-cell"><?= $answerContent || $documentationContent
+      ? $answerContent . ($answerContent && $documentationContent ? '<br>' : '') . $documentationContent
+      : '-' ?></td>
+  <?php
+  $savedScores = $row['daftar_nilai'] ? json_decode($row['daftar_nilai'], true) : [];
+  $hasScore = is_array($savedScores) && count(array_filter($savedScores, static function ($score) {
+      return $score !== null && $score !== '';
+  })) > 0;
+  ?>
+  <td class="status-cell"><?= $hasScore ? htmlspecialchars($row['status_kompetensi'] ?: '-') : '-' ?><?php if ($row['id_wawancara']): ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?php endif; ?></td>
         <td class="action-cell">
             <div class="d-flex align-items-center justify-content-center w-100">
                 <div class="dropdown mr-1">
@@ -171,4 +253,42 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php endif; ?>
 </tbody>
 </table></div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('[data-toggle="popover"]').popover({ trigger: 'focus' });
+    $(document).on('show.bs.modal', '.answer-review-modal', function () {
+        var modal = this;
+        var status = document.getElementById(modal.dataset.statusId);
+        var body = new URLSearchParams();
+        body.set('_csrf', <?= json_encode(csrfToken()) ?>);
+        body.set('id_wawancara', modal.dataset.wawancaraId);
+        fetch('periksa_jawaban.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        }).then(function (response) {
+            return response.json().then(function (result) {
+                if (!response.ok) {
+                    throw new Error(result.error || 'Pemeriksaan jawaban gagal dicatat.');
+                }
+                return result;
+            });
+        }).then(function (result) {
+            var info = 'Sudah diperiksa oleh: ' + result.nama_penilai + ' (' + result.diperiksa_at + ')';
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-link text-success p-0 review-check';
+            button.setAttribute('aria-label', 'Lihat informasi pemeriksaan');
+            button.innerHTML = '<i class="fas fa-check-circle" aria-hidden="true"></i><span class="sr-only">Sudah diperiksa</span>';
+            status.innerHTML = '';
+            status.appendChild(button);
+            $(button).popover({ trigger: 'focus', placement: 'top', title: 'Status pemeriksaan', content: info });
+        }).catch(function (error) {
+            status.className = 'small text-danger mt-1 d-block';
+            status.textContent = error.message;
+        });
+    });
+});
+</script>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

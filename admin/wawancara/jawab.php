@@ -31,14 +31,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($existingDetails as $detail) {
         $existingById[(string) $detail['id_hasil']] = $detail;
     }
-    $stmt = $pdo->prepare('SELECT file_bukti FROM bukti_wawancara WHERE id_wawancara = ?');
+    $stmt = $pdo->prepare('SELECT id_bukti, file_bukti FROM bukti_wawancara WHERE id_wawancara = ?');
     $stmt->execute([$idWawancara]);
-    $existingSessionFiles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $existingSessionFiles = $stmt->fetchAll();
+    $existingSessionFileIds = array_map(static function ($file) {
+        return (string) $file['id_bukti'];
+    }, $existingSessionFiles);
+    $documentationStmt = $pdo->prepare(
+        'SELECT id_dokumentasi FROM dokumentasi_wawancara WHERE id_wawancara = ?'
+    );
+    $documentationStmt->execute([$idWawancara]);
+    $existingDocumentationIds = array_map('strval', $documentationStmt->fetchAll(PDO::FETCH_COLUMN));
     $validIds = array_keys($existingById);
     $questionIds = array_map('strval', array_filter(array_keys($questions), 'is_numeric'));
     $answers = is_array($_POST['jawaban'] ?? null) ? $_POST['jawaban'] : [];
     $deleteSessionFile = ($_POST['hapus_file_bukti'] ?? '') === '1';
     $deleteDocumentation = ($_POST['hapus_dokumentasi'] ?? '') === '1';
+    $deleteSessionFileIds = $_POST['hapus_file_jawaban'] ?? [];
+    $deleteQuestionEvidenceIds = $_POST['hapus_bukti_pertanyaan'] ?? [];
+    $deleteDocumentationIds = $_POST['hapus_foto_dokumentasi'] ?? [];
     $newQuestions = array_filter($questions, static function ($question, $id) {
         return !is_numeric($id) && trim($question) !== '';
     }, ARRAY_FILTER_USE_BOTH);
@@ -54,11 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (array_diff($scoreIds, $submittedIds) || array_diff($submittedIds, $scoreIds)) {
         setFlash('error', 'Data pertanyaan tidak valid.');
         $canSave = false;
-    } elseif (count($scores) !== count($submittedIds) || count($newScores) !== count($newQuestions)) {
-        setFlash('error', 'Semua pertanyaan wajib diberi nilai.');
-        $canSave = false;
     } elseif (array_filter($scores, static function ($score) {
-        return filter_var($score, FILTER_VALIDATE_INT) === false || (int) $score < 0 || (int) $score > 100;
+        return $score !== '' && ($score === null || !is_scalar($score)
+            || filter_var($score, FILTER_VALIDATE_INT) === false || (int) $score < 0 || (int) $score > 100);
     })) {
         setFlash('error', 'Nilai harus berupa angka 0 sampai 100.');
         $canSave = false;
@@ -66,7 +75,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         || array_diff($submittedIds, array_map('strval', array_keys($answers)))
         || array_filter($answers, static function ($answer) { return !is_string($answer); })
         || (isset($_POST['hapus_file_bukti']) && !in_array($_POST['hapus_file_bukti'], ['1'], true))
-        || (isset($_POST['hapus_dokumentasi']) && !in_array($_POST['hapus_dokumentasi'], ['1'], true))) {
+        || (isset($_POST['hapus_dokumentasi']) && !in_array($_POST['hapus_dokumentasi'], ['1'], true))
+        || !is_array($deleteSessionFileIds) || !is_array($deleteQuestionEvidenceIds)
+        || !is_array($deleteDocumentationIds)
+        || array_filter($deleteSessionFileIds, static function ($id) use ($existingSessionFileIds) {
+            return !is_scalar($id) || !ctype_digit((string) $id)
+                || !in_array((string) $id, $existingSessionFileIds, true);
+        })
+        || array_filter($deleteQuestionEvidenceIds, static function ($id) use ($existingById) {
+            return !is_scalar($id) || !ctype_digit((string) $id)
+                || !isset($existingById[(string) $id])
+                || empty($existingById[(string) $id]['file_bukti']);
+        })
+        || array_filter($deleteDocumentationIds, static function ($id) use ($existingDocumentationIds) {
+            return !is_scalar($id) || !ctype_digit((string) $id)
+                || !in_array((string) $id, $existingDocumentationIds, true);
+        })) {
         setFlash('error', 'Data jawaban tidak valid.');
         $canSave = false;
     }
@@ -89,25 +113,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $documentationPaths = $uploadDocumentation['paths'];
         }
     }
-    if ($canSave) {
-        $hasTextAnswer = (bool) array_filter($answers, static function ($answer) {
-            return trim($answer) !== '';
-        });
-        $hasLegacyDetailFile = (bool) array_filter($existingById, static function ($detail) use ($questionIds) {
-            return in_array((string) $detail['id_hasil'], $questionIds, true) && !empty($detail['file_bukti']);
-        });
-        $hasExistingSessionFile = $existingSessionFiles && !$deleteSessionFile;
-        if (!$hasTextAnswer && !$uploadedPaths && !$hasExistingSessionFile && !$hasLegacyDetailFile) {
-            setFlash('error', 'Isi jawaban tertulis atau unggah satu file jawaban.');
-            $canSave = false;
-        }
-    }
     if (!$canSave) {
         hapusFileBuktiPenilaian(array_merge($uploadedPaths, $documentationPaths));
     }
     if ($canSave) {
-        $average = array_sum(array_map('intval', $scores)) / count($scores);
-        $overallStatus = $average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten');
+        $scoredValues = array_values(array_filter($scores, static function ($score) {
+            return $score !== '' && $score !== null;
+        }));
+        $average = $scoredValues ? array_sum(array_map('intval', $scoredValues)) / count($scoredValues) : null;
+        $overallStatus = $average === null
+            ? 'Tidak Kompeten'
+            : ($average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten'));
         $deletedEvidence = [];
         $deletedDocumentation = [];
         try {
@@ -117,6 +133,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $documentationStmt->execute([$idWawancara]);
             $deletedDocumentation = $documentationStmt->fetchAll(PDO::FETCH_COLUMN);
             $pdo->prepare('DELETE FROM dokumentasi_wawancara WHERE id_wawancara = ?')->execute([$idWawancara]);
+        } else {
+            $getDocumentation = $pdo->prepare(
+                'SELECT file_dokumentasi FROM dokumentasi_wawancara
+                 WHERE id_dokumentasi = ? AND id_wawancara = ?'
+            );
+            $deleteDocumentationStmt = $pdo->prepare(
+                'DELETE FROM dokumentasi_wawancara WHERE id_dokumentasi = ? AND id_wawancara = ?'
+            );
+            foreach (array_unique(array_map('intval', $deleteDocumentationIds)) as $documentationId) {
+                $getDocumentation->execute([$documentationId, $idWawancara]);
+                $documentationPath = $getDocumentation->fetchColumn();
+                if ($documentationPath !== false) {
+                    $deletedDocumentation[] = $documentationPath;
+                    $deleteDocumentationStmt->execute([$documentationId, $idWawancara]);
+                }
+            }
         }
         $getEvidence = $pdo->prepare('SELECT file_bukti FROM hasil_wawancara WHERE id_hasil = ? AND id_wawancara = ?');
         $deleteQuestion = $pdo->prepare('DELETE FROM hasil_wawancara WHERE id_hasil = ? AND id_wawancara = ?');
@@ -128,6 +160,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $deleteQuestion->execute([$idHasil, $idWawancara]);
         }
+        $clearQuestionEvidence = $pdo->prepare(
+            'UPDATE hasil_wawancara SET file_bukti = NULL WHERE id_hasil = ? AND id_wawancara = ?'
+        );
+        foreach (array_unique(array_map('intval', $deleteQuestionEvidenceIds)) as $idHasil) {
+            $filePath = $existingById[(string) $idHasil]['file_bukti'];
+            if ($filePath) {
+                $deletedEvidence[] = $filePath;
+                $clearQuestionEvidence->execute([$idHasil, $idWawancara]);
+            }
+        }
         $update = $pdo->prepare(
             'UPDATE hasil_wawancara
              SET isi_penilaian = ?, jawaban = ?, nilai = ?, status_kompetensi = ?
@@ -138,7 +180,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $jawaban = trim($answers[(string) $idHasil]);
                 $update->execute([
                     trim($question), $jawaban !== '' ? $jawaban : null,
-                    (int) $scores[$idHasil], $overallStatus, $idHasil, $idWawancara,
+                    $scores[$idHasil] === '' ? null : (int) $scores[$idHasil],
+                    $overallStatus, $idHasil, $idWawancara,
                 ]);
             }
         }
@@ -149,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  VALUES (?, ?, ?, ?, ?, ?)'
             );
             foreach ($newQuestions as $questionId => $question) {
-                $score = (int) $newScores[$questionId];
+                $score = $newScores[$questionId] === '' ? null : (int) $newScores[$questionId];
                 $jawaban = trim($answers[$questionId]);
                 $addQuestion->execute([
                     $idWawancara, $competency, trim($question),
@@ -157,9 +200,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         }
-        if ($uploadedPaths || ($deleteSessionFile && $existingSessionFiles)) {
-            $deletedEvidence = array_merge($deletedEvidence, $existingSessionFiles);
-            $pdo->prepare('DELETE FROM bukti_wawancara WHERE id_wawancara = ?')->execute([$idWawancara]);
+        if ($uploadedPaths || ($deleteSessionFile && $existingSessionFiles) || $deleteSessionFileIds) {
+            if ($uploadedPaths || $deleteSessionFile) {
+                $deletedEvidence = array_merge($deletedEvidence, array_column($existingSessionFiles, 'file_bukti'));
+                $pdo->prepare('DELETE FROM bukti_wawancara WHERE id_wawancara = ?')->execute([$idWawancara]);
+            } else {
+                $getSessionFile = $pdo->prepare(
+                    'SELECT file_bukti FROM bukti_wawancara WHERE id_bukti = ? AND id_wawancara = ?'
+                );
+                $deleteSessionFileStmt = $pdo->prepare(
+                    'DELETE FROM bukti_wawancara WHERE id_bukti = ? AND id_wawancara = ?'
+                );
+                foreach (array_unique(array_map('intval', $deleteSessionFileIds)) as $fileId) {
+                    $getSessionFile->execute([$fileId, $idWawancara]);
+                    $filePath = $getSessionFile->fetchColumn();
+                    if ($filePath !== false) {
+                        $deletedEvidence[] = $filePath;
+                        $deleteSessionFileStmt->execute([$fileId, $idWawancara]);
+                    }
+                }
+            }
             if ($uploadedPaths) {
                 $pdo->prepare('INSERT INTO bukti_wawancara (id_wawancara, file_bukti) VALUES (?, ?)')
                     ->execute([$idWawancara, $uploadedPaths[0]]);
@@ -184,9 +244,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: index.php'); exit;
     }
 }
-$stmt = $pdo->prepare('SELECT file_bukti FROM bukti_wawancara WHERE id_wawancara = ? ORDER BY id_bukti');
+$stmt = $pdo->prepare('SELECT id_bukti, file_bukti FROM bukti_wawancara WHERE id_wawancara = ? ORDER BY id_bukti');
 $stmt->execute([$idWawancara]);
-$buktiList = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$buktiList = $stmt->fetchAll();
 $documentationStmt = $pdo->prepare(
     'SELECT id_dokumentasi, file_dokumentasi FROM dokumentasi_wawancara
      WHERE id_wawancara = ? ORDER BY id_dokumentasi'
@@ -207,15 +267,15 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
     <div class="mb-3">
         <label class="form-label">Pertanyaan, Jawaban, dan Nilai</label>
-        <small class="form-text text-muted mb-2">Minimal satu pertanyaan harus tersisa. Isi jawaban tertulis atau unggah satu file PDF/JPG/PNG (maksimal 5 MB).</small>
-        <div id="daftar-pertanyaan"><?php foreach ($details as $i => $item): ?><div class="border rounded p-2 mb-2 question-row"><input name="pertanyaan[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($item['isi_penilaian']) ?>" required><textarea name="jawaban[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" rows="3" placeholder="Ketik jawaban"><?= htmlspecialchars($item['jawaban'] ?? '') ?></textarea><?php if ($item['file_bukti']): ?><div class="small mb-2"><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($item['file_bukti'])) ?>">Lihat bukti lama</a></div><?php endif; ?><input type="number" name="nilai[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" min="0" max="100" step="1" value="<?= $item['nilai'] !== null ? (int) $item['nilai'] : '' ?>" placeholder="Nilai 0-100" required><small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small><div class="mt-2"><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div></div><?php endforeach; ?></div>
+        <small class="form-text text-muted mb-2">Minimal satu pertanyaan harus tersisa. Nilai boleh dikosongkan dan diisi nanti; jawaban teks, file bukti kompetensi, atau dokumentasi dapat disimpan terpisah.</small>
+        <div id="daftar-pertanyaan"><?php foreach ($details as $i => $item): ?><div class="border rounded p-2 mb-2 question-row"><input name="pertanyaan[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($item['isi_penilaian']) ?>" required><textarea name="jawaban[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" rows="3" placeholder="Ketik jawaban"><?= htmlspecialchars($item['jawaban'] ?? '') ?></textarea><?php if ($item['file_bukti']): ?><div class="small mb-2"><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($item['file_bukti'])) ?>">Lihat bukti lama</a><label class="form-check-label ml-2"><input type="checkbox" name="hapus_bukti_pertanyaan[]" value="<?= (int) $item['id_hasil'] ?>"> Hapus file ini saat disimpan</label></div><?php endif; ?><input type="number" name="nilai[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" min="0" max="100" step="1" value="<?= $item['nilai'] !== null ? (int) $item['nilai'] : '' ?>" placeholder="Nilai 0-100"><small class="text-muted">Opsional: 0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small><div class="mt-2"><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div></div><?php endforeach; ?></div>
         <button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button>
     </div>
     <div class="mb-3">
-        <label class="form-label">File jawaban (opsional, satu file untuk wawancara ini)</label>
+        <label class="form-label">Jawaban / Bukti Kompetensi (opsional)</label>
         <input type="file" name="file_bukti" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
         <small class="text-muted">Pilih satu PDF/JPG/PNG maksimal 5 MB. File baru menggantikan file jawaban sebelumnya.</small>
-        <?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($bukti)) ?>">Lihat bukti</a></div><?php endforeach; ?>
+        <?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($bukti['file_bukti'])) ?>">Lihat bukti</a><label class="form-check-label ml-2"><input type="checkbox" name="hapus_file_jawaban[]" value="<?= (int) $bukti['id_bukti'] ?>"> Hapus file ini saat disimpan</label></div><?php endforeach; ?>
         <?php if ($buktiList): ?><div class="form-check mt-2"><input type="checkbox" name="hapus_file_bukti" value="1" class="form-check-input" id="hapus-file-bukti"><label class="form-check-label" for="hapus-file-bukti">Hapus file jawaban saat disimpan</label></div><?php endif; ?>
     </div>
     <div class="mb-3">
@@ -223,7 +283,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <input type="file" name="foto_dokumentasi[]" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple>
         <small class="text-muted">Foto JPG/PNG, maksimal 5 MB per foto dan 10 foto per unggahan.</small>
         <?php foreach ($dokumentasi as $foto): ?>
-            <div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($foto['file_dokumentasi'])) ?>">Lihat foto dokumentasi</a></div>
+            <div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($foto['file_dokumentasi'])) ?>">Lihat foto dokumentasi</a><label class="form-check-label ml-2"><input type="checkbox" name="hapus_foto_dokumentasi[]" value="<?= (int) $foto['id_dokumentasi'] ?>"> Hapus foto ini saat disimpan</label></div>
         <?php endforeach; ?>
         <?php if ($dokumentasi): ?>
             <div class="form-check mt-2"><input type="checkbox" name="hapus_dokumentasi" value="1" class="form-check-input" id="hapus-dokumentasi"><label class="form-check-label" for="hapus-dokumentasi">Hapus semua foto dokumentasi saat disimpan</label></div>
@@ -247,8 +307,8 @@ document.getElementById('tambah-pertanyaan').addEventListener('click', function 
     wrapper.className = 'border rounded p-2 mb-2 question-row';
     wrapper.innerHTML = '<input name="pertanyaan[' + id + ']" class="form-control mb-2" placeholder="Pertanyaan baru" required>' +
         '<textarea name="jawaban[' + id + ']" class="form-control mb-2" rows="3" placeholder="Ketik jawaban"></textarea>' +
-        '<input type="number" name="nilai[' + id + ']" class="form-control mb-2" min="0" max="100" step="1" placeholder="Nilai 0-100" required>' +
-        '<small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small>' +
+        '<input type="number" name="nilai[' + id + ']" class="form-control mb-2" min="0" max="100" step="1" placeholder="Nilai 0-100">' +
+        '<small class="text-muted">Opsional: 0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small>' +
         '<div><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div>';
     daftarPertanyaan.appendChild(wrapper);
     perbaruiTombolHapus();

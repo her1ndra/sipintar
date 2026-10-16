@@ -34,6 +34,8 @@ $user = currentUser();
 $isAdmin = $user['role'] === 'Admin';
 $ditemukan = false;
 $diizinkan = false;
+$wawancaraEvidence = [];
+$kuesionerEvidence = [];
 
 // 1. Sertifikat pegawai: hanya Admin.
 $s = $pdo->prepare('SELECT 1 FROM sertifikat_pegawai WHERE file_sertifikat = ? LIMIT 1');
@@ -52,7 +54,7 @@ if ($s->fetchColumn()) {
 }
 
 // 3. Bukti kuesioner/wawancara: Admin, atau Penilai yang berwenang atas pegawai tsb.
-$buktiSql = "SELECT p.id_jabatan AS id_jabatan_pegawai, k.id_jabatan_dinilai
+$buktiSql = "SELECT x.id_wawancara, p.id_jabatan AS id_jabatan_pegawai, k.id_jabatan_dinilai
              FROM %s x
              JOIN wawancara w ON w.id_wawancara = x.id_wawancara
              JOIN pegawai p ON p.id_pegawai = w.id_pegawai
@@ -71,11 +73,15 @@ foreach (['hasil_kuesioner', 'hasil_wawancara', 'bukti_wawancara'] as $tabel) {
             if (in_array((int) $row['id_jabatan_pegawai'], $wewenang, true)
                 || ($row['id_jabatan_dinilai'] !== null && in_array((int) $row['id_jabatan_dinilai'], $wewenang, true))) {
                 $diizinkan = true;
+                if (in_array($tabel, ['hasil_wawancara', 'bukti_wawancara'], true)) {
+                    $wawancaraEvidence[] = (int) $row['id_wawancara'];
+                } elseif ($tabel === 'hasil_kuesioner') {
+                    $kuesionerEvidence[] = (int) $row['id_wawancara'];
+                }
             }
         }
     }
 }
-
 $wawancaraDocumentationSql = "SELECT p.id_jabatan AS id_jabatan_pegawai
                               FROM dokumentasi_wawancara d
                               JOIN wawancara w ON w.id_wawancara = d.id_wawancara
@@ -149,6 +155,30 @@ $ext = strtolower(pathinfo($full, PATHINFO_EXTENSION));
 if (!isset($tipe[$ext])) {
     fileNotFound();
 }
+
+if ($user['role'] === 'Penilai' && $wawancaraEvidence) {
+    $markReviewed = $pdo->prepare(
+        'INSERT INTO pemeriksaan_bukti_wawancara
+            (id_wawancara, file_bukti, id_user_penilai)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE diperiksa_at = CURRENT_TIMESTAMP'
+    );
+    foreach (array_unique($wawancaraEvidence) as $idWawancara) {
+        $markReviewed->execute([$idWawancara, $path, (int) $user['id_user']]);
+    }
+}
+if ($user['role'] === 'Penilai' && $kuesionerEvidence) {
+    $markReviewed = $pdo->prepare(
+        'INSERT INTO pemeriksaan_bukti_kuesioner
+            (id_wawancara, file_bukti, id_user_penilai)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE diperiksa_at = CURRENT_TIMESTAMP'
+    );
+    foreach (array_unique($kuesionerEvidence) as $idWawancara) {
+        $markReviewed->execute([$idWawancara, $path, (int) $user['id_user']]);
+    }
+}
+
 [$mime, $inline] = $tipe[$ext];
 if (isset($_GET['download'])) {
     $inline = false;

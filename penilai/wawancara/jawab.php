@@ -57,11 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (array_diff($scoreIds, $submittedIds) || array_diff($submittedIds, $scoreIds)) {
         setFlash('error', 'Data pertanyaan tidak valid.');
         $canSave = false;
-    } elseif (count($scores) !== count($submittedIds) || count($newScores) !== count($newQuestions)) {
-        setFlash('error', 'Semua pertanyaan wajib diberi nilai.');
-        $canSave = false;
     } elseif (array_filter($scores, static function ($score) {
-        return filter_var($score, FILTER_VALIDATE_INT) === false || (int) $score < 0 || (int) $score > 100;
+        return $score !== '' && ($score === null || !is_scalar($score)
+            || filter_var($score, FILTER_VALIDATE_INT) === false || (int) $score < 0 || (int) $score > 100);
     })) {
         setFlash('error', 'Nilai harus berupa angka 0 sampai 100.');
         $canSave = false;
@@ -92,25 +90,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $documentationPaths = $uploadDocumentation['paths'];
         }
     }
-    if ($canSave) {
-        $hasTextAnswer = (bool) array_filter($answers, static function ($answer) {
-            return trim($answer) !== '';
-        });
-        $hasLegacyDetailFile = (bool) array_filter($existingById, static function ($detail) use ($questionIds) {
-            return in_array((string) $detail['id_hasil'], $questionIds, true) && !empty($detail['file_bukti']);
-        });
-        $hasExistingSessionFile = $existingSessionFiles && !$deleteSessionFile;
-        if (!$hasTextAnswer && !$uploadedPaths && !$hasExistingSessionFile && !$hasLegacyDetailFile) {
-            setFlash('error', 'Isi jawaban tertulis atau unggah satu file jawaban.');
-            $canSave = false;
-        }
-    }
     if (!$canSave) {
         hapusFileBuktiPenilaian(array_merge($uploadedPaths, $documentationPaths));
     }
     if ($canSave) {
-        $average = array_sum(array_map('intval', $scores)) / count($scores);
-        $overallStatus = $average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten');
+        $scoredValues = array_values(array_filter($scores, static function ($score) {
+            return $score !== '' && $score !== null;
+        }));
+        $average = $scoredValues ? array_sum(array_map('intval', $scoredValues)) / count($scoredValues) : null;
+        $overallStatus = $average === null
+            ? 'Tidak Kompeten'
+            : ($average <= 30 ? 'Tidak Kompeten' : ($average <= 70 ? 'Cukup' : 'Kompeten'));
         $deletedEvidence = [];
         $deletedDocumentation = [];
         try {
@@ -141,7 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $jawaban = trim($answers[(string) $idHasil]);
                 $update->execute([
                     trim($question), $jawaban !== '' ? $jawaban : null,
-                    (int) $scores[$idHasil], $overallStatus, $idHasil, $idWawancara,
+                    $scores[$idHasil] === '' ? null : (int) $scores[$idHasil],
+                    $overallStatus, $idHasil, $idWawancara,
                 ]);
             }
         }
@@ -152,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  VALUES (?, ?, ?, ?, ?, ?)'
             );
             foreach ($newQuestions as $questionId => $question) {
-                $score = (int) $newScores[$questionId];
+                $score = $newScores[$questionId] === '' ? null : (int) $newScores[$questionId];
                 $jawaban = trim($answers[$questionId]);
                 $addQuestion->execute([
                     $idWawancara, $competency, trim($question),
@@ -205,8 +196,8 @@ require_once __DIR__ . '/../../includes/header.php';
 <h2 class="h4 mb-3">Wawancara: <?= htmlspecialchars($sesi['nama_lengkap']) ?> (<?= htmlspecialchars($sesi['nama_jabatan']) ?>)</h2>
 <form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm"><?= csrfField() ?>
     <div class="mb-3"><label class="form-label">Kompetensi / Jabatan</label><div class="form-control bg-light"><?= htmlspecialchars($details[0]['kompetensi'] ?? '-') ?></div></div>
-    <div class="mb-3"><label class="form-label">Pertanyaan, Jawaban, dan Nilai</label><small class="form-text text-muted mb-2">Minimal satu pertanyaan harus tersisa. Isi jawaban tertulis atau unggah satu file PDF/JPG/PNG (maksimal 5 MB).</small><div id="daftar-pertanyaan"><?php foreach ($details as $i => $item): ?><div class="border rounded p-2 mb-2 question-row"><input name="pertanyaan[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($item['isi_penilaian']) ?>" required><textarea name="jawaban[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" rows="3" placeholder="Ketik jawaban"><?= htmlspecialchars($item['jawaban'] ?? '') ?></textarea>    <?php if ($item['file_bukti']): ?><div class="small mb-2"><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($item['file_bukti'])) ?>">Lihat bukti lama</a></div><?php endif; ?><input type="number" name="nilai[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" min="0" max="100" step="1" value="<?= $item['nilai'] !== null ? (int) $item['nilai'] : '' ?>" placeholder="Nilai 0-100" required><small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small><div class="mt-2"><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div></div><?php endforeach; ?></div><button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button></div>
-    <div class="mb-3"><label class="form-label">File jawaban (opsional, satu file untuk wawancara ini)</label><input type="file" name="file_bukti" class="form-control" accept=".pdf,.jpg,.jpeg,.png"><small class="text-muted">Pilih satu PDF/JPG/PNG maksimal 5 MB. File baru menggantikan file jawaban sebelumnya.</small><?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($bukti)) ?>">Lihat file jawaban</a></div><?php endforeach; ?><?php if ($buktiList): ?><div class="form-check mt-2"><input type="checkbox" name="hapus_file_bukti" value="1" class="form-check-input" id="hapus-file-bukti"><label class="form-check-label" for="hapus-file-bukti">Hapus file jawaban saat disimpan</label></div><?php endif; ?></div>
+    <div class="mb-3"><label class="form-label">Pertanyaan, Jawaban, dan Nilai</label><small class="form-text text-muted mb-2">Minimal satu pertanyaan harus tersisa. Nilai boleh dikosongkan dan diisi nanti; jawaban teks, file bukti kompetensi, atau dokumentasi dapat disimpan terpisah.</small><div id="daftar-pertanyaan"><?php foreach ($details as $i => $item): ?><div class="border rounded p-2 mb-2 question-row"><input name="pertanyaan[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($item['isi_penilaian']) ?>" required><textarea name="jawaban[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" rows="3" placeholder="Ketik jawaban"><?= htmlspecialchars($item['jawaban'] ?? '') ?></textarea>    <?php if ($item['file_bukti']): ?><div class="small mb-2"><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($item['file_bukti'])) ?>">Lihat bukti lama</a></div><?php endif; ?><input type="number" name="nilai[<?= (int) $item['id_hasil'] ?>]" class="form-control mb-2" min="0" max="100" step="1" value="<?= $item['nilai'] !== null ? (int) $item['nilai'] : '' ?>" placeholder="Nilai 0-100"><small class="text-muted">Opsional: 0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small><div class="mt-2"><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div></div><?php endforeach; ?></div><button type="button" id="tambah-pertanyaan" class="btn btn-outline-secondary">+ Tambah pertanyaan</button></div>
+    <div class="mb-3"><label class="form-label">Jawaban / Bukti Kompetensi (opsional)</label><input type="file" name="file_bukti" class="form-control" accept=".pdf,.jpg,.jpeg,.png"><small class="text-muted">Pilih satu PDF/JPG/PNG maksimal 5 MB. File baru menggantikan file sebelumnya.</small><?php foreach ($buktiList as $bukti): ?><div><a target="_blank" rel="noopener" href="<?= htmlspecialchars(fileUrl($bukti)) ?>">Lihat file jawaban/bukti kompetensi</a></div><?php endforeach; ?><?php if ($buktiList): ?><div class="form-check mt-2"><input type="checkbox" name="hapus_file_bukti" value="1" class="form-check-input" id="hapus-file-bukti"><label class="form-check-label" for="hapus-file-bukti">Hapus file jawaban/bukti kompetensi saat disimpan</label></div><?php endif; ?></div>
     <div class="mb-3">
         <label class="form-label">Dokumentasi (foto)</label>
         <input type="file" name="foto_dokumentasi[]" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple>
@@ -236,8 +227,8 @@ document.getElementById('tambah-pertanyaan').addEventListener('click', function 
     wrapper.className = 'border rounded p-2 mb-2 question-row';
     wrapper.innerHTML = '<input name="pertanyaan[' + id + ']" class="form-control mb-2" placeholder="Pertanyaan baru" required>' +
         '<textarea name="jawaban[' + id + ']" class="form-control mb-2" rows="3" placeholder="Ketik jawaban"></textarea>' +
-        '<input type="number" name="nilai[' + id + ']" class="form-control mb-2" min="0" max="100" step="1" placeholder="Nilai 0-100" required>' +
-        '<small class="text-muted">0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small>' +
+        '<input type="number" name="nilai[' + id + ']" class="form-control mb-2" min="0" max="100" step="1" placeholder="Nilai 0-100">' +
+        '<small class="text-muted">Opsional: 0-30 Tidak Kompeten, 31-70 Cukup, 71-100 Kompeten</small>' +
         '<div><button type="button" class="btn btn-sm btn-outline-danger hapus-pertanyaan table-action-btn" title="Hapus pertanyaan" aria-label="Hapus pertanyaan"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></div>';
     daftarPertanyaan.appendChild(wrapper);
     perbaruiTombolHapus();
