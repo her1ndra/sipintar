@@ -24,8 +24,10 @@ require_once __DIR__ . '/../../includes/header.php';
   <td><?= htmlspecialchars($row['status_aktif']) ?></td>
   <td><a href="../sertifikat/index.php?id_pegawai=<?= (int) $row['id_pegawai'] ?>" class="text-primary"><?= (int) $row['jumlah_sertifikat'] ?> sertifikat</a></td>
   <td class="text-center align-middle">
+    <div class="table-actions">
     <a href="edit.php?id=<?= $row['id_pegawai'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
     <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus pegawai ini?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_pegawai'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
+    </div>
   </td>
 </tr>
 <?php endforeach; ?>

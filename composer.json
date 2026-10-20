@@ -10,7 +10,9 @@
         "ext-fileinfo": "*",
         "ext-mbstring": "*",
         "ext-zip": "*",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6"
     },
     "config": {
         "sort-packages": true

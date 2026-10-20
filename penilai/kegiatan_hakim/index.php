@@ -116,6 +116,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <td><?= htmlspecialchars($row['tanggal_mulai']) ?><?= $row['tanggal_selesai'] ? ' s.d. ' . htmlspecialchars($row['tanggal_selesai']) : '' ?></td>
         <td><?= htmlspecialchars($row['lokasi'] ?: '-') ?></td>
         <td class="text-center text-nowrap action-cell">
+          <div class="table-actions">
           <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
           <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')"><?= csrfField() ?>
             <input type="hidden" name="id" value="<?= (int) $row['id_kegiatan'] ?>">
@@ -143,6 +144,7 @@ require_once __DIR__ . '/../../includes/header.php';
               ><i class="fas fa-file-pdf text-danger mr-2" aria-hidden="true"></i>PDF</button>
               <a class="dropdown-item" href="cetak.php?id=<?= (int) $row['id_kegiatan'] ?>&amp;format=word"><i class="fas fa-file-word text-primary mr-2" aria-hidden="true"></i>Word</a>
             </div>
+          </div>
           </div>
         </td>
       </tr>

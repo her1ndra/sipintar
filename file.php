@@ -36,6 +36,8 @@ $ditemukan = false;
 $diizinkan = false;
 $wawancaraEvidence = [];
 $kuesionerEvidence = [];
+$isWawancaraEvidenceFile = false;
+$isKuesionerEvidenceFile = false;
 
 // 1. Sertifikat pegawai: hanya Admin.
 $s = $pdo->prepare('SELECT 1 FROM sertifikat_pegawai WHERE file_sertifikat = ? LIMIT 1');
@@ -66,6 +68,11 @@ foreach (['hasil_kuesioner', 'hasil_wawancara', 'bukti_wawancara'] as $tabel) {
     $s->execute([$path]);
     foreach ($s->fetchAll() as $row) {
         $ditemukan = true;
+        if (in_array($tabel, ['hasil_wawancara', 'bukti_wawancara'], true)) {
+            $isWawancaraEvidenceFile = true;
+        } elseif ($tabel === 'hasil_kuesioner') {
+            $isKuesionerEvidenceFile = true;
+        }
         if ($isAdmin) {
             $diizinkan = true;
         } elseif ($user['role'] === 'Penilai') {
@@ -156,6 +163,7 @@ if (!isset($tipe[$ext])) {
     fileNotFound();
 }
 
+$reviewedPdf = false;
 if ($user['role'] === 'Penilai' && $wawancaraEvidence) {
     $markReviewed = $pdo->prepare(
         'INSERT INTO pemeriksaan_bukti_wawancara
@@ -166,6 +174,7 @@ if ($user['role'] === 'Penilai' && $wawancaraEvidence) {
     foreach (array_unique($wawancaraEvidence) as $idWawancara) {
         $markReviewed->execute([$idWawancara, $path, (int) $user['id_user']]);
     }
+    $reviewedPdf = $ext === 'pdf';
 }
 if ($user['role'] === 'Penilai' && $kuesionerEvidence) {
     $markReviewed = $pdo->prepare(
@@ -177,6 +186,23 @@ if ($user['role'] === 'Penilai' && $kuesionerEvidence) {
     foreach (array_unique($kuesionerEvidence) as $idWawancara) {
         $markReviewed->execute([$idWawancara, $path, (int) $user['id_user']]);
     }
+    $reviewedPdf = $reviewedPdf || $ext === 'pdf';
+}
+if ($ext === 'pdf' && !$reviewedPdf) {
+    foreach ([
+        [$isWawancaraEvidenceFile, 'pemeriksaan_bukti_wawancara'],
+        [$isKuesionerEvidenceFile, 'pemeriksaan_bukti_kuesioner'],
+    ] as [$isEvidenceFile, $reviewTable]) {
+        if (!$isEvidenceFile) {
+            continue;
+        }
+        $reviewStmt = $pdo->prepare("SELECT 1 FROM {$reviewTable} WHERE file_bukti = ? LIMIT 1");
+        $reviewStmt->execute([$path]);
+        if ($reviewStmt->fetchColumn()) {
+            $reviewedPdf = true;
+            break;
+        }
+    }
 }
 
 [$mime, $inline] = $tipe[$ext];
@@ -185,11 +211,33 @@ if (isset($_GET['download'])) {
 }
 
 $namaUnduh = preg_replace('/[^A-Za-z0-9._-]/', '_', basename($full));
+$output = null;
+if ($reviewedPdf) {
+    require_once __DIR__ . '/includes/reviewed_pdf.php';
+    try {
+        $output = createReviewedPdf($full);
+    } catch (\RuntimeException $error) {
+        error_log('SI PINTAR: dependensi PDF untuk file yang sudah diperiksa tidak tersedia: ' . $error->getMessage());
+        http_response_code(503);
+        header('Content-Type: text/plain; charset=utf-8');
+        exit('Salinan PDF bertanda belum dapat dibuat. Silakan hubungi administrator.');
+    } catch (\setasign\Fpdi\FpdiException $error) {
+        error_log('SI PINTAR: gagal memberi tanda pemeriksaan pada PDF: ' . $error->getMessage());
+        http_response_code(422);
+        header('Content-Type: text/plain; charset=utf-8');
+        exit('PDF tidak dapat diberi tanda pemeriksaan. File asli tetap tersimpan.');
+    }
+    $namaUnduh = pathinfo($namaUnduh, PATHINFO_FILENAME) . '-sudah-diperiksa.pdf';
+}
 session_write_close();
 header('Content-Type: ' . $mime);
-header('Content-Length: ' . filesize($full));
+header('Content-Length: ' . ($output === null ? filesize($full) : strlen($output)));
 header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $namaUnduh . '"');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: private, max-age=300');
-readfile($full);
+if ($output === null) {
+    readfile($full);
+} else {
+    echo $output;
+}
 exit;

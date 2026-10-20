@@ -231,7 +231,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 ?>
                 <td class="status-cell"><?= $hasScore ? htmlspecialchars($row['status_kompetensi'] ?: '-') : '-' ?><?php if ($row['id_wawancara']): ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?php endif; ?></td>
                 <td class="action-cell">
-                    <div class="d-flex align-items-center justify-content-center w-100">
+                    <div class="table-actions">
                         <div class="dropdown mr-1">
                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download kuesioner" aria-label="Download kuesioner"><i class="fas fa-download" aria-hidden="true"></i></button>
                             <div class="dropdown-menu dropdown-menu-right">
