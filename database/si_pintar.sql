@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 09 Okt 2026 pada 04.17
--- Versi server: 10.4.28-MariaDB
--- Versi PHP: 8.2.4
+-- Waktu pembuatan: 20 Okt 2026 pada 09.20
+-- Versi server: 10.4.32-MariaDB
+-- Versi PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -79,15 +79,97 @@ CREATE TABLE `analisis_tugas` (
 --
 
 INSERT INTO `analisis_tugas` (`id_analisis_tugas`, `id_jabatan`, `id_pegawai`, `tugas`, `kegiatan`, `kompetensi_sementara_jabatan`, `kompetensi_jabatan`, `created_at`, `updated_at`) VALUES
-(1, 7, 24, 'Melaksanakan Administrasi Perkara Di Bidang Perdata', 'Pelaksanaan Pemeriksaan Dan Penelaahan Kelengkapan Berkas Perkara Perdata.\r\nPelaksanaan Registrasi Perkara Gugatan Dan Permohonan.\r\nPelaksanaan Distribusi Perkara Yang Telah Diregister Untuk Diteruskan Kepada Ketua Majelis Hakim Berdasarkan Penetapan Penunjukkan Majelis Hakim Dari Ketua Pengadilan.\r\nPelaksanaan Penerimaan Kembali Berkas Perkara Yang Sudah Diputus Dan Diminutasi.\r\nPelaksanaan Pemberitahuan Isi Putusan Tingkat Pertama Kepada Para Pihak Yang Tidak Hadir.\r\nPelaksanaan Penyampaian Pemberitahuan Putusan Tingkat Banding, Kasasi Dan Peninjauan Kembali Kepada Para Pihak.\r\nPelaksanaan Penerimaan Dan Pengiriman Berkas Perkara Yang Dimohonkan Banding, Kasasi Dan Peninjauan Kembali.\r\nPelaksanaan Pengawasan Terhadap Pemberitahuan Isi Putusan Upaya Hukum Kepada Para Pihak Dan Menyampaikan Relas Penyerahan Isi Putusan Kepada Pengadilan Tinggi Dan Mahkamah Agung.\r\nPelaksanaan Penerimaan Konsinyasi.\r\nPelaksanaan Penerimaan Permohonan Eksekusi.\r\nPelaksanaan Penyimpanan Berkas Perkara Yang Belum Mempunyai Kekuatan Hukum Tetap.\r\nPelaksanaan Penyerahan Berkas Perkara Yang Sudah Berkekuatan Hukum Tetap Kepada Panitera Muda Hukum.\r\nPelaksanaan Urusan Tata Usaha Kepaniteraan.\r\nPelaksanaan Fungsi Lain Yang Diberikan Oleh Panitera.', 'Ketelitian tinggi, pemahaman hukum acara perdata, penguasaan aplikasi SIPP', 'Administrasi perkara perdata, penguasaan SIPP, ketepatan minutasi, pelayanan prima', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(2, 8, 23, 'Melaksanakan Administrasi Perkara Di Bidang Pidana', 'Pelaksanaan Pemeriksaan Dan Penelaahan Kelengkapan Berkas Perkara Pidana.\r\nPelaksanaan Registrasi Perkara Pidana.\r\nPelaksanaan Penerimaan Permohonan Praperadilan Dan Pemberitahuan Kepada Termohon.\r\nPelaksanaan Distribusi Perkara Yang Telah Diregister Untuk Diteruskan Kepada Ketua Majelis Hakim Berdasarkan Penetapan Penunjukkan Majelis Hakim Dari Ketua Pengadilan.\r\nPelaksanaan Penghitungan, Penyiapan Dan Pengiriman Penetapan Penahanan, Perpanjangan Penahanan Dan Penangguhan Penahanan.\r\nPelaksanaan Penerimaan Permohonan Ijin Penggeledahan Dan Ijin Penyitaan Dari Penyidik.\r\nPelaksanaan Penerimaan Kembali Berkas Perkara Yang Sudah Diputus Dan Diminutasi.\r\nPelaksanaan Pemberitahuan Isi Putusan Tingkat Pertama Kepada Para Pihak Yang Tidak Hadir.\r\nPelaksanaan Penyampaian Pemberitahuan Putusan Tingkat Banding, Kasasi Dan Peninjauan Kembali Kepada Para Pihak.\r\nPelaksanaan Penerimaan Dan Pengiriman Berkas Perkara Yang Dimohonkan Banding, Kasasi Dan Peninjauan Kembali.\r\nPelaksanaan Pengawasan Terhadap Pemberitahuan Isi Putusan Upaya Hukum Kepada Para Pihak Dan Menyampaikan Relas Penyerahan Isi Putusan Kepada Pengadilan Tinggi Dan Mahkamah Agung.\r\nPelaksanaan Pemberitahuan Isi Putusan Upaya Hukum Kepada Jaksa Penuntut Umum Dan Terdakwa.\r\nPelaksanaan Penerimaan Permohonan Eksekusi.\r\nPelaksanaan Penyimpanan Berkas Perkara Yang Belum Mempunyai Kekuatan Hukum Tetap.\r\nPelaksanaan Penyerahan Berkas Perkara Yang Sudah Berkekuatan Hukum Tetap Kepada Panitera Muda Hukum.\r\nPelaksanaan Urusan Tata Usaha Kepaniteraan.\r\nPelaksanaan Fungsi Lain Yang Diberikan Oleh Panitera.', 'Ketelitian, pemahaman hukum acara pidana, disiplin kerja', 'Administrasi perkara pidana, penguasaan e-Court, ketepatan register', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(3, 11, 25, 'Melaksanakan Administrasi Perkara Di Bidang Perkara Khusus Tindak Pidana Korupsi', 'Koordinator pelayanan PTSP.\r\nMonitoring dan evaluasi pelaksanaan administrasi pada Kepaniteraan TIPIKOR.\r\nMonitoring dan evaluasi pelimpahan perkara TIPIKOR melalui E-berpadu.\r\nMonitoring dan evaluasi pemrosesan izin besuk , izin penyitaan, izin penggeledahan dan penahanan melalui E-berpadu.\r\nMonitoring dan evaluasi pemrosesan upaya hukum perkara TIPIKOR secara elektronik.', 'Integritas tinggi, kerahasiaan dokumen, pemahaman hukum tipikor', 'Administrasi perkara tipikor, akurasi dokumen, pengendalian arsip', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(4, 10, 21, 'Melaksanakan Administrasi Perkara Di Bidang Perkara Khusus Penyelesaian Perselisihan Hubungan Industrial', 'Membantu Hakim dalam persidangan dengan mengikuti dan mencatat jalannya persidangan.\r\nMemonitor pendaftaran perkara Gugatan, secara elektronik.\r\nMemonitor, panjar biaya Gugatan yang diajukan.\r\nMemonitor register perkara PHI secara elektronik.\r\nMemeriksa berkas perkara yang diajukan upaya hukum Kasasi.\r\nMenerima dan memeriksa berkas perkara yang telah diminutasi.\r\nMemonitor penyerahan berkas perkara In Aktif yang sudah Berkekuatan Hukum Tetap (BHT) ke kepaniteraan Hukum.\r\nMemeriksa permohonan eksekusi yang diajukan oleh Pemohon.\r\nMembuat resume atas permohonan eksekusi.\r\nMemonitor surat masuk dan surat kembali, serta mendistribusikan.\r\nMembuat surat balasan atas surat masuk.', 'Pemahaman hukum PHI, komunikasi koordinatif, ketelitian', 'Administrasi perkara PHI, ketelitian dokumen, kecepatan pelayanan', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(5, 9, 22, 'Melaksanakan Pengumpulan, Pengolahan Dan Penyajian Data Perkara, Kehumasan, Penataan Arsip Perkara Serta Pelaporan', 'Pelaksanaan Pengumpulan, Pengelolaan Dan Penyajian Data Perkara.\r\nPelaksanaan Penyajian Statistik Perkara.\r\nPelaksanaan Penyusunan Dan Pengiriman Pelaporan Perkara.\r\nPelaksanaan Penataan, Penyimpanan Dan Pemeliharaan Arsip Perkara.\r\nPelaksanaan Kerja Sama Dengan Arsip Daerah Untuk Penitipan Berkas Perkara.\r\nPelaksanaan Penyiapan, Pengelolaan Dan Penyajian Bahan-Bahan Yang Berkaitan Dengan Transparansi Perkara.\r\nPelaksanaan Penghimpunan Pengaduan Dari Masyarakat.\r\nPelaksanaan Fungsi Lain Yang Diberikan Oleh Panitera.', 'Penyusunan laporan, dokumentasi hukum, penguasaan aplikasi', 'Pelaporan perkara, dokumentasi hukum, publikasi informasi', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(6, 17, 117, 'Melaksanakan Penyiapan Bahan Pelaksanaan Urusan Kepegawaian, Penataan Organisasi Dan Tata Laksana', 'Merencanakan dan memimpin pelaksanaan tugas bagian Kepegawaian, organisasi, dan Tata Laksana.\r\nMenetapkan sasaran kegiatan setiap tahun.\r\nMenyusun dan menjadwalkan rencana kegiatan.\r\nMembagi tugas kepada bawahan dan menentukan penanggung jawab kegiatan Sub bagian Kepegawaian.\r\nOrganisasi dan Tata laksana.\r\nMenggerakkan dan mengarahkan pelaksanaan kegiatan Sub Bagian Kepegawaian, Organisasi dan Tata Laksana.\r\nMengadakan konsultasi dengan atasan setiap waktu diperlakukan.\r\nMelakukan tugas khusus dari atasan/pimpinanan.\r\nMengevaluasi pelaksanaan tugas bawahan.\r\nMemantau dan melakukan evaluasi pelaksanaan tugas para bawahan di lingkungan Sub bagian Kepegawaian, Organisasi dan Tata laksana.\r\nMelaksanakan tugas dari atasan sehubungan dengan kedinasan.', 'Pemahaman regulasi ASN, administrasi kepegawaian, tata naskah dinas', 'Administrasi ASN, tata laksana organisasi, ketelitian dokumen', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(7, 48, 64, 'Melaksanakan Penyiapan Bahan Pelaksanaan, Program, Dan Anggaran, Pengelolaan Teknologi Informasi, Dan Statistik, Serta Pelaksanaan Pemantauan, Evaluasi Dan Dokumentasi Serta Pelaporan', 'Melaksanakan Penyiapan Bahan Pelaksanaan Program Dan Anggaran.\r\nMelaksanakan Penyusunan Perencanaan Program Dan Anggaran/ Kegiatan/RKAKL Dan Penyusunan TOR, RAB, Bahan Dan Data Dukung Pengajuan Anggaran.\r\nMelaksanakan Revisi DIPA Dan DIPA Hal III Berupa Perubahan/Pergeseran Rincian Anggaran Yang Telah Ditetapkan Berdasarkan APBN/DIPA.\r\nMelaksanakan Revisi POK/Komponen Dalam Satu Output Yang Disesuaikan Dengan Output Yang Disesuaikan Dengan Rencana Kegiatan Dan Dana Yang Tersedia.\r\nMelaksanakan Perawatan Dan Pemeliharaan Jaringan Sehingga Kualitas Dan Kinerja Perangkat Jaringan Stabil Dan Tidak Terjadi Kerusakan Pada Komponen Yang Ada Didalamnya.\r\nMelaksanakan Perawatan Dan Pengelolaan CCTV, Yaitu Menjaga Sarpras, Sistem, Aplikasi Jaringan, Database CCTV Dalam Kondisi Baik Dan Dapat Berfungsi Dengan Baik.\r\nMonev Terlaksananya Keterbukaan Informasi Publik (KIP) Yaitu Dengan Menjaga Keamanan Website Berikut Aplikasi Yang Terintegrasi, Publikasi Informasi Website Dan Media Sosial.\r\nMelaksanakan Pengelolaan Server Yaitu Dengan Menjaga Sarpras, Sistem, Aplikasi, Jaringan, Database Server Dalam Kondisi Baik Dan Dapat Berfungsi Dengan Baik.\r\nMonev Terlaksananya Koordinasi Dengan Bagian Umum Terkait Pengelolaan Jaringan Listrik Dan Genset Yang Mendukung Perangkat/Sarpras IT Dapat Berfungsi Dengan Baik.\r\nMonev Terlaksananya Pengumpulan Data Statistik Akurat Dan Benar.\r\nMonev Terkoordinirnya Pengelolaan Dokumen Surat Keputusan Dalam Aplikasi JDIH.\r\nMelaksanakan Perawatan Dan Pengelolaan Sistem IT Yaitu Menjaga Sarpras, Sistem Aplikasi, Jaringan, Database dll Dalam Kondisi Dan Fungsi Baik: Sinkronisasi SIPP (Web, PT, MA, Ecourt, Direktori Putusan, SPPT-TI), Media Sosial, Layanan Ptsp, Sidang Online.\r\nMelaksanakan Penyusunan Dan Pengiriman Laporan Badilum Selain Perkara Sesuai, Benar Dan Tepat Waktu.\r\nMonev Terlaksananya Penyusunan Dan Pengiriman Laporan Monev Smart Sesuai Benar Dan Tepat Waktu.\r\nMonev Terlaksananya Penyusunan Laporan Kegiatan Bulanan Sesuai, Benar Dan Tepat Waktu.\r\nMonev Terlaksananya Penyusunan Dan Pengiriman Data Dan Dokumen SAKIP Pada Komdanas Sesuai, Benar Dan Tepat Waktu.\r\nMelaksanakan Penyusunan Dan Pengiriman Laporan Tahunan/ Kegiatan Sesuai, Benar Dan Tepat Waktu.\r\nMelaksanakan Penyusunan Dokumen Evaluasi Kinerja Pada Aplikasi SEMAR Sesuai, Benar Dan Tepat Waktu.\r\nPenyelesaian Tindak Lanjut Atas Hasil Monitoring Dan Evaluasi/ Assesment Surveilance AMPUH Badilum.\r\nPenyelesaian Tindak Lanjut Atas Hasil Pemeriksaan Pengadilan Tinggi.\r\nPenyelesaian Tindak Lanjut Atas Hasil Monitoring Dan Evaluasi/ Assesment Sistem Manajemen Anti Penyuapan.\r\nPenyelesaian Tindak Lanjut Atas Hasil Pemeriksaan Bawas.\r\nMonev Penyelesaian Tindak Lanjut Atas Hasil Pengawasan Bidang.\r\nMonev Terlaksananya Administrasi Dan Dokumentasi Persuratan Tertata Dengan Rapi.\r\nTerlaksananya Tugas-Tugas Lain Yang Ada Di Perencanaan, IT Dan Pelaporan Serta Tugas Lain Yang Diberikan Pimpinan.\r\nTerlaksananya Monitoring & Evaluasi Secara Berjenjang Di Kesekretariatan, Terutama Bagian PTIP.\r\nPenyelesaian Pengembangan Sistem/Aplikasi Nasional (SIPP, E-Court, E-Berpadu, SIAP.', 'Penguasaan TI, analisis data, perencanaan program', 'Monitoring evaluasi, pengelolaan TI, penyusunan laporan kinerja', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(8, 18, 69, 'Pengelolaan BMN dan keuangan', 'Membuat Perencanaan Pencairan Anggaran Seminggu Sebelum Pencairan Dana Dan Menginput Dalam Aplikasi AFS,Kemudian Mengirimkan Ke KPPN.\r\nMengajukan Uang Persediaan Dan Mengantarkan Spmnya Ke KPPN.\r\nMembuat Dan Mengajukan Tambahan Uang Persediaan Yang Bersifat Mendesak Dan Mengantarkannya Spmnya Ke KPPN.\r\nMengajukan Ganti Uang Persediaan Dan Mengatarkan Spmnya Ke KPPN.\r\nMembuat SPM Langsung Dan Mengantarkannya Ke KPPN.\r\nMengisi Setiap Transaksi Ke Dalam Buku: Buku Kas Umum, Buku Kas Umum, Buku Pembantu Kas Tunai, Buku Pembantu Bank, Buku Pembantu Pajak, Buku Pembantu Uang Persediaan, Buku Pembantu Kas LS.\r\nMembuat Laporan Pertanggungjawaban Bendahara Pengeluaran, Membuat Realisasi Anggaran Manual, Membuat Penyerapan Anggaran Manual.\r\nMenerima Dan Menyetorkan Pajak Melalui Kantor Pos Bank.\r\nMembuat Daftar Dan Pertanggungjawaban Remnunisasi Dan Mengirimkannya ke KORWIL.', 'Pemahaman keuangan negara, ketelitian, akuntabilitas', 'Pengelolaan BMN, keuangan, akuntabilitas anggaran', '2026-09-22 01:59:58', '2026-09-22 01:59:58'),
-(9, 23, 70, 'Pelayanan publik dan informasi', 'Pelayanan informasi perkara.\r\nPenerimaan tamu.\r\nPengaduan masyarakat.\r\nPelayanan dokumen.', 'Komunikasi efektif, pelayanan publik, etika layanan', 'Service excellent, komunikasi publik, penanganan pengaduan', '2026-09-22 01:59:58', '2026-09-22 01:59:58');
+(1, 1, NULL, 'Bertanggung jawab sepenuhnya terhadap jalannya peradilan, baik ke dalam maupun ke luar, sesuai ketentuan undang-undang, serta memimpin pelaksanaan tugas pokok dan fungsi Pengadilan Negeri Yogyakarta.', 'Bertanggung jawab sepenuhnya terhadap jalannya peradilan, baik ke dalam maupun ke luar, sesuai dengan ketentuan undang-undang.\r\nMemimpin dan bertanggung jawab atas pelaksanaan tugas pokok dan fungsi Pengadilan Negeri Yogyakarta berdasarkan undang-undang, kebijakan Mahkamah Agung dan pemerintah.\r\nMembuat kebijakan umum di bidang kepaniteraan dan kesekretariatan melalui surat keputusan/penetapan atau surat dinas/tugas, serta membagi tugas seluruh aparatur berdasarkan jabatan struktural atau fungsional.\r\nMembuat program kerja berkala bersama para hakim, panitera, sekretaris, dan pejabat kesekretariatan/kepaniteraan terkait anggaran DIPA dan kebutuhan kantor sesuai kebijakan Mahkamah Agung dan pemerintah.\r\nBertanggung jawab atas pembuatan dan realisasi rencana fisik penjabaran DIPA, serta mengadakan pengawasan dan evaluasi setiap triwulan.\r\nMelaksanakan pembinaan dan pengawasan serta menjadi penanggung jawab umum pelaksanaan anggaran dalam DIPA-005.03.2.099128/2024 dan DIPA-005.01.2.098057/2024.\r\nMelakukan kebijakan dan pengawasan terhadap keuangan negara dan semua barang kekayaan (inventaris) milik negara.\r\nMembina dan mengawasi hakim, panitera, sekretaris, dan seluruh pejabat kepaniteraan/kesekretariatan agar peradilan berjalan tertib, adil, dan berwibawa.\r\nMelakukan pengawasan melekat terhadap perilaku seluruh pegawai di dalam maupun di luar kantor, secara langsung atau berjenjang, sebagai catatan prestasi kerja dalam penilaian SKP atau kebijakan lainnya.\r\nMembuat laporan berkala tahunan atas pelaksanaan tugas kepada Ketua Pengadilan Tinggi Yogyakarta dan Ketua Mahkamah Agung c.q. Ketua Muda Urusan Lingkungan Peradilan Umum.\r\nMembuat penetapan majelis hakim yang menangani perkara, menunjuk hakim sebagai pencatat dalam perkara yang diajukan secara lisan, serta menunjuk hakim pengawas bidang di bawah koordinasi Ketua.\r\nMerencanakan dan melakukan rapat koordinasi berkala bersama Panitera dan Sekretaris, serta pertemuan insidentil secara umum maupun terbatas.\r\nMenerima dan menindaklanjuti hasil pengawasan hakim pengawas bidang.\r\nMenilai SKP hakim, Panitera, dan Sekretaris setiap akhir tahun.\r\nMengusulkan pengangkatan atau penambahan pegawai/jabatan tertentu ke Mahkamah Agung melalui Pengadilan Tinggi Yogyakarta.\r\nMelakukan penyumpahan dan pelantikan hakim, Panitera, Sekretaris, pejabat, atau pegawai negeri sipil di lingkungan Pengadilan Negeri Yogyakarta.\r\nMelakukan pembinaan dan pengawasan terhadap anggota IKAHI, PTWP, dan Dharma Yukti Karini Pengadilan Negeri Yogyakarta.\r\nMenetapkan panjar biaya perkara, biaya panggilan, biaya eksekusi, dan biaya proses peradilan lainnya.\r\nMenerima berkas perkara dari Panitera, meneliti, lalu menunjuk majelis hakim yang akan menyidangkan perkara dengan suatu penetapan.\r\nDalam keadaan mendesak/darurat, mengganti ketua majelis dengan hakim lain melalui suatu penetapan.\r\nMemimpin jalannya eksekusi.\r\nMemerintahkan jurusita untuk melakukan pemanggilan terhadap termohon, putusan berkekuatan hukum tetap, putusan provisi, putusan serta merta, dan pelaksanaan eksekusi lainnya.\r\nMemerintahkan jurusita untuk melakukan penangguhan eksekusi untuk jangka waktu tertentu apabila ada gugatan perlawanan oleh pihak ketiga.\r\nMenetapkan pelaksanaan lelang, tempat pelaksanaan lelang, dan/atau kantor lelang negara sebagai pelaksana lelang.\r\nMemeriksa pemegang kas keuangan perkara dan keuangan rutin (DIPA) secara berkala atau insidentil.\r\nMenandatangani izin kuasa khusus/insidentil, penutupan buku-buku register akhir tahun, serta laporan bulanan dan laporan tahunan bersama Panitera dan Sekretaris.\r\nMemberi izin untuk membawa keluar dari ruang kepaniteraan daftar, catatan, risalah, berita acara, atau berkas perkara.\r\nMemberikan penilaian atas prestasi dan SKP bagi hakim, Panitera, dan Sekretaris.\r\nMelakukan koordinasi dengan sesama instansi penegak hukum dan instansi lainnya di lingkungan Pemerintah Kota Yogyakarta, serta dapat menunjuk seorang hakim sebagai pejabat yang melaksanakan tugas kehumasan.\r\nMenunjuk hakim untuk membantu membuat gugatan/permohonan lisan bagi pihak yang buta huruf.\r\nMembuat uraian tugas bagi seluruh pejabat dan pelaksana.\r\nMelaksanakan tugas lainnya sebagai pimpinan Pengadilan Negeri Yogyakarta.\r\nMelaksanakan tugas lainnya yang diatur berdasarkan peraturan perundang-undangan atau perintah atasan.', NULL, 'Kepemimpinan dan manajemen satuan kerja, perencanaan program dan anggaran DIPA, pembinaan dan pengawasan, pengelolaan keuangan dan BMN, penetapan perkara dan eksekusi, penilaian kinerja (SKP), koordinasi antarinstansi, pemahaman peraturan perundang-undangan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(2, 2, NULL, 'Membantu Ketua dalam memimpin Pengadilan Negeri, perencanaan program kerja, pengawasan, dan koordinasi.', 'Membantu Ketua membuat perencanaan program kerja, baik jangka pendek maupun jangka panjang.\r\nMewakili Ketua apabila berhalangan.\r\nMelaksanakan delegasi dari Ketua.\r\nMelakukan pengawasan intern untuk mengamati apakah pelaksanaan tugas telah dikerjakan sesuai dengan rencana kerja dan ketentuan yang berlaku serta melaporkan hasil pengawasan kepada Ketua.\r\nMelakukan evaluasi atas hasil pengawasan dan memberikan penilaian.\r\nMelakukan koordinasi dan kerja sama antarinstansi pemerintah dan swasta.', NULL, 'Kepemimpinan, perencanaan kerja, pengawasan intern, evaluasi, koordinasi, pemahaman peraturan peradilan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(3, 3, NULL, 'Melakukan tugas kekuasaan kehakiman untuk memeriksa, memutus, dan menyelesaikan perkara pidana dan perdata di tingkat pertama.', 'Menerima, memeriksa, mengadili, dan menyelesaikan semua perkara yang diajukan kepadanya.\r\nMelakukan pengawasan yang ditugaskan Ketua untuk mengamati apakah pelaksanaan tugas dilaksanakan sesuai dengan ketentuan yang berlaku dan melaporkannya kepada pimpinan pengadilan.\r\nMelakukan pengawasan dan pengamatan (Kimwasmat) terhadap pelaksanaan putusan pidana di Lembaga Pemasyarakatan/Rumah Tahanan dan melaporkannya kepada Mahkamah Agung RI.\r\nMelaksanakan tugas kedinasan lain yang diperintahkan oleh atasan.', NULL, 'Hukum acara perdata dan pidana, pemeriksaan dan penilaian alat bukti, penyusunan putusan, pengawasan dan pengamatan (Kimwasmat), etika hakim', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(4, 4, NULL, 'Melakukan tugas kekuasaan kehakiman untuk memeriksa, memutus, dan menyelesaikan perkara pidana dan perdata di tingkat pertama.', 'Menerima, memeriksa, mengadili, dan menyelesaikan semua perkara yang diajukan kepadanya.\r\nMelakukan pengawasan yang ditugaskan Ketua untuk mengamati apakah pelaksanaan tugas dilaksanakan sesuai dengan ketentuan yang berlaku dan melaporkannya kepada pimpinan pengadilan.\r\nMelakukan pengawasan dan pengamatan (Kimwasmat) terhadap pelaksanaan putusan pidana di Lembaga Pemasyarakatan/Rumah Tahanan dan melaporkannya kepada Mahkamah Agung RI.\r\nMelaksanakan tugas kedinasan lain yang diperintahkan oleh atasan.', NULL, 'Hukum acara perdata dan pidana, pemeriksaan dan penilaian alat bukti, penyusunan putusan, pengawasan dan pengamatan (Kimwasmat), etika hakim', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(5, 5, NULL, 'Melakukan tugas kekuasaan kehakiman untuk memeriksa, memutus, dan menyelesaikan perkara pidana dan perdata di tingkat pertama.', 'Menerima, memeriksa, mengadili, dan menyelesaikan semua perkara yang diajukan kepadanya.\r\nMelakukan pengawasan yang ditugaskan Ketua untuk mengamati apakah pelaksanaan tugas dilaksanakan sesuai dengan ketentuan yang berlaku dan melaporkannya kepada pimpinan pengadilan.\r\nMelakukan pengawasan dan pengamatan (Kimwasmat) terhadap pelaksanaan putusan pidana di Lembaga Pemasyarakatan/Rumah Tahanan dan melaporkannya kepada Mahkamah Agung RI.\r\nMelaksanakan tugas kedinasan lain yang diperintahkan oleh atasan.', NULL, 'Hukum acara perdata dan pidana, pemeriksaan dan penilaian alat bukti, penyusunan putusan, pengawasan dan pengamatan (Kimwasmat), etika hakim', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(6, 6, NULL, 'Melaksanakan pemberian dukungan di bidang teknis dan administrasi perkara serta menyelesaikan surat-surat.', 'Melaksanakan koordinasi, pembinaan, dan pengawasan pelaksanaan tugas dalam pemberian dukungan di bidang teknis.\r\nMelaksanakan pengelolaan administrasi perkara perdata.\r\nMelaksanakan pengelolaan administrasi perkara pidana.\r\nMelaksanakan pengelolaan administrasi perkara khusus.\r\nMelaksanakan pengelolaan administrasi perkara, penyajian data perkara, dan transparansi perkara.\r\nMelaksanakan administrasi keuangan dalam program teknis dan keuangan perkara yang ditetapkan berdasarkan peraturan perundang-undangan, minutasi, evaluasi, dan administrasi kepaniteraan.\r\nMelaksanakan mediasi.\r\nMelaksanakan pembinaan teknis kepaniteraan dan kejurusitaan.\r\nMelaksanakan fungsi lain yang diberikan oleh Ketua Pengadilan Negeri.', NULL, 'Kepemimpinan teknis kepaniteraan, pengelolaan administrasi perkara perdata/pidana/khusus, keuangan perkara dan minutasi, mediasi, pembinaan teknis kepaniteraan dan kejurusitaan, koordinasi dan pengawasan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(7, 7, NULL, 'Melaksanakan administrasi perkara di bidang perdata.', 'Melaksanakan pemeriksaan dan penelaahan kelengkapan berkas perkara perdata.\r\nMelaksanakan registrasi perkara gugatan dan permohonan.\r\nMelaksanakan distribusi perkara yang telah diregister untuk diteruskan kepada ketua majelis hakim berdasarkan penetapan penunjukan majelis hakim dari Ketua Pengadilan.\r\nMelaksanakan penerimaan kembali berkas perkara yang sudah diputus dan diminutasi.\r\nMelaksanakan pemberitahuan isi putusan tingkat pertama kepada para pihak yang tidak hadir.\r\nMelaksanakan penyampaian pemberitahuan putusan tingkat banding, kasasi, dan peninjauan kembali kepada para pihak.\r\nMelaksanakan penerimaan dan pengiriman berkas perkara yang dimohonkan banding, kasasi, dan peninjauan kembali.\r\nMelaksanakan pengawasan terhadap pemberitahuan isi putusan upaya hukum kepada para pihak dan penyampaian relaas penyerahan isi putusan kepada Pengadilan Tinggi dan Mahkamah Agung.\r\nMelaksanakan penerimaan konsinyasi.\r\nMelaksanakan penerimaan permohonan eksekusi.\r\nMelaksanakan penyimpanan berkas perkara yang belum mempunyai kekuatan hukum tetap.\r\nMelaksanakan penyerahan berkas perkara yang sudah berkekuatan hukum tetap kepada Panitera Muda Hukum.\r\nMelaksanakan urusan tata usaha kepaniteraan.\r\nMelaksanakan fungsi lain yang diberikan oleh Panitera.', NULL, 'Administrasi perkara perdata, registrasi dan distribusi perkara, penanganan upaya hukum (banding, kasasi, PK), konsinyasi dan permohonan eksekusi, pengelolaan berkas perkara, tata usaha kepaniteraan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(8, 49, NULL, 'Menerima, membukukan, dan mengeluarkan uang panjar biaya perkara serta membuat laporan keuangan perkara.', 'Menerima dan membukukan panjar biaya perkara sebagaimana tercantum dalam SKUM pada buku jurnal keuangan perkara yang bersangkutan.\r\nMengeluarkan dan membukukan uang yang diperlukan bagi segala jenis penyelenggaraan peradilan sesuai dengan SK Biaya Panjar yang berlaku.\r\nMenyerahkan uang hak-hak kepaniteraan kepada Bendahara Penerima untuk disetorkan ke Kas Negara.\r\nMelakukan penginputan semua jenis transaksi keuangan terkait biaya panjar ke dalam SIPP.\r\nMembuat laporan bulanan keuangan perkara.\r\nMelaksanakan tugas sebagai Bendahara Proses.\r\nMelaksanakan tugas-tugas yang diberikan pimpinan yang berkaitan dengan kedinasan.', NULL, 'Pembukuan keuangan perkara, pengelolaan panjar biaya perkara, penguasaan SIPP, penyusunan laporan keuangan perkara, ketelitian dan akuntabilitas', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(9, 50, NULL, 'Melaksanakan tugas jurusita pengganti, input perkara pada SIPP, penerimaan berkas perkara, serta layanan Pojok E-Court dan PTSP.', 'Melaksanakan tugas sebagai Jurusita Pengganti.\r\nMenginput perkara permohonan, gugatan, gugatan sederhana, dan eksekusi pada SIPP.\r\nMemproses penerimaan berkas permohonan, gugatan, dan gugatan sederhana beserta kelengkapannya untuk diserahkan kepada Panitera Pengganti.\r\nMeregister buku induk keuangan dan keuangan eksekusi.\r\nMelaksanakan tugas Pojok E-Court.\r\nMelaksanakan tugas PTSP.\r\nMembantu tugas lainnya yang diberikan oleh Panitera Muda Perdata.\r\nMelaksanakan tugas-tugas yang diberikan pimpinan yang berkaitan dengan kedinasan.', NULL, 'Kejurusitaan dan pemanggilan, penginputan SIPP, penerimaan dan pemeriksaan kelengkapan berkas, e-Court, pelayanan PTSP, register keuangan perkara dan eksekusi', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(10, 51, NULL, 'Memproses administrasi upaya hukum perkara perdata (banding, kasasi, dan peninjauan kembali) serta menyusun laporan keperdataan.', 'Membuat akta-akta terkait upaya hukum, termasuk akta banding, akta kasasi, dan akta peninjauan kembali, serta menerima dan memeriksa memori banding, kontra memori, memori kasasi, kontra memori kasasi, dan berkas PK.\r\nMenginput seluruh data perkara upaya hukum (banding, kasasi, dan PK) ke dalam SIPP, E-Court, dan E-Court Banding.\r\nMemproses dan mengirim berkas perkara upaya hukum ke Pengadilan Tinggi untuk banding dan ke Mahkamah Agung untuk kasasi dan PK secara E-Court/E-Filing.\r\nMelaksanakan pemberitahuan isi putusan banding, putusan kasasi, dan putusan peninjauan kembali.\r\nMenyusun laporan-laporan keperdataan, termasuk laporan Hawasbid Kepaniteraan Perdata dan laporan rutin terkait perkara upaya hukum.\r\nMelaksanakan penginputan pada aplikasi-aplikasi perdata lainnya sesuai ketentuan pengadilan.\r\nMengirim berkas inaktif yang telah berkekuatan hukum tetap (BHT) ke Bagian Hukum sesuai prosedur arsip perkara.\r\nMelaksanakan layanan PTSP pada lingkup Kepaniteraan Perdata sesuai penugasan.\r\nMelaksanakan tugas kedinasan lain yang diberikan oleh pimpinan sesuai kebutuhan satuan kerja.', NULL, 'Pembuatan akta upaya hukum, penginputan SIPP dan e-Court, pengiriman berkas banding/kasasi/PK secara elektronik, pemberitahuan putusan, penyusunan laporan keperdataan, pengarsipan berkas perkara, pelayanan PTSP', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(11, 8, NULL, 'Melaksanakan administrasi perkara di bidang pidana.', 'Melaksanakan pemeriksaan dan penelaahan kelengkapan berkas perkara pidana.\r\nMelaksanakan registrasi perkara pidana.\r\nMelaksanakan penerimaan permohonan praperadilan dan pemberitahuan kepada termohon.\r\nMelaksanakan distribusi perkara yang telah diregister untuk diteruskan kepada ketua majelis hakim berdasarkan penetapan penunjukan majelis hakim dari Ketua Pengadilan.\r\nMelaksanakan penghitungan, penyiapan, dan pengiriman penetapan penahanan, perpanjangan penahanan, dan penangguhan penahanan.\r\nMelaksanakan penerimaan permohonan izin penggeledahan dan izin penyitaan dari penyidik.\r\nMelaksanakan penerimaan kembali berkas perkara yang sudah diputus dan diminutasi.\r\nMelaksanakan pemberitahuan isi putusan tingkat pertama kepada para pihak yang tidak hadir.\r\nMelaksanakan penyampaian pemberitahuan putusan tingkat banding, kasasi, dan peninjauan kembali kepada para pihak.\r\nMelaksanakan penerimaan dan pengiriman berkas perkara yang dimohonkan banding, kasasi, dan peninjauan kembali.\r\nMelaksanakan pengawasan terhadap pemberitahuan isi putusan upaya hukum kepada para pihak dan penyampaian relaas penyerahan isi putusan kepada Pengadilan Tinggi dan Mahkamah Agung.\r\nMelaksanakan pemberitahuan isi putusan upaya hukum kepada Jaksa Penuntut Umum dan terdakwa.\r\nMelaksanakan penerimaan permohonan eksekusi.\r\nMelaksanakan penyimpanan berkas perkara yang belum mempunyai kekuatan hukum tetap.\r\nMelaksanakan penyerahan berkas perkara yang sudah berkekuatan hukum tetap kepada Panitera Muda Hukum.\r\nMelaksanakan urusan tata usaha kepaniteraan.\r\nMelaksanakan fungsi lain yang diberikan oleh Panitera.', NULL, 'Administrasi perkara pidana, registrasi dan distribusi perkara, penetapan penahanan, izin penggeledahan dan penyitaan, praperadilan, penanganan upaya hukum, tata usaha kepaniteraan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(12, 52, NULL, 'Melaksanakan tugas jurusita pengganti, memproses permohonan melalui E-Berpadu, dan mengirimkan salinan serta petikan putusan.', 'Menjalankan tugas-tugas Jurusita Pengganti.\r\nMemproses permohonan sita, geledah, diversi, dan tahanan melalui E-Berpadu.\r\nMengirimkan salinan putusan dan petikan putusan kepada terdakwa/penasihat hukum dan penuntut umum.\r\nMembantu Panitera Muda Pidana dalam melaksanakan tugas-tugas lainnya.\r\nMelaksanakan tugas-tugas yang diberikan pimpinan berkaitan dengan dinas.', NULL, 'Kejurusitaan, penguasaan aplikasi E-Berpadu, penanganan permohonan sita/geledah/diversi/tahanan, pengiriman salinan dan petikan putusan, pelayanan prima', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(13, 53, NULL, 'Melayani PTSP serta menerima, mendaftarkan, dan menginput perkara pidana dari E-Berpadu ke SIPP.', 'Bertugas sebagai petugas Pelayanan Terpadu Satu Pintu.\r\nMenerima berkas perkara pidana biasa, pidana anak, pidana singkat, pidana cepat, lalu lintas, dan praperadilan.\r\nMelakukan pendaftaran perkara pidana biasa, pidana anak, pidana singkat, pidana cepat, lalu lintas, dan praperadilan.\r\nMenginput data perkara pidana biasa, pidana anak, pidana singkat, pidana cepat, lalu lintas, dan praperadilan dari E-Berpadu ke SIPP.\r\nMemproses/memvalidasi surat izin besuk melalui E-Berpadu.\r\nMembantu Panitera Muda Pidana dalam melaksanakan tugas-tugas lainnya.\r\nMelaksanakan tugas yang diberikan pimpinan berkaitan dengan dinas.', NULL, 'Pelayanan PTSP, penerimaan dan pendaftaran perkara pidana, input data perkara E-Berpadu ke SIPP, validasi izin besuk, administrasi perkara pidana', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(14, 54, NULL, 'Memproses administrasi upaya hukum banding dan peninjauan kembali perkara pidana melalui E-Berpadu dan SIPP.', 'Bertugas sebagai petugas Pelayanan Terpadu Satu Pintu.\r\nMenerima permohonan banding dan peninjauan kembali dari terdakwa/keluarganya, penuntut umum, dan penasihat hukum melalui E-Berpadu.\r\nMembuat akta permohonan banding dan peninjauan kembali.\r\nMembuat surat laporan pemberitahuan banding dan peninjauan kembali ke Pengadilan Tinggi/Mahkamah Agung Republik Indonesia.\r\nMenerima dan membuatkan tanda terima memori/kontra memori banding.\r\nMelengkapi berkas perkara Bundel A dan Bundel B di E-Berpadu dan SIPP yang akan dikirim ke Pengadilan Tinggi/Mahkamah Agung Republik Indonesia.\r\nMengirim surat tembusan pengiriman banding dan peninjauan kembali kepada para pihak melalui Bagian Umum.\r\nMeregister perkara banding dan peninjauan kembali ke dalam buku register/buku bantu perkara.\r\nMenyerahkan berkas perkara banding dan peninjauan kembali yang telah berkekuatan hukum tetap kepada Kepaniteraan Hukum serta mencatatnya ke dalam SIPP.\r\nMembantu Panitera Muda Pidana dalam melaksanakan tugas-tugas lainnya.\r\nMelaksanakan tugas yang diberikan pimpinan berkaitan dengan dinas.', NULL, 'Pelayanan PTSP, penerimaan permohonan banding dan PK melalui E-Berpadu, pembuatan akta dan surat laporan upaya hukum, pengelolaan Bundel A dan B, registrasi perkara upaya hukum, penguasaan SIPP', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(15, 10, NULL, 'Melaksanakan administrasi perkara di bidang perkara khusus penyelesaian perselisihan hubungan industrial.', 'Membantu hakim dalam persidangan dengan mengikuti dan mencatat jalannya persidangan.\r\nMemonitor pendaftaran perkara gugatan secara elektronik.\r\nMemonitor panjar biaya gugatan yang diajukan.\r\nMemonitor register perkara PHI secara elektronik.\r\nMemeriksa berkas perkara yang diajukan upaya hukum kasasi.\r\nMenerima dan memeriksa berkas perkara yang telah diminutasi.\r\nMemonitor penyerahan berkas perkara inaktif yang sudah berkekuatan hukum tetap (BHT) ke Kepaniteraan Hukum.\r\nMemeriksa permohonan eksekusi yang diajukan oleh pemohon.\r\nMembuat resume atas permohonan eksekusi.\r\nMemonitor surat masuk dan surat kembali, serta mendistribusikannya.\r\nMembuat surat balasan atas surat masuk.', NULL, 'Administrasi perkara PHI, pendaftaran dan monitoring perkara secara elektronik, pemeriksaan berkas kasasi dan minutasi, pengelolaan berkas inaktif, penanganan permohonan eksekusi, pembuatan resume dan surat', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(16, 55, NULL, 'Mendaftarkan perkara PHI melalui E-Court, memproses berkas perkara, serta menyusun laporan pengawasan bidang dan TLHP.', 'Mendaftarkan perkara perdata khusus/PHI melalui E-Court.\r\nMenyiapkan dan memproses berkas pendaftaran perkara untuk didistribusikan ke Panitera Pengganti.\r\nMemeriksa checklist berkas perkara yang diserahkan Panitera Pengganti sebelum diarsipkan di Kepaniteraan Hukum.\r\nMembuat berita acara penyerahan berkas inaktif ke Kepaniteraan Hukum.\r\nMembuat laporan pengawasan bidang Kepaniteraan PHI.\r\nMembuat laporan TLHP Kepaniteraan PHI.\r\nMelaksanakan tugas sebagai petugas PTSP.\r\nMelaksanakan tugas-tugas kedinasan yang diberikan oleh atasan.', NULL, 'Pendaftaran perkara melalui e-Court, pemeriksaan kelengkapan berkas perkara, pembuatan berita acara penyerahan berkas inaktif, penyusunan laporan pengawasan bidang dan TLHP, pelayanan PTSP', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(17, 56, NULL, 'Mendaftarkan upaya hukum kasasi perkara PHI secara elektronik, memproses akta Perjanjian Bersama, dan menyusun monev serta laporan Kepaniteraan PHI.', 'Mendaftarkan upaya hukum kasasi perkara PHI secara elektronik.\r\nMenyiapkan dan memproses berkas perkara upaya hukum untuk dikirim secara elektronik.\r\nMemproses permohonan pendaftaran akta Perjanjian Bersama (Bipartit/Mediasi).\r\nMencatat pendaftaran Perjanjian Bersama (Bipartit/Mediasi) ke buku register.\r\nMembuat monev dan laporan yang ada di Kepaniteraan PHI.\r\nMelaksanakan tugas sebagai petugas PTSP.\r\nMembantu tugas lainnya yang dilaksanakan oleh Panitera Muda PHI.\r\nMelaksanakan tugas-tugas kedinasan yang diberikan oleh atasan.', NULL, 'Pendaftaran kasasi perkara PHI secara elektronik, pemrosesan berkas upaya hukum, pendaftaran akta Perjanjian Bersama, penyusunan monev dan laporan, pelayanan PTSP', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(18, 57, NULL, 'Mendaftarkan upaya hukum kasasi perkara PHI secara elektronik, memproses akta Perjanjian Bersama, dan menyusun monev serta laporan Kepaniteraan PHI.', 'Mendaftarkan upaya hukum kasasi perkara PHI secara elektronik.\r\nMenyiapkan dan memproses berkas perkara upaya hukum untuk dikirim secara elektronik.\r\nMemproses permohonan pendaftaran akta Perjanjian Bersama (Bipartit/Mediasi).\r\nMencatat pendaftaran Perjanjian Bersama (Bipartit/Mediasi) ke buku register.\r\nMembuat monev dan laporan yang ada di Kepaniteraan PHI.\r\nMelaksanakan tugas sebagai petugas PTSP.\r\nMembantu tugas lainnya yang dilaksanakan oleh Panitera Muda PHI.\r\nMelaksanakan tugas-tugas kedinasan yang diberikan oleh atasan.', NULL, 'Pendaftaran kasasi perkara PHI secara elektronik, pemrosesan berkas upaya hukum, pendaftaran akta Perjanjian Bersama, penyusunan monev dan laporan, pelayanan PTSP', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(19, 11, NULL, 'Melaksanakan administrasi perkara di bidang perkara khusus tindak pidana korupsi.', 'Mengoordinasikan pelayanan PTSP.\r\nMemonitor dan mengevaluasi pelaksanaan administrasi pada Kepaniteraan TIPIKOR.\r\nMemonitor dan mengevaluasi pelimpahan perkara TIPIKOR melalui E-Berpadu.\r\nMemonitor dan mengevaluasi pemrosesan izin besuk, izin penyitaan, izin penggeledahan, dan penahanan melalui E-Berpadu.\r\nMemonitor dan mengevaluasi pemrosesan upaya hukum perkara TIPIKOR secara elektronik.', NULL, 'Administrasi perkara Tipikor, koordinasi pelayanan PTSP, monitoring dan evaluasi pelimpahan perkara melalui E-Berpadu, pemrosesan izin besuk/penyitaan/penggeledahan/penahanan, penanganan upaya hukum elektronik', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(20, 58, NULL, 'Melayani PTSP Tipikor, memproses izin penyitaan dan penggeledahan serta upaya hukum secara elektronik, dan menyusun monev dan laporan.', 'Melaksanakan pelayanan PTSP TIPIKOR.\r\nMemproses penyelesaian permohonan izin/persetujuan penyitaan dan izin/persetujuan penggeledahan melalui E-Berpadu.\r\nMemproses permohonan upaya hukum secara elektronik.\r\nMembuat monev dan laporan Kepaniteraan TIPIKOR.\r\nMelaksanakan tugas-tugas kedinasan yang diberikan oleh atasan.', NULL, 'Pelayanan PTSP, pemrosesan izin penyitaan dan penggeledahan melalui E-Berpadu, pemrosesan upaya hukum elektronik, penyusunan monev dan laporan Kepaniteraan Tipikor', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(21, 59, NULL, 'Melayani PTSP Tipikor, memproses izin besuk dan berkas perkara inaktif, serta menyusun laporan pengawasan bidang dan TLHP.', 'Melaksanakan pelayanan PTSP TIPIKOR.\r\nMemproses permohonan izin/persetujuan besuk melalui E-Berpadu.\r\nMemproses berkas perkara inaktif ke Kepaniteraan Hukum.\r\nMembuat laporan pengawasan bidang dan TLHP Kepaniteraan TIPIKOR.\r\nMelaksanakan tugas-tugas kedinasan yang diberikan oleh atasan.', NULL, 'Pelayanan PTSP, pemrosesan izin besuk melalui E-Berpadu, pengelolaan berkas inaktif ke Kepaniteraan Hukum, penyusunan laporan pengawasan bidang dan TLHP', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(22, 9, NULL, 'Melaksanakan pengumpulan, pengolahan, dan penyajian data perkara, kehumasan, penataan arsip perkara, serta pelaporan.', 'Melaksanakan pengumpulan, pengelolaan, dan penyajian data perkara.\r\nMelaksanakan penyajian statistik perkara.\r\nMelaksanakan penyusunan dan pengiriman pelaporan perkara.\r\nMelaksanakan penataan, penyimpanan, dan pemeliharaan arsip perkara.\r\nMelaksanakan kerja sama dengan arsip daerah untuk penitipan berkas perkara.\r\nMelaksanakan penyiapan, pengelolaan, dan penyajian bahan-bahan yang berkaitan dengan transparansi perkara.\r\nMelaksanakan penghimpunan pengaduan dari masyarakat.\r\nMelaksanakan fungsi lain yang diberikan oleh Panitera.', NULL, 'Pengumpulan, pengolahan, dan penyajian data perkara, statistik perkara, pelaporan perkara, kearsipan perkara, transparansi perkara, penanganan pengaduan masyarakat', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(23, 60, NULL, 'Melayani PTSP dan layanan hukum, meregister berkas BHT, serta menyusun laporan monev dan statistik layanan hukum.', 'Melaksanakan tugas sebagai petugas PTSP Kepaniteraan Muda Hukum.\r\nMemberikan pelayanan Eraterang Badilum.\r\nMelaksanakan pelayanan akta di bawah tangan (waarmerking).\r\nMemproses permintaan surat keterangan inkracht.\r\nMelayani pendaftaran surat kuasa khusus.\r\nMelakukan pembuatan permohonan surat kuasa insidentil.\r\nMeregister berkas perkara pidana, perdata, Tipikor, dan PHI yang telah BHT ke dalam buku register.\r\nMelakukan pencatatan peminjaman berkas perkara/arsip.\r\nMembuat dan mengarsipkan jawaban surat masuk.\r\nMenyusun laporan monitoring dan evaluasi (monev) berikut: Monev SPKP dan SPAK, Monev Eraterang, Monev SIPP, Monev PTSP, Monev Uraian Tugas, dan Monev Posbakum.\r\nMembuat statistik layanan hukum.\r\nMembuat laporan Hawasbid dan TLHP Kepaniteraan Hukum.\r\nMembuat laporan ke Pengadilan Tinggi setiap bulan.\r\nMembuat laporan survei harian terkait pelayanan.\r\nMembuat notulen rapat berjenjang kepaniteraan.\r\nMelaksanakan perintah atasan sehubungan dengan kedinasan.', NULL, 'Pelayanan PTSP, pelayanan Eraterang, waarmerking, surat keterangan inkracht, pendaftaran surat kuasa, registrasi berkas BHT, pencatatan peminjaman arsip, penyusunan laporan monev dan statistik layanan hukum, pembuatan notulen', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(24, 61, NULL, 'Menangani pengaduan dan operator SIWAS, menyusun laporan berkala, serta melayani waarmerking, PTSP, dan penataan arsip.', 'Menangani pengaduan dan menjadi operator SIWAS.\r\nMenangani pengaduan pada meja pengaduan.\r\nMembuat laporan bulanan dan laporan tahunan.\r\nMembuat laporan triwulan SPKP dan SPAK.\r\nMelaksanakan pelayanan akta di bawah tangan (waarmerking).\r\nMelaksanakan tugas PTSP.\r\nMelaksanakan pendaftaran surat kuasa khusus.\r\nMenjadi operator layanan elektronik.\r\nMenata arsip dan menginput arsip ke dalam SIPP.\r\nMembuat laporan semester berkaitan dengan gratifikasi.\r\nMelaksanakan perintah atasan sehubungan dengan kedinasan.', NULL, 'Penanganan pengaduan dan operator SIWAS, penyusunan laporan bulanan/triwulan/semester/tahunan, pelayanan waarmerking, pelayanan PTSP, pendaftaran surat kuasa khusus, penataan arsip dan penginputan SIPP, laporan gratifikasi', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(25, 13, NULL, 'Melaksanakan semua perintah Ketua/Hakim Ketua Majelis untuk menyampaikan pengumuman, teguran, protes, dan pemberitahuan putusan pengadilan menurut cara yang ditentukan undang-undang.', 'Membuat relaas panggilan sidang.\r\nMembuat relaas pemberitahuan putusan Pengadilan Negeri, Pengadilan Tinggi, dan Mahkamah Agung.\r\nMembuat relaas pemberitahuan yang berkaitan dengan banding, kasasi, PK, dan eksekusi.\r\nMembuat berita acara penyitaan yang salinannya diserahkan kepada pihak-pihak yang berkepentingan.\r\nMembuat penetapan-penetapan dan berita acara yang berkaitan dengan pelaksanaan eksekusi.', NULL, 'Kejurusitaan, pembuatan relaas panggilan dan pemberitahuan, pembuatan berita acara penyitaan, pelaksanaan eksekusi, pemahaman hukum acara', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(26, 12, NULL, 'Membantu hakim dalam persidangan perkara perdata maupun pidana serta melaporkan kegiatan persidangan.', 'Membantu hakim dalam persidangan dan melaporkan kegiatan persidangan tersebut kepada bagian pidana (Panmud Pidana).\r\nMembantu hakim dalam membuat penetapan hari sidang, berita acara persidangan, serta penetapan terdakwa tetap ditahan, dikeluarkan dari tahanan, atau diubah jenis tahanannya.\r\nMelaporkan barang bukti.\r\nMelaporkan kepada Panitera Muda Pidana maupun Panitera Muda Perdata untuk mencatat perkara yang sudah putus beserta amar putusannya.\r\nMenyerahkan berkas yang telah diminutasi.', NULL, 'Pendampingan hakim dalam persidangan, pembuatan berita acara sidang dan penetapan, pelaporan barang bukti, pencatatan putusan, minutasi berkas perkara, pemahaman hukum acara perdata dan pidana', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(27, 15, NULL, 'Melaksanakan pemberian dukungan di bidang administrasi, organisasi, keuangan, sumber daya manusia, serta sarana dan prasarana di lingkungan Pengadilan Negeri Kelas IA.', 'Menyiapkan bahan pelaksanaan urusan perencanaan program dan anggaran.\r\nMelaksanakan urusan kepegawaian.\r\nMelaksanakan urusan keuangan.\r\nMenyiapkan bahan pelaksanaan penataan organisasi dan tata laksana.\r\nMelaksanakan pengelolaan teknologi informasi dan statistik.\r\nMelaksanakan urusan surat menyurat, arsip, perlengkapan, rumah tangga, keamanan, keprotokolan, hubungan masyarakat, dan perpustakaan.\r\nMenyiapkan bahan pelaksanaan pemantauan, evaluasi, dokumentasi, serta pelaporan di lingkungan kesekretariatan Pengadilan Negeri Kelas IA.', NULL, 'Kepemimpinan, perencanaan program dan anggaran, manajemen kepegawaian dan keuangan, penataan organisasi dan tata laksana, pengelolaan teknologi informasi, persuratan, kearsipan, perlengkapan, keprotokolan, kehumasan, pemantauan dan pelaporan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(28, 17, NULL, 'Melaksanakan penyiapan bahan pelaksanaan program dan anggaran, pengelolaan teknologi informasi dan statistik, serta pelaksanaan pemantauan, evaluasi, dokumentasi, dan pelaporan.', 'Melaksanakan penyiapan bahan pelaksanaan program dan anggaran.\r\nMelaksanakan penyusunan perencanaan program dan anggaran/kegiatan/RKAKL serta penyusunan TOR, RAB, bahan, dan data dukung pengajuan anggaran.\r\nMelaksanakan revisi DIPA dan DIPA Halaman III berupa perubahan/pergeseran rincian anggaran yang telah ditetapkan berdasarkan APBN/DIPA.\r\nMelaksanakan revisi POK/komponen dalam satu output yang disesuaikan dengan rencana kegiatan dan dana yang tersedia.\r\nMelaksanakan perawatan dan pemeliharaan jaringan agar kualitas dan kinerja perangkat jaringan stabil dan tidak terjadi kerusakan pada komponen di dalamnya.\r\nMelaksanakan perawatan dan pengelolaan CCTV, yaitu menjaga sarana prasarana, sistem, aplikasi jaringan, dan database CCTV dalam kondisi baik dan berfungsi dengan baik.\r\nMemonitor dan mengevaluasi terlaksananya keterbukaan informasi publik (KIP) dengan menjaga keamanan website beserta aplikasi yang terintegrasi, serta publikasi informasi pada website dan media sosial.\r\nMelaksanakan pengelolaan server, yaitu menjaga sarana prasarana, sistem, aplikasi, jaringan, dan database server dalam kondisi baik dan berfungsi dengan baik.\r\nMemonitor dan mengevaluasi terlaksananya koordinasi dengan Bagian Umum terkait pengelolaan jaringan listrik dan genset yang mendukung perangkat/sarana prasarana TI.\r\nMemonitor dan mengevaluasi terlaksananya pengumpulan data statistik yang akurat dan benar.\r\nMemonitor dan mengevaluasi terkoordinirnya pengelolaan dokumen surat keputusan dalam aplikasi JDIH.\r\nMelaksanakan perawatan dan pengelolaan sistem TI, yaitu menjaga sarana prasarana, sistem aplikasi, jaringan, dan database dalam kondisi dan fungsi baik, termasuk sinkronisasi SIPP (Web, PT, MA, E-Court, Direktori Putusan, SPPT-TI), media sosial, layanan PTSP, dan sidang online.\r\nMelaksanakan penyusunan dan pengiriman laporan Badilum selain perkara secara sesuai, benar, dan tepat waktu.\r\nMemonitor dan mengevaluasi terlaksananya penyusunan dan pengiriman laporan Monev SMART secara sesuai, benar, dan tepat waktu.\r\nMemonitor dan mengevaluasi terlaksananya penyusunan laporan kegiatan bulanan secara sesuai, benar, dan tepat waktu.\r\nMemonitor dan mengevaluasi terlaksananya penyusunan dan pengiriman data dan dokumen SAKIP pada Komdanas secara sesuai, benar, dan tepat waktu.\r\nMelaksanakan penyusunan dan pengiriman laporan tahunan/kegiatan secara sesuai, benar, dan tepat waktu.\r\nMelaksanakan penyusunan dokumen evaluasi kinerja pada aplikasi SEMAR secara sesuai, benar, dan tepat waktu.\r\nMenyelesaikan tindak lanjut atas hasil monitoring dan evaluasi/assessment surveilans AMPUH Badilum.\r\nMenyelesaikan tindak lanjut atas hasil pemeriksaan Pengadilan Tinggi.\r\nMenyelesaikan tindak lanjut atas hasil monitoring dan evaluasi/assessment Sistem Manajemen Anti Penyuapan.\r\nMenyelesaikan tindak lanjut atas hasil pemeriksaan Bawas.\r\nMemonitor dan mengevaluasi penyelesaian tindak lanjut atas hasil pengawasan bidang.\r\nMemonitor dan mengevaluasi terlaksananya administrasi dan dokumentasi persuratan yang tertata dengan rapi.\r\nMelaksanakan tugas-tugas lain di bidang perencanaan, TI, dan pelaporan serta tugas lain yang diberikan pimpinan.\r\nMelaksanakan monitoring dan evaluasi secara berjenjang di kesekretariatan, terutama bagian PTIP.\r\nMenyelesaikan pengembangan sistem/aplikasi nasional (SIPP, E-Court, E-Berpadu, SIAP).', NULL, 'Perencanaan program dan anggaran (RKAKL, TOR, RAB, revisi DIPA/POK), pengelolaan jaringan, server, CCTV dan website, keterbukaan informasi publik, statistik dan pelaporan, SAKIP dan SEMAR, penyelesaian tindak lanjut hasil pengawasan, monitoring dan evaluasi', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(29, 20, NULL, 'Mempersiapkan sistem, sarana, dan prasarana teknologi informasi serta melaksanakan pemantauan, evaluasi, dokumentasi, dan pelaporan.', 'Mempersiapkan sistem, sarana, dan prasarana teknologi informasi.\r\nMelaksanakan pemantauan, evaluasi, dan dokumentasi serta pelaporan.\r\nMengedit dan mengunggah berita serta kegiatan pengadilan di media sosial dan website.\r\nMenyusun dan membuat video.\r\nMelakukan pemeliharaan CCTV.\r\nMelakukan instalasi dan/atau upgrade sistem operasi komputer dan aplikasi pendukungnya.\r\nMenangani keluhan dan gangguan serta melakukan troubleshooting peripheral, jaringan, sistem operasi, dan aplikasi komputer.\r\nMelakukan pengelolaan di bidang perangkat keras (hardware).\r\nMembuat laporan pengawasan dan tindak lanjut Hawasbid.\r\nMelakukan penyusunan dokumen laporan.\r\nMelaksanakan tugas dari atasan sehubungan dengan kedinasan.', NULL, 'Pengelolaan sarana dan prasarana TI, troubleshooting perangkat keras, jaringan, sistem operasi dan aplikasi, instalasi dan upgrade sistem, pengelolaan konten website dan media sosial, produksi video, pemeliharaan CCTV, penyusunan laporan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(30, 62, NULL, 'Mengelola perangkat pendukung TI, dokumen potongan gaji dan uang makan, laporan bendahara penerimaan, serta kode billing PNBP.', 'Melakukan pengelolaan di bidang perangkat pendukung teknologi informasi.\r\nMelakukan pengelolaan di bidang perangkat lunak.\r\nMelakukan pembuatan dokumen potongan gaji.\r\nMelakukan pembuatan laporan bendahara penerimaan.\r\nMelakukan pembuatan dan pengajuan dokumen uang makan.\r\nMelakukan pembuatan kode billing PNBP dan laporan penerimaan.\r\nMelakukan pembuatan laporan pengawasan dan tindak lanjut Hawasbid.\r\nMelakukan pengumpulan dan pembuatan laporan tahunan.\r\nMelaksanakan tugas dari atasan sehubungan dengan kedinasan.', NULL, 'Pengelolaan perangkat pendukung TI, pengelolaan perangkat lunak, pembuatan dokumen potongan gaji dan uang makan, laporan bendahara penerimaan, kode billing PNBP, penyusunan laporan tahunan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(31, 16, NULL, 'Melaksanakan penyiapan bahan pelaksanaan urusan kepegawaian, penataan organisasi, dan tata laksana.', 'Merencanakan dan memimpin pelaksanaan tugas bagian Kepegawaian, Organisasi, dan Tata Laksana.\r\nMenetapkan sasaran kegiatan setiap tahun.\r\nMenyusun dan menjadwalkan rencana kegiatan.\r\nMembagi tugas kepada bawahan dan menentukan penanggung jawab kegiatan Subbagian Kepegawaian, Organisasi, dan Tata Laksana.\r\nMenggerakkan dan mengarahkan pelaksanaan kegiatan Subbagian Kepegawaian, Organisasi, dan Tata Laksana.\r\nMengadakan konsultasi dengan atasan setiap waktu diperlukan.\r\nMelakukan tugas khusus dari atasan/pimpinan.\r\nMengevaluasi pelaksanaan tugas bawahan.\r\nMemantau dan melakukan evaluasi pelaksanaan tugas para bawahan di lingkungan Subbagian Kepegawaian, Organisasi, dan Tata Laksana.\r\nMelaksanakan tugas dari atasan sehubungan dengan kedinasan.', NULL, 'Kepemimpinan dan perencanaan kerja, pembagian tugas, pengelolaan kepegawaian, organisasi dan tata laksana, monitoring dan evaluasi kinerja bawahan, koordinasi dengan atasan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(32, 63, NULL, 'Mengelola persuratan, surat tugas, data kepegawaian pada aplikasi KOMDANAS dan SIKEP, serta laporan kedisiplinan dan kepegawaian.', 'Menjawab surat masuk.\r\nMembuat surat tugas.\r\nMenginput presensi pada aplikasi KOMDANAS.\r\nMembuat laporan kedisiplinan.\r\nMengupdate data pada aplikasi SIKEP Mahkamah Agung Republik Indonesia.\r\nMendistribusikan surat keputusan ketua, surat tugas, dan surat-surat lainnya.\r\nMenginput PCKB pada aplikasi KOMDANAS.\r\nMenginput surat cuti pada aplikasi SIKEP.\r\nMembuat laporan TLHP pengawasan.\r\nMembuat laporan mutasi internal.\r\nMembuat laporan pengembangan kompetensi.\r\nMengupdate data pegawai, KP, KGB, dan pensiun pada monitor.\r\nMelaksanakan tugas dari atasan sehubungan dengan kedinasan.', NULL, 'Persuratan dan distribusi surat, penyusunan surat tugas, penguasaan aplikasi KOMDANAS dan SIKEP, penyusunan laporan kedisiplinan/TLHP/mutasi/pengembangan kompetensi, pengelolaan data pegawai, KP, KGB, dan pensiun', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(33, 21, NULL, 'Melaksanakan pengelolaan arsip dinamis dan arsip statis serta pembinaan kearsipan.', 'Melakukan pengelolaan arsip dinamis.\r\nMelakukan pengelolaan arsip statis.\r\nMelakukan pembinaan kearsipan.\r\nMelaksanakan tugas dari atasan sehubungan dengan kedinasan.', NULL, 'Pengelolaan arsip dinamis, pengelolaan arsip statis, pembinaan kearsipan, penataan dan pemeliharaan arsip', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(34, 18, NULL, 'Melaksanakan penyiapan urusan surat menyurat, arsip, perlengkapan, rumah tangga, keamanan, keprotokolan, hubungan masyarakat, perpustakaan, serta pengelolaan keuangan.', 'Membuat perencanaan pencairan anggaran seminggu sebelum pencairan dana, menginputnya dalam aplikasi AFS, kemudian mengirimkannya ke KPPN.\r\nMengajukan uang persediaan dan mengantarkan SPM-nya ke KPPN.\r\nMembuat dan mengajukan tambahan uang persediaan yang bersifat mendesak dan mengantarkan SPM-nya ke KPPN.\r\nMengajukan ganti uang persediaan dan mengantarkan SPM-nya ke KPPN.\r\nMembuat SPM langsung dan mengantarkannya ke KPPN.\r\nMengisi setiap transaksi ke dalam buku: Buku Kas Umum, Buku Pembantu Kas Tunai, Buku Pembantu Bank, Buku Pembantu Pajak, Buku Pembantu Uang Persediaan, dan Buku Pembantu Kas LS.\r\nMembuat laporan pertanggungjawaban bendahara pengeluaran, realisasi anggaran manual, dan penyerapan anggaran manual.\r\nMenerima dan menyetorkan pajak melalui kantor pos/bank.\r\nMembuat daftar dan pertanggungjawaban remunerasi serta mengirimkannya ke Korwil.', NULL, 'Perencanaan pencairan anggaran dan aplikasi AFS, pengajuan UP/TUP/GUP dan SPM ke KPPN, pembukuan kas (BKU dan buku pembantu), pertanggungjawaban bendahara pengeluaran, penyetoran pajak, remunerasi', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(35, 64, NULL, 'Menyiapkan informasi dan pemberitaan, layanan kehumasan, serta dokumen pembayaran dan pengajuan keuangan.', 'Menyiapkan penyelenggaraan informasi dan pemberitaan.\r\nMenyiapkan laporan analisis dan evaluasi pelaksanaan kehumasan.\r\nMenyiapkan rumusan pelayanan dan pemberitaan.\r\nMengelola data pemohon informasi kehumasan.\r\nMemeriksa dan menyediakan berkas/dokumen pembayaran gaji induk, gaji susulan, gaji ke-13, THR, uang penghargaan Hakim Ad Hoc, dan PPNPN.\r\nMemeriksa data pegawai dan menyediakan berkas/dokumen pengajuan tunjangan khusus kinerja bagi ASN dan transport bagi hakim di tingkat satuan kerja.\r\nMemeriksa bukti pendukung, menguji SPP, memvalidasi, memproses SPM ke KPPN melalui aplikasi SAKTI, dan mengarsipkan dokumen SPM.', NULL, 'Kehumasan dan layanan informasi, administrasi gaji dan tunjangan, verifikasi SPP/SPM, penguasaan SAKTI, pengarsipan', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(36, 65, NULL, 'Menyusun laporan realisasi anggaran dan rekonsiliasi keuangan DIPA 01 dan DIPA 03 serta memproses SPP/SPM melalui SAKTI.', 'Melaksanakan laporan manual realisasi anggaran DIPA 01 dan DIPA 03.\r\nMelaksanakan rekonsiliasi keuangan DIPA 01 dan DIPA 03.\r\nMenyampaikan neraca, laporan realisasi anggaran, laporan operasional, dan laporan perubahan ekuitas.\r\nMenyampaikan berita acara rekonsiliasi keuangan DIPA 01 dan DIPA 03.\r\nMenerima bukti pembayaran sebagai bahan untuk membuat surat perintah pembayaran (SPBy).\r\nMembuat SPP sebagai dasar pembuatan SPM ke KPPN melalui aplikasi SAKTI untuk belanja 52.\r\nMengarsipkan SPM beserta lampiran-lampirannya sesuai bulan.\r\nMemeriksa berkas-berkas relaas DIPA 03.', NULL, 'Pelaporan realisasi anggaran DIPA 01 dan DIPA 03, rekonsiliasi keuangan, penyusunan laporan keuangan (neraca, LRA, LO, LPE), penyusunan SPP/SPM melalui SAKTI, pengarsipan SPM, pemeriksaan berkas relaas DIPA 03', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(37, 66, NULL, 'Mengelola transaksi dan laporan Barang Milik Negara (BMN), inventarisasi, serta rekonsiliasi internal pada aplikasi SAKTI.', 'Memeriksa dokumen dan menginput data transaksi BMN.\r\nMelaksanakan permohonan usulan: Penetapan Status Penggunaan (PSP), asuransi, hibah masuk, sewa, rencana kebutuhan, dan penghapusan BMN.\r\nMenyusun laporan pengawasan dan pengendalian (Wasdal) untuk periode semesteran dan tahunan.\r\nMenyusun laporan BMN untuk periode semesteran dan tahunan.\r\nMembuat daftar barang ruangan/daftar barang lainnya, kartu identitas barang, labelisasi, dan SK penggunaan BMN.\r\nMelakukan inventarisasi BMN.\r\nMelakukan rekonsiliasi internal antara modul GLP dengan modul Aset Tetap dan Persediaan pada aplikasi SAKTI setiap bulan, semester, dan tahunan.', NULL, 'Pengelolaan BMN (input transaksi, PSP, asuransi, hibah, sewa, penghapusan), penyusunan laporan BMN dan Wasdal, inventarisasi, penyusunan daftar barang dan labelisasi, rekonsiliasi internal SAKTI', '2026-10-13 04:03:38', '2026-10-13 04:03:38'),
+(44, 48, 64, 'Melaksanakan Penyiapan Bahan Pelaksanaan, Program, Dan Anggaran, Pengelolaan Teknologi Informasi, Dan Statistik, Serta Pelaksanaan Pemantauan, Evaluasi Dan Dokumentasi Serta Pelaporan', 'Melaksanakan Penyiapan Bahan Pelaksanaan Program Dan Anggaran.\r\nMelaksanakan Penyusunan Perencanaan Program Dan Anggaran/ Kegiatan/RKAKL Dan Penyusunan TOR, RAB, Bahan Dan Data Dukung Pengajuan Anggaran.\r\nMelaksanakan Revisi DIPA Dan DIPA Hal III Berupa Perubahan/Pergeseran Rincian Anggaran Yang Telah Ditetapkan Berdasarkan APBN/DIPA.\r\nMelaksanakan Revisi POK/Komponen Dalam Satu Output Yang Disesuaikan Dengan Output Yang Disesuaikan Dengan Rencana Kegiatan Dan Dana Yang Tersedia.\r\nMelaksanakan Perawatan Dan Pemeliharaan Jaringan Sehingga Kualitas Dan Kinerja Perangkat Jaringan Stabil Dan Tidak Terjadi Kerusakan Pada Komponen Yang Ada Didalamnya.\r\nMelaksanakan Perawatan Dan Pengelolaan CCTV, Yaitu Menjaga Sarpras, Sistem, Aplikasi Jaringan, Database CCTV Dalam Kondisi Baik Dan Dapat Berfungsi Dengan Baik.\r\nMonev Terlaksananya Keterbukaan Informasi Publik (KIP) Yaitu Dengan Menjaga Keamanan Website Berikut Aplikasi Yang Terintegrasi, Publikasi Informasi Website Dan Media Sosial.\r\nMelaksanakan Pengelolaan Server Yaitu Dengan Menjaga Sarpras, Sistem, Aplikasi, Jaringan, Database Server Dalam Kondisi Baik Dan Dapat Berfungsi Dengan Baik.\r\nMonev Terlaksananya Koordinasi Dengan Bagian Umum Terkait Pengelolaan Jaringan Listrik Dan Genset Yang Mendukung Perangkat/Sarpras IT Dapat Berfungsi Dengan Baik.\r\nMonev Terlaksananya Pengumpulan Data Statistik Akurat Dan Benar.\r\nMonev Terkoordinirnya Pengelolaan Dokumen Surat Keputusan Dalam Aplikasi JDIH.\r\nMelaksanakan Perawatan Dan Pengelolaan Sistem IT Yaitu Menjaga Sarpras, Sistem Aplikasi, Jaringan, Database dll Dalam Kondisi Dan Fungsi Baik: Sinkronisasi SIPP (Web, PT, MA, Ecourt, Direktori Putusan, SPPT-TI), Media Sosial, Layanan Ptsp, Sidang Online.\r\nMelaksanakan Penyusunan Dan Pengiriman Laporan Badilum Selain Perkara Sesuai, Benar Dan Tepat Waktu.\r\nMonev Terlaksananya Penyusunan Dan Pengiriman Laporan Monev Smart Sesuai Benar Dan Tepat Waktu.\r\nMonev Terlaksananya Penyusunan Laporan Kegiatan Bulanan Sesuai, Benar Dan Tepat Waktu.\r\nMonev Terlaksananya Penyusunan Dan Pengiriman Data Dan Dokumen SAKIP Pada Komdanas Sesuai, Benar Dan Tepat Waktu.\r\nMelaksanakan Penyusunan Dan Pengiriman Laporan Tahunan/ Kegiatan Sesuai, Benar Dan Tepat Waktu.\r\nMelaksanakan Penyusunan Dokumen Evaluasi Kinerja Pada Aplikasi SEMAR Sesuai, Benar Dan Tepat Waktu.\r\nPenyelesaian Tindak Lanjut Atas Hasil Monitoring Dan Evaluasi/ Assesment Surveilance AMPUH Badilum.\r\nPenyelesaian Tindak Lanjut Atas Hasil Pemeriksaan Pengadilan Tinggi.\r\nPenyelesaian Tindak Lanjut Atas Hasil Monitoring Dan Evaluasi/ Assesment Sistem Manajemen Anti Penyuapan.\r\nPenyelesaian Tindak Lanjut Atas Hasil Pemeriksaan Bawas.\r\nMonev Penyelesaian Tindak Lanjut Atas Hasil Pengawasan Bidang.\r\nMonev Terlaksananya Administrasi Dan Dokumentasi Persuratan Tertata Dengan Rapi.\r\nTerlaksananya Tugas-Tugas Lain Yang Ada Di Perencanaan, IT Dan Pelaporan Serta Tugas Lain Yang Diberikan Pimpinan.\r\nTerlaksananya Monitoring & Evaluasi Secara Berjenjang Di Kesekretariatan, Terutama Bagian PTIP.\r\nPenyelesaian Pengembangan Sistem/Aplikasi Nasional (SIPP, E-Court, E-Berpadu, SIAP.', 'Penguasaan TI, analisis data, perencanaan program', 'Monitoring evaluasi, pengelolaan TI, penyusunan laporan kinerja', '2026-09-21 18:59:58', '2026-09-21 18:59:58'),
+(45, 18, 69, 'Pengelolaan BMN dan keuangan', 'Membuat Perencanaan Pencairan Anggaran Seminggu Sebelum Pencairan Dana Dan Menginput Dalam Aplikasi AFS,Kemudian Mengirimkan Ke KPPN.\r\nMengajukan Uang Persediaan Dan Mengantarkan Spmnya Ke KPPN.\r\nMembuat Dan Mengajukan Tambahan Uang Persediaan Yang Bersifat Mendesak Dan Mengantarkannya Spmnya Ke KPPN.\r\nMengajukan Ganti Uang Persediaan Dan Mengatarkan Spmnya Ke KPPN.\r\nMembuat SPM Langsung Dan Mengantarkannya Ke KPPN.\r\nMengisi Setiap Transaksi Ke Dalam Buku: Buku Kas Umum, Buku Kas Umum, Buku Pembantu Kas Tunai, Buku Pembantu Bank, Buku Pembantu Pajak, Buku Pembantu Uang Persediaan, Buku Pembantu Kas LS.\r\nMembuat Laporan Pertanggungjawaban Bendahara Pengeluaran, Membuat Realisasi Anggaran Manual, Membuat Penyerapan Anggaran Manual.\r\nMenerima Dan Menyetorkan Pajak Melalui Kantor Pos Bank.\r\nMembuat Daftar Dan Pertanggungjawaban Remnunisasi Dan Mengirimkannya ke KORWIL.', 'Pemahaman keuangan negara, ketelitian, akuntabilitas', 'Pengelolaan BMN, keuangan, akuntabilitas anggaran', '2026-09-21 18:59:58', '2026-09-21 18:59:58'),
+(46, 23, 70, 'Pelayanan publik dan informasi', 'Pelayanan informasi perkara.\r\nPenerimaan tamu.\r\nPengaduan masyarakat.\r\nPelayanan dokumen.', 'Komunikasi efektif, pelayanan publik, etika layanan', 'Service excellent, komunikasi publik, penanganan pengaduan', '2026-09-21 18:59:58', '2026-09-21 18:59:58');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `audit_log`
+--
+
+CREATE TABLE `audit_log` (
+  `id_log` bigint(20) UNSIGNED NOT NULL,
+  `id_user` int(10) UNSIGNED DEFAULT NULL,
+  `nip` varchar(50) DEFAULT NULL,
+  `aksi` varchar(50) NOT NULL,
+  `keterangan` varchar(255) DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `audit_log`
+--
+
+INSERT INTO `audit_log` (`id_log`, `id_user`, `nip`, `aksi`, `keterangan`, `ip`, `created_at`) VALUES
+(1, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-15 01:35:47'),
+(2, 1, '12323', 'logout', NULL, '::1', '2026-10-15 03:02:22'),
+(3, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-15 03:02:31'),
+(4, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-16 01:44:11'),
+(5, 1, '12323', 'logout', NULL, '::1', '2026-10-16 01:58:10'),
+(6, 3, '197303151992032001', 'login', 'Login berhasil', '::1', '2026-10-16 01:58:15'),
+(7, 3, '197303151992032001', 'logout', NULL, '::1', '2026-10-16 01:58:35'),
+(8, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-16 01:58:38'),
+(9, 1, '12323', 'logout', NULL, '::1', '2026-10-16 02:03:25'),
+(10, 3, '197303151992032001', 'login', 'Login berhasil', '::1', '2026-10-16 02:03:30'),
+(11, 3, '197303151992032001', 'logout', NULL, '::1', '2026-10-16 02:07:06'),
+(12, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-16 02:07:08'),
+(13, 1, '12323', 'logout', NULL, '::1', '2026-10-16 02:08:49'),
+(14, 3, '197303151992032001', 'login', 'Login berhasil', '::1', '2026-10-16 02:08:52'),
+(15, 3, '197303151992032001', 'logout', NULL, '::1', '2026-10-16 02:16:26'),
+(16, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-16 02:16:30'),
+(17, 1, '12323', 'logout', NULL, '::1', '2026-10-16 02:17:37'),
+(18, 3, '197303151992032001', 'login', 'Login berhasil', '::1', '2026-10-16 02:17:41'),
+(19, 3, '197303151992032001', 'logout', NULL, '::1', '2026-10-16 02:19:46'),
+(20, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-16 02:19:49'),
+(21, 1, '12323', 'logout', NULL, '::1', '2026-10-16 02:56:52'),
+(22, 3, '197303151992032001', 'login', 'Login berhasil', '::1', '2026-10-16 02:56:55'),
+(23, 3, '197303151992032001', 'logout', NULL, '::1', '2026-10-16 03:26:22'),
+(24, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-20 04:48:41'),
+(25, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-20 06:21:08'),
+(26, 1, '12323', 'logout', NULL, '::1', '2026-10-20 06:27:33'),
+(27, 5, '197308161994031001', 'login', 'Login berhasil', '::1', '2026-10-20 06:28:10'),
+(28, 5, '197308161994031001', 'logout', NULL, '::1', '2026-10-20 06:28:56'),
+(29, 1, '12323', 'login', 'Login berhasil', '::1', '2026-10-20 06:29:03');
 
 -- --------------------------------------------------------
 
@@ -118,6 +200,13 @@ CREATE TABLE `bukti_wawancara` (
   `file_bukti` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `bukti_wawancara`
+--
+
+INSERT INTO `bukti_wawancara` (`id_bukti`, `id_wawancara`, `file_bukti`, `created_at`) VALUES
+(5, 4, 'assets/uploads/wawancara/3b87430647a87de0495508b101667138.pdf', '2026-10-16 02:01:18');
 
 -- --------------------------------------------------------
 
@@ -168,6 +257,39 @@ INSERT INTO `diklat` (`id_diklat`, `id_kompetensi`, `nama_diklat`, `penyelenggar
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `dokumentasi_kuesioner`
+--
+
+CREATE TABLE `dokumentasi_kuesioner` (
+  `id_dokumentasi` int(10) UNSIGNED NOT NULL,
+  `id_wawancara` int(10) UNSIGNED NOT NULL,
+  `file_dokumentasi` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `dokumentasi_kuesioner`
+--
+
+INSERT INTO `dokumentasi_kuesioner` (`id_dokumentasi`, `id_wawancara`, `file_dokumentasi`, `created_at`) VALUES
+(1, 9, 'assets/uploads/kuesioner/2c15d114adf605f8d59f51d99052b24c.png', '2026-10-20 06:25:50');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `dokumentasi_wawancara`
+--
+
+CREATE TABLE `dokumentasi_wawancara` (
+  `id_dokumentasi` int(10) UNSIGNED NOT NULL,
+  `id_wawancara` int(10) UNSIGNED NOT NULL,
+  `file_dokumentasi` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `hasil_kuesioner`
 --
 
@@ -182,6 +304,14 @@ CREATE TABLE `hasil_kuesioner` (
   `daftar_jawaban` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `hasil_kuesioner`
+--
+
+INSERT INTO `hasil_kuesioner` (`id_hasil`, `id_wawancara`, `file_bukti`, `status_kompetensi`, `created_at`, `updated_at`, `daftar_nilai`, `daftar_jawaban`) VALUES
+(1, 6, NULL, 'Tidak Kompeten', '2026-10-16 02:56:43', '2026-10-16 03:23:21', '[null,null,null]', '{\"9\":\"asd\",\"8\":\"\",\"7\":\"asd\"}'),
+(6, 9, 'assets/uploads/kuesioner/77a7022eaafc38e6f08620d6e4323f9a.png', 'Kompeten', '2026-10-20 06:25:50', '2026-10-20 06:25:50', '[95,80,80]', '{\"6\":\"iya\",\"5\":\"iya\",\"4\":\"iya\"}');
+
 -- --------------------------------------------------------
 
 --
@@ -193,6 +323,7 @@ CREATE TABLE `hasil_wawancara` (
   `id_wawancara` int(10) UNSIGNED NOT NULL,
   `kompetensi` varchar(200) NOT NULL,
   `isi_penilaian` text NOT NULL,
+  `jawaban` text DEFAULT NULL,
   `nilai` tinyint(3) UNSIGNED DEFAULT NULL COMMENT 'Nilai 0-100',
   `file_bukti` varchar(255) DEFAULT NULL,
   `status_kompetensi` enum('Kompeten','Cukup','Tidak Kompeten') NOT NULL DEFAULT 'Tidak Kompeten',
@@ -204,22 +335,22 @@ CREATE TABLE `hasil_wawancara` (
 -- Dumping data untuk tabel `hasil_wawancara`
 --
 
-INSERT INTO `hasil_wawancara` (`id_hasil`, `id_wawancara`, `kompetensi`, `isi_penilaian`, `nilai`, `file_bukti`, `status_kompetensi`, `created_at`, `updated_at`) VALUES
-(0, 4, 'Penguasaan SIPP', 'Bagaimana prosedur minutasi perkara sampai selesai?', NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:08:10'),
-(1, 1, 'Pelayanan Prima', 'Bagaimana menangani ublicn masyarakat yang tidak puas?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:42'),
-(2, 1, 'Pelayanan Prima', 'Apa yang dimaksud dengan standar pelayanan prima?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
-(3, 1, 'Pelayanan Prima', 'Bagaimana prosedur pelayanan informasi perkara kepada masyarakat?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:37'),
-(4, 2, 'Pelayanan Prima', 'Bagaimana menangani masyarakat yang tidak puas?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:55'),
-(5, 2, 'Pelayanan Prima', 'Apa yang dimaksud dengan standar pelayanan prima?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
-(6, 2, 'Pelayanan Prima', 'Bagaimana prosedur pelayanan informasi perkara kepada masyarakat?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:52'),
-(7, 3, 'Teknisi Sarana dan Prasarana Umum', 'Apa langkah yang Anda lakukan dalam pemiliharaan preventif system kelistrikan gedung?', NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:07:31'),
-(8, 3, 'Teknisi Sarana dan Prasarana Umum', 'Bagaimana Anda beradaptasi dengan teknologi atau peralatan baru dalam system pemeliharaan sarana?', NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
-(9, 3, 'Teknisi Sarana dan Prasarana Umum', 'Bagaimana Anda memastikan standar keamanan (K3) terpenuhi saat Anda melakukan perbaikan prasarana?', NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:07:04'),
-(10, 4, 'Penguasaan SIPP', 'Bagaimana cara melakukan koreksi data perkara yang salah input?', NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:08:36'),
-(12, 4, 'Penguasaan SIPP', 'Apakah Saudara memahami seluruh tahapan input perkara pada SIPP?', NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:08:30'),
-(13, 5, 'Penguasaan SIPP', 'Apakah Saudara memahami seluruh tahapan input perkara pada SIPP?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:08'),
-(14, 5, 'Penguasaan SIPP', 'Bagaimana prosedur minutasi perkara sampai selesai?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
-(15, 5, 'Penguasaan SIPP', 'Bagaimana cara melakukan koreksi data perkara yang salah input?', NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:02');
+INSERT INTO `hasil_wawancara` (`id_hasil`, `id_wawancara`, `kompetensi`, `isi_penilaian`, `jawaban`, `nilai`, `file_bukti`, `status_kompetensi`, `created_at`, `updated_at`) VALUES
+(0, 4, 'Penguasaan SIPP', 'Bagaimana prosedur minutasi perkara sampai selesai?', NULL, 20, NULL, 'Tidak Kompeten', '2026-09-22 03:05:26', '2026-10-16 02:01:18'),
+(1, 1, 'Pelayanan Prima', 'Bagaimana menangani ublicn masyarakat yang tidak puas?', NULL, NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:42'),
+(2, 1, 'Pelayanan Prima', 'Apa yang dimaksud dengan standar pelayanan prima?', NULL, NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
+(3, 1, 'Pelayanan Prima', 'Bagaimana prosedur pelayanan informasi perkara kepada masyarakat?', NULL, NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:37'),
+(4, 2, 'Pelayanan Prima', 'Bagaimana menangani masyarakat yang tidak puas?', NULL, NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:55'),
+(5, 2, 'Pelayanan Prima', 'Apa yang dimaksud dengan standar pelayanan prima?', NULL, NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
+(6, 2, 'Pelayanan Prima', 'Bagaimana prosedur pelayanan informasi perkara kepada masyarakat?', NULL, NULL, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-09-22 04:06:52'),
+(7, 3, 'Teknisi Sarana dan Prasarana Umum', 'Apa langkah yang Anda lakukan dalam pemiliharaan preventif system kelistrikan gedung?', NULL, NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:07:31'),
+(8, 3, 'Teknisi Sarana dan Prasarana Umum', 'Bagaimana Anda beradaptasi dengan teknologi atau peralatan baru dalam system pemeliharaan sarana?', NULL, NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 03:05:26'),
+(9, 3, 'Teknisi Sarana dan Prasarana Umum', 'Bagaimana Anda memastikan standar keamanan (K3) terpenuhi saat Anda melakukan perbaikan prasarana?', NULL, NULL, NULL, 'Cukup', '2026-09-22 03:05:26', '2026-09-22 04:07:04'),
+(10, 4, 'Penguasaan SIPP', 'Bagaimana cara melakukan koreksi data perkara yang salah input?', NULL, 20, NULL, 'Tidak Kompeten', '2026-09-22 03:05:26', '2026-10-16 02:01:18'),
+(12, 4, 'Penguasaan SIPP', 'Apakah Saudara memahami seluruh tahapan input perkara pada SIPP?', NULL, 40, NULL, 'Tidak Kompeten', '2026-09-22 03:05:26', '2026-10-16 02:01:18'),
+(13, 5, 'Penguasaan SIPP', 'Apakah Saudara memahami seluruh tahapan input perkara pada SIPP?', NULL, 80, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-10-14 04:02:46'),
+(14, 5, 'Penguasaan SIPP', 'Bagaimana prosedur minutasi perkara sampai selesai?', 'betul kawab', 80, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-10-14 03:56:06'),
+(15, 5, 'Penguasaan SIPP', 'Bagaimana cara melakukan koreksi data perkara yang salah input?', 'mantao jiwa', 80, NULL, 'Kompeten', '2026-09-22 03:05:26', '2026-10-14 03:56:06');
 
 -- --------------------------------------------------------
 
@@ -287,7 +418,25 @@ INSERT INTO `jabatan` (`id_jabatan`, `kode_jabatan`, `nama_jabatan`, `is_penilai
 (45, 'PLO-PTIP', 'Penata Layanan Operasional-PTIP', 0, '2026-09-22 08:00:00'),
 (46, 'PLO-PID', 'Penata Layanan Operasional-Pidana (Paruh Waktu)', 0, '2026-09-22 08:00:00'),
 (47, 'PRB', 'Pramubhakti', 0, '2026-09-22 08:00:00'),
-(48, 'KSB', 'Kepala Sub Bagian', 0, '2026-09-22 08:00:00');
+(48, 'KSB', 'Kepala Sub Bagian', 0, '2026-09-22 08:00:00'),
+(49, 'KSR-PDT', 'Kasir Kepaniteraan Perdata', 0, '2026-10-13 02:37:15'),
+(50, 'JSP-PDT', 'Jurusita Pengganti Kepaniteraan Perdata', 0, '2026-10-13 02:37:15'),
+(51, 'APP-PDT', 'Klerek Analis Perkara Peradilan Kepaniteraan Perdata', 0, '2026-10-13 02:37:15'),
+(52, 'JSP-PID', 'Jurusita Pengganti Kepaniteraan Pidana', 0, '2026-10-13 02:37:15'),
+(53, 'PGP-PID', 'Klerek Pengelolaan Perkara Kepaniteraan Pidana', 0, '2026-10-13 02:37:15'),
+(54, 'APP-PID', 'Klerek Analis Perkara Peradilan Kepaniteraan Pidana', 0, '2026-10-13 02:37:15'),
+(55, 'APP-PHI', 'Klerek Analis Perkara Peradilan PHI', 0, '2026-10-13 02:37:15'),
+(56, 'PGP-PHI', 'Klerek Pengelola Perkara Kepaniteraan PHI', 0, '2026-10-13 02:37:15'),
+(57, 'OLO-PHI-SK', 'Operator Layanan Operasional Kepaniteraan PHI', 0, '2026-10-13 02:37:15'),
+(58, 'APP-TPK', 'Klerek Analis Perkara Peradilan Kepaniteraan TIPIKOR', 0, '2026-10-13 02:37:15'),
+(59, 'DOK-TPK', 'Klerek Dokumentasi Hukum Kepaniteraan TIPIKOR', 0, '2026-10-13 02:37:15'),
+(60, 'APP-HKM', 'Klerek Analis Perkara Peradilan Kepaniteraan Muda Hukum', 0, '2026-10-13 02:37:15'),
+(61, 'PAK-HKM', 'Pengadministrasi Perkantoran Kepaniteraan Muda Hukum', 0, '2026-10-13 02:37:15'),
+(62, 'PLO-PTIP-SK', 'Operator Penata Layanan Operasional Subbagian Perencanaan, Teknologi Informasi, dan Pelaporan', 0, '2026-10-13 02:37:15'),
+(63, 'PLO-KOT', 'Operator Penata Layanan Operasional Subbagian Kepegawaian, Organisasi, dan Tata Laksana', 0, '2026-10-13 02:37:15'),
+(64, 'OLO-UK-SK', 'Operator Penata Layanan Operasional Subbagian Umum dan Keuangan', 0, '2026-10-13 02:37:15'),
+(65, 'APKEU-UK', 'Analis Pengelolaan Keuangan APBN Subbagian Umum dan Keuangan', 0, '2026-10-13 02:37:15'),
+(66, 'PDI-UK', 'Klerek Pengolah Data dan Informasi Subbagian Umum dan Keuangan', 0, '2026-10-13 02:37:15');
 
 -- --------------------------------------------------------
 
@@ -353,14 +502,15 @@ CREATE TABLE `kebutuhan_diklat` (
 --
 
 INSERT INTO `kebutuhan_diklat` (`id_kebutuhan`, `id_pegawai`, `id_kesenjangan`, `id_diklat`, `diklat_lainnya`, `metode_pengembangan`, `prioritas`, `status`, `tahun_rencana`, `catatan`, `created_at`, `updated_at`) VALUES
-(10, 24, NULL, 1, NULL, 'Diklat teknis kepaniteraan', 'Tinggi', 'Diusulkan', '2026', 'Perlu peningkatan administrasi perkara dan ketelitian kerja', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
+(10, 24, NULL, 1, NULL, 'Diklat teknis kepaniteraan', 'Tinggi', 'Terlaksana', '2026', 'Perlu peningkatan administrasi perkara dan ketelitian kerja', '2026-09-24 02:34:12', '2026-10-13 07:41:36'),
 (11, 23, NULL, 2, NULL, 'Diklat teknis kepaniteraan', 'Tinggi', 'Diusulkan', '2026', 'Perlu pemahaman aplikasi pidana', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
 (12, 25, NULL, 3, NULL, 'Diklat teknis kepaniteraan', 'Tinggi', 'Diusulkan', '2026', 'Perlu peningkatan administrasi perkara dan ketelitian kerja', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
 (13, 21, NULL, 4, NULL, 'Diklat teknis kepaniteraan', 'Sedang', 'Diusulkan', '2026', 'Perlu peningkatan administrasi perkara PHI dan ketelitian kerja', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
 (14, 22, NULL, 5, NULL, 'Diklat teknis kepaniteraan', 'Sedang', 'Diusulkan', '2026', 'Perlu arsiparis perkara', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
 (15, 63, NULL, 6, NULL, 'Diklat + coaching', 'Tinggi', 'Diusulkan', '2026', 'Administrasi ASN, Penguasaan Aplikasi SIKEP, SI ASN, KOMDANAS, E KINERJA', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
 (16, 117, NULL, 7, NULL, 'Bimtek Kepegawaian', 'Sedang', 'Diusulkan', '2026', 'Monitoring Perencanaan, TI dan Pelaporan', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
-(17, 69, NULL, 8, NULL, 'Bimtek Kepegawaian', 'Tinggi', 'Diusulkan', '2026', 'Perlu penambahan personil dan pelatihan untuk Aplikasi di Keuangan', '2026-09-24 02:34:12', '2026-09-24 02:34:12');
+(17, 69, NULL, 8, NULL, 'Bimtek Kepegawaian', 'Tinggi', 'Diusulkan', '2026', 'Perlu penambahan personil dan pelatihan untuk Aplikasi di Keuangan', '2026-09-24 02:34:12', '2026-09-24 02:34:12'),
+(18, 88, NULL, 1, NULL, NULL, 'Sedang', 'Diusulkan', '2027', '', '2026-10-13 07:17:33', '2026-10-13 07:17:33');
 
 -- --------------------------------------------------------
 
@@ -382,6 +532,15 @@ CREATE TABLE `kegiatan_hakim` (
   `keterangan` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `kegiatan_hakim`
+--
+
+INSERT INTO `kegiatan_hakim` (`id_kegiatan`, `id_pegawai`, `jenis_kegiatan`, `nama_kegiatan`, `penyelenggara`, `peran_topik`, `tanggal_mulai`, `tanggal_selesai`, `lokasi`, `file_bukti`, `keterangan`, `created_at`) VALUES
+(1, 18, 'Narasumber', 'sosialisasi tindak pidana', 'pny', NULL, '2026-10-12', '2026-10-13', 'kalasan', NULL, NULL, '2026-10-12 01:59:50'),
+(2, 93, 'Bimtek/Pelatihan', 'pelatihan hakim', 'pnpusat', NULL, '2026-10-12', '2026-10-13', 'sch', NULL, NULL, '2026-10-12 02:00:34'),
+(3, 15, 'Bimtek/Pelatihan', 'anu', 'anu', NULL, '2026-11-21', '2026-11-21', 'anu', NULL, NULL, '2026-10-15 03:32:11');
 
 -- --------------------------------------------------------
 
@@ -447,7 +606,7 @@ CREATE TABLE `pegawai` (
 
 INSERT INTO `pegawai` (`id_pegawai`, `nip`, `nama_lengkap`, `id_jabatan`, `status_aktif`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES
 (2, '196804141996031002', 'SYAFRIZAL, S.H.', 1, 'Aktif', 1, '2026-09-15 01:53:35', '2026-10-09 01:52:21'),
-(3, '197809112001122002', 'MELINDA ARITONANG, S.H.', 2, 'Aktif', 1, '2026-09-15 01:53:35', '2026-09-15 01:53:35'),
+(3, '197809112001122002', 'MELINDA ARITONANG, S.H.', 2, 'Aktif', 1, '2026-09-15 01:53:35', '2026-10-13 06:25:11'),
 (4, '196905311996031001', 'SUNARYANTO, SH.,MH', 3, 'Aktif', 1, '2026-09-15 01:53:35', '2026-09-15 01:53:35'),
 (5, '197501272000032003', 'NI LUH SUKMARINI, SH., MH', 4, 'Aktif', 1, '2026-09-15 01:53:35', '2026-09-15 01:53:35'),
 (6, '197204271993031003', 'KARSENA, S.H.,M.H.', 4, 'Aktif', 1, '2026-09-15 01:53:35', '2026-09-15 01:53:35'),
@@ -568,6 +727,93 @@ INSERT INTO `pegawai` (`id_pegawai`, `nip`, `nama_lengkap`, `id_jabatan`, `statu
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `pemeriksaan_bukti_kuesioner`
+--
+
+CREATE TABLE `pemeriksaan_bukti_kuesioner` (
+  `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL,
+  `id_wawancara` int(10) UNSIGNED NOT NULL,
+  `file_bukti` varchar(255) NOT NULL,
+  `id_user_penilai` int(10) UNSIGNED NOT NULL,
+  `diperiksa_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `pemeriksaan_bukti_kuesioner`
+--
+
+INSERT INTO `pemeriksaan_bukti_kuesioner` (`id_pemeriksaan`, `id_wawancara`, `file_bukti`, `id_user_penilai`, `diperiksa_at`) VALUES
+(1, 6, 'assets/uploads/kuesioner/63178f8710498ac880bc0422717410ef.pdf', 3, '2026-10-16 03:05:28'),
+(7, 9, 'assets/uploads/kuesioner/77a7022eaafc38e6f08620d6e4323f9a.png', 5, '2026-10-20 06:28:28');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `pemeriksaan_bukti_wawancara`
+--
+
+CREATE TABLE `pemeriksaan_bukti_wawancara` (
+  `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL,
+  `id_wawancara` int(10) UNSIGNED NOT NULL,
+  `file_bukti` varchar(255) NOT NULL,
+  `id_user_penilai` int(10) UNSIGNED NOT NULL,
+  `diperiksa_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `pemeriksaan_bukti_wawancara`
+--
+
+INSERT INTO `pemeriksaan_bukti_wawancara` (`id_pemeriksaan`, `id_wawancara`, `file_bukti`, `id_user_penilai`, `diperiksa_at`) VALUES
+(1, 4, 'assets/uploads/wawancara/3b87430647a87de0495508b101667138.pdf', 3, '2026-10-16 02:03:38');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `pemeriksaan_jawaban_kuesioner`
+--
+
+CREATE TABLE `pemeriksaan_jawaban_kuesioner` (
+  `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL,
+  `id_hasil` int(10) UNSIGNED NOT NULL,
+  `id_user_penilai` int(10) UNSIGNED NOT NULL,
+  `jawaban_hash` char(64) NOT NULL,
+  `diperiksa_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `pemeriksaan_jawaban_kuesioner`
+--
+
+INSERT INTO `pemeriksaan_jawaban_kuesioner` (`id_pemeriksaan`, `id_hasil`, `id_user_penilai`, `jawaban_hash`, `diperiksa_at`) VALUES
+(1, 1, 3, 'b04aa861fe72bae7547452cd9c16e715ea48b16bfbd21cb233f1c58994d96bac', '2026-10-16 03:26:16'),
+(7, 6, 5, 'c7c030d677373c989114717aed285610a63577e0b87378c4566ec775005ec3b2', '2026-10-20 06:28:21');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `pemeriksaan_jawaban_wawancara`
+--
+
+CREATE TABLE `pemeriksaan_jawaban_wawancara` (
+  `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL,
+  `id_hasil` int(10) UNSIGNED NOT NULL,
+  `id_user_penilai` int(10) UNSIGNED NOT NULL,
+  `jawaban_hash` char(64) NOT NULL,
+  `diperiksa_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `pemeriksaan_jawaban_wawancara`
+--
+
+INSERT INTO `pemeriksaan_jawaban_wawancara` (`id_pemeriksaan`, `id_hasil`, `id_user_penilai`, `jawaban_hash`, `diperiksa_at`) VALUES
+(1, 14, 3, '94a5fe3405667a27405617337512766b142789961b5c90eaf27095a756278fe5', '2026-10-16 03:26:10'),
+(2, 15, 3, '1118e46cda0861c2c4cf603c79414d38d892a6153736b01b658e147e5a8fd565', '2026-10-16 03:26:10');
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `penilaian_kompetensi`
 --
 
@@ -616,6 +862,25 @@ INSERT INTO `pertanyaan_kuesioner` (`id_pertanyaan`, `id_kuesioner`, `id_kompete
 (7, 1, NULL, 3, 'Bagaimana tata cara pengarsipan berkas perkara?', 1.00, '2026-09-22 03:17:52'),
 (8, 1, NULL, 2, 'Bagaimana prosedur registrasi perkara baru?', 1.00, '2026-09-22 03:17:52'),
 (9, 1, NULL, 1, 'Apakah Saudara memahami SOP administrasi perkara?', 1.00, '2026-09-22 03:17:52');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `schema_migrations`
+--
+
+CREATE TABLE `schema_migrations` (
+  `filename` varchar(190) NOT NULL,
+  `applied_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `schema_migrations`
+--
+
+INSERT INTO `schema_migrations` (`filename`, `applied_at`) VALUES
+('20261009_001_keamanan.sql', '2026-10-14 03:46:10'),
+('20261014_001_jawaban_wawancara.sql', '2026-10-14 03:46:10');
 
 -- --------------------------------------------------------
 
@@ -1169,10 +1434,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id_user`, `id_pegawai`, `NIP`, `password`, `role`, `status_aktif`, `last_login`, `created_at`) VALUES
-(1, NULL, '12323', '$2y$10$9NtGq3urEkM56R8LK/6Uq.JfEwCHCSWYwJwVc5IAMlyagwxXJ7nPa', 'Admin', 1, '2026-10-09 08:39:31', '2026-09-13 13:20:29'),
-(3, 20, '197303151992032001', '$2y$10$LmvO6Rw/oSMP.eP9cZQn7OSK8i3TelWTFsVmAngt0wZxsw4oilaBq', 'Penilai', 1, '2026-09-29 09:57:36', '2026-09-15 03:39:28'),
-(4, 2, '196804141996031002', '$2y$10$Sqlz49AhHXPXvGi4fnj0X.wpyEIa9YDhWHcn0NAmkJXD2Dnb6hkF6', 'Penilai', 1, '2026-09-24 08:36:28', '2026-09-17 01:20:29'),
-(5, 62, '197308161994031001', '$2y$10$HBPIMXcf3dMF2YWpWWn22.AP2H1iB/g6h/uNl6oNqBO95zF4/.Eai', 'Penilai', 1, '2026-09-22 11:10:24', '2026-09-22 03:53:03');
+(1, NULL, '12323', '$2y$10$9NtGq3urEkM56R8LK/6Uq.JfEwCHCSWYwJwVc5IAMlyagwxXJ7nPa', 'Admin', 1, '2026-10-20 13:29:02', '2026-09-13 13:20:29'),
+(3, 20, '197303151992032001', '$2y$10$LmvO6Rw/oSMP.eP9cZQn7OSK8i3TelWTFsVmAngt0wZxsw4oilaBq', 'Penilai', 1, '2026-10-16 09:56:55', '2026-09-15 03:39:28'),
+(4, 2, '196804141996031002', '$2y$10$Sqlz49AhHXPXvGi4fnj0X.wpyEIa9YDhWHcn0NAmkJXD2Dnb6hkF6', 'Penilai', 1, '2026-10-13 14:17:13', '2026-09-17 01:20:29'),
+(5, 62, '197308161994031001', '$2y$10$HBPIMXcf3dMF2YWpWWn22.AP2H1iB/g6h/uNl6oNqBO95zF4/.Eai', 'Penilai', 1, '2026-10-20 13:28:10', '2026-09-22 03:53:03');
 
 -- --------------------------------------------------------
 
@@ -1294,6 +1559,15 @@ ALTER TABLE `analisis_tugas`
   ADD KEY `fk_analisis_pegawai` (`id_pegawai`);
 
 --
+-- Indeks untuk tabel `audit_log`
+--
+ALTER TABLE `audit_log`
+  ADD PRIMARY KEY (`id_log`),
+  ADD KEY `idx_audit_user` (`id_user`),
+  ADD KEY `idx_audit_waktu` (`created_at`),
+  ADD KEY `idx_audit_aksi` (`aksi`);
+
+--
 -- Indeks untuk tabel `bukti_dokumentasi`
 --
 ALTER TABLE `bukti_dokumentasi`
@@ -1321,6 +1595,20 @@ ALTER TABLE `detail_wawancara`
 ALTER TABLE `diklat`
   ADD PRIMARY KEY (`id_diklat`),
   ADD KEY `fk_diklat_kompetensi` (`id_kompetensi`);
+
+--
+-- Indeks untuk tabel `dokumentasi_kuesioner`
+--
+ALTER TABLE `dokumentasi_kuesioner`
+  ADD PRIMARY KEY (`id_dokumentasi`),
+  ADD KEY `idx_dokumentasi_kuesioner_sesi` (`id_wawancara`);
+
+--
+-- Indeks untuk tabel `dokumentasi_wawancara`
+--
+ALTER TABLE `dokumentasi_wawancara`
+  ADD PRIMARY KEY (`id_dokumentasi`),
+  ADD KEY `idx_dokumentasi_wawancara_sesi` (`id_wawancara`);
 
 --
 -- Indeks untuk tabel `hasil_kuesioner`
@@ -1398,6 +1686,38 @@ ALTER TABLE `pegawai`
   ADD KEY `fk_pegawai_dibuat_oleh` (`dibuat_oleh`);
 
 --
+-- Indeks untuk tabel `pemeriksaan_bukti_kuesioner`
+--
+ALTER TABLE `pemeriksaan_bukti_kuesioner`
+  ADD PRIMARY KEY (`id_pemeriksaan`),
+  ADD UNIQUE KEY `uq_pemeriksaan_bukti_kuesioner_penilai` (`id_wawancara`,`file_bukti`,`id_user_penilai`),
+  ADD KEY `idx_pemeriksaan_bukti_kuesioner_penilai` (`id_user_penilai`);
+
+--
+-- Indeks untuk tabel `pemeriksaan_bukti_wawancara`
+--
+ALTER TABLE `pemeriksaan_bukti_wawancara`
+  ADD PRIMARY KEY (`id_pemeriksaan`),
+  ADD UNIQUE KEY `uq_pemeriksaan_bukti_penilai` (`id_wawancara`,`file_bukti`,`id_user_penilai`),
+  ADD KEY `idx_pemeriksaan_bukti_penilai` (`id_user_penilai`);
+
+--
+-- Indeks untuk tabel `pemeriksaan_jawaban_kuesioner`
+--
+ALTER TABLE `pemeriksaan_jawaban_kuesioner`
+  ADD PRIMARY KEY (`id_pemeriksaan`),
+  ADD UNIQUE KEY `uq_pemeriksaan_jawaban_kuesioner_penilai` (`id_hasil`,`id_user_penilai`),
+  ADD KEY `idx_pemeriksaan_jawaban_kuesioner_penilai` (`id_user_penilai`);
+
+--
+-- Indeks untuk tabel `pemeriksaan_jawaban_wawancara`
+--
+ALTER TABLE `pemeriksaan_jawaban_wawancara`
+  ADD PRIMARY KEY (`id_pemeriksaan`),
+  ADD UNIQUE KEY `uq_pemeriksaan_jawaban_penilai` (`id_hasil`,`id_user_penilai`),
+  ADD KEY `idx_pemeriksaan_jawaban_penilai` (`id_user_penilai`);
+
+--
 -- Indeks untuk tabel `penilaian_kompetensi`
 --
 ALTER TABLE `penilaian_kompetensi`
@@ -1414,6 +1734,12 @@ ALTER TABLE `pertanyaan_kuesioner`
   ADD PRIMARY KEY (`id_pertanyaan`),
   ADD KEY `fk_pertanyaan_kuesioner` (`id_kuesioner`),
   ADD KEY `fk_pertanyaan_kompetensi` (`id_kompetensi`);
+
+--
+-- Indeks untuk tabel `schema_migrations`
+--
+ALTER TABLE `schema_migrations`
+  ADD PRIMARY KEY (`filename`);
 
 --
 -- Indeks untuk tabel `sertifikat_pegawai`
@@ -1470,7 +1796,13 @@ ALTER TABLE `analisis_kesenjangan_kompetensi`
 -- AUTO_INCREMENT untuk tabel `analisis_tugas`
 --
 ALTER TABLE `analisis_tugas`
-  MODIFY `id_analisis_tugas` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_analisis_tugas` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+
+--
+-- AUTO_INCREMENT untuk tabel `audit_log`
+--
+ALTER TABLE `audit_log`
+  MODIFY `id_log` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT untuk tabel `bukti_dokumentasi`
@@ -1482,7 +1814,7 @@ ALTER TABLE `bukti_dokumentasi`
 -- AUTO_INCREMENT untuk tabel `bukti_wawancara`
 --
 ALTER TABLE `bukti_wawancara`
-  MODIFY `id_bukti` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_bukti` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `detail_wawancara`
@@ -1497,10 +1829,22 @@ ALTER TABLE `diklat`
   MODIFY `id_diklat` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT untuk tabel `dokumentasi_kuesioner`
+--
+ALTER TABLE `dokumentasi_kuesioner`
+  MODIFY `id_dokumentasi` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT untuk tabel `dokumentasi_wawancara`
+--
+ALTER TABLE `dokumentasi_wawancara`
+  MODIFY `id_dokumentasi` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `hasil_kuesioner`
 --
 ALTER TABLE `hasil_kuesioner`
-  MODIFY `id_hasil` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_hasil` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `hasil_wawancara`
@@ -1512,7 +1856,7 @@ ALTER TABLE `hasil_wawancara`
 -- AUTO_INCREMENT untuk tabel `jabatan`
 --
 ALTER TABLE `jabatan`
-  MODIFY `id_jabatan` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id_jabatan` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT untuk tabel `jawaban_wawancara`
@@ -1524,13 +1868,13 @@ ALTER TABLE `jawaban_wawancara`
 -- AUTO_INCREMENT untuk tabel `kebutuhan_diklat`
 --
 ALTER TABLE `kebutuhan_diklat`
-  MODIFY `id_kebutuhan` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_kebutuhan` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT untuk tabel `kegiatan_hakim`
 --
 ALTER TABLE `kegiatan_hakim`
-  MODIFY `id_kegiatan` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id_kegiatan` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `kompetensi`
@@ -1549,6 +1893,30 @@ ALTER TABLE `kuesioner`
 --
 ALTER TABLE `pegawai`
   MODIFY `id_pegawai` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
+
+--
+-- AUTO_INCREMENT untuk tabel `pemeriksaan_bukti_kuesioner`
+--
+ALTER TABLE `pemeriksaan_bukti_kuesioner`
+  MODIFY `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT untuk tabel `pemeriksaan_bukti_wawancara`
+--
+ALTER TABLE `pemeriksaan_bukti_wawancara`
+  MODIFY `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT untuk tabel `pemeriksaan_jawaban_kuesioner`
+--
+ALTER TABLE `pemeriksaan_jawaban_kuesioner`
+  MODIFY `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT untuk tabel `pemeriksaan_jawaban_wawancara`
+--
+ALTER TABLE `pemeriksaan_jawaban_wawancara`
+  MODIFY `id_pemeriksaan` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `penilaian_kompetensi`
@@ -1636,6 +2004,18 @@ ALTER TABLE `diklat`
   ADD CONSTRAINT `fk_diklat_kompetensi` FOREIGN KEY (`id_kompetensi`) REFERENCES `kompetensi` (`id_kompetensi`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
+-- Ketidakleluasaan untuk tabel `dokumentasi_kuesioner`
+--
+ALTER TABLE `dokumentasi_kuesioner`
+  ADD CONSTRAINT `fk_dokumentasi_kuesioner_sesi` FOREIGN KEY (`id_wawancara`) REFERENCES `wawancara` (`id_wawancara`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `dokumentasi_wawancara`
+--
+ALTER TABLE `dokumentasi_wawancara`
+  ADD CONSTRAINT `fk_dokumentasi_wawancara_sesi` FOREIGN KEY (`id_wawancara`) REFERENCES `wawancara` (`id_wawancara`) ON DELETE CASCADE;
+
+--
 -- Ketidakleluasaan untuk tabel `hasil_wawancara`
 --
 ALTER TABLE `hasil_wawancara`
@@ -1674,6 +2054,34 @@ ALTER TABLE `kuesioner`
 ALTER TABLE `pegawai`
   ADD CONSTRAINT `fk_pegawai_dibuat_oleh` FOREIGN KEY (`dibuat_oleh`) REFERENCES `users` (`id_user`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_pegawai_jabatan` FOREIGN KEY (`id_jabatan`) REFERENCES `jabatan` (`id_jabatan`) ON UPDATE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `pemeriksaan_bukti_kuesioner`
+--
+ALTER TABLE `pemeriksaan_bukti_kuesioner`
+  ADD CONSTRAINT `fk_pemeriksaan_bukti_kuesioner_penilai` FOREIGN KEY (`id_user_penilai`) REFERENCES `users` (`id_user`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pemeriksaan_bukti_kuesioner_sesi` FOREIGN KEY (`id_wawancara`) REFERENCES `wawancara` (`id_wawancara`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `pemeriksaan_bukti_wawancara`
+--
+ALTER TABLE `pemeriksaan_bukti_wawancara`
+  ADD CONSTRAINT `fk_pemeriksaan_bukti_penilai` FOREIGN KEY (`id_user_penilai`) REFERENCES `users` (`id_user`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pemeriksaan_bukti_wawancara` FOREIGN KEY (`id_wawancara`) REFERENCES `wawancara` (`id_wawancara`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `pemeriksaan_jawaban_kuesioner`
+--
+ALTER TABLE `pemeriksaan_jawaban_kuesioner`
+  ADD CONSTRAINT `fk_pemeriksaan_jawaban_kuesioner_hasil` FOREIGN KEY (`id_hasil`) REFERENCES `hasil_kuesioner` (`id_hasil`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pemeriksaan_jawaban_kuesioner_penilai` FOREIGN KEY (`id_user_penilai`) REFERENCES `users` (`id_user`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `pemeriksaan_jawaban_wawancara`
+--
+ALTER TABLE `pemeriksaan_jawaban_wawancara`
+  ADD CONSTRAINT `fk_pemeriksaan_jawaban_hasil` FOREIGN KEY (`id_hasil`) REFERENCES `hasil_wawancara` (`id_hasil`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_pemeriksaan_jawaban_penilai` FOREIGN KEY (`id_user_penilai`) REFERENCES `users` (`id_user`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `penilaian_kompetensi`
