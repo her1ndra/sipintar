@@ -93,9 +93,19 @@ require_once __DIR__ . '/../../includes/header.php';
   </select>
 </div>
 <?php endif; ?>
-<button id="unduh-laporan-kegiatan-hakim" type="button" class="btn btn-primary mb-3 mr-2">
-  <i class="fas fa-file-pdf mr-1" aria-hidden="true"></i>Unduh laporan
-</button>
+<div class="dropdown d-inline-block mb-3 mr-2">
+  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <i class="fas fa-download mr-1" aria-hidden="true"></i>Unduh laporan
+  </button>
+  <div class="dropdown-menu">
+    <button id="unduh-laporan-kegiatan-hakim" type="button" class="dropdown-item">
+      <i class="fas fa-file-pdf text-danger mr-2" aria-hidden="true"></i>PDF
+    </button>
+    <a id="unduh-laporan-kegiatan-hakim-word" class="dropdown-item" href="download_laporan.php?format=word">
+      <i class="fas fa-file-word text-primary mr-2" aria-hidden="true"></i>Word
+    </a>
+  </div>
+</div>
 <a href="tambah.php" class="btn btn-primary mb-3">+ Catat kegiatan</a>
 <?php if (!$data): ?>
 <div class="alert alert-info">Belum ada data kegiatan hakim.</div>
@@ -118,7 +128,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <td class="text-center text-nowrap action-cell">
           <div class="table-actions">
           <a href="edit.php?id=<?= (int) $row['id_kegiatan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
-          <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus kegiatan hakim ini?')"><?= csrfField() ?>
+          <form method="post" action="hapus.php" class="d-inline" data-confirm-message="Hapus kegiatan hakim ini?"><?= csrfField() ?>
             <input type="hidden" name="id" value="<?= (int) $row['id_kegiatan'] ?>">
             <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
           </form>
@@ -254,8 +264,30 @@ document.querySelectorAll('.download-pdf').forEach(function (button) {
 (function () {
   var filter = document.getElementById('filter-kegiatan-hakim');
   var downloadButton = document.getElementById('unduh-laporan-kegiatan-hakim');
+  var wordDownloadLink = document.getElementById('unduh-laporan-kegiatan-hakim-word');
+  var periodeSelect = document.getElementById('periode');
+  var tahunSelect = document.getElementById('tahun');
+
+  function updateWordDownloadUrl() {
+    var params = new URLSearchParams({
+      format: 'word',
+      periode: periodeSelect.value,
+      tahun: tahunSelect.value
+    });
+    if (filter && filter.value) {
+      var separator = filter.value.indexOf(':');
+      params.set('filter', filter.value.slice(0, separator));
+      params.set('value', decodeURIComponent(filter.value.slice(separator + 1)));
+    }
+    wordDownloadLink.href = 'download_laporan.php?' + params.toString();
+  }
+
+  updateWordDownloadUrl();
+  periodeSelect.addEventListener('change', updateWordDownloadUrl);
+  tahunSelect.addEventListener('change', updateWordDownloadUrl);
 
   if (filter) filter.addEventListener('change', function () {
+    updateWordDownloadUrl();
     var pilihan = filter.value;
     var pemisah = pilihan.indexOf(':');
     var jenis = pemisah === -1 ? '' : pilihan.slice(0, pemisah);

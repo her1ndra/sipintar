@@ -47,7 +47,7 @@ $data = $pdo->query(
               j.nama_jabatan, j_target.nama_jabatan, k.kompetensi,
               hk.file_bukti, hk.daftar_nilai, hk.daftar_jawaban, hk.status_kompetensi,
               dk.dokumentasi_banyak
-     ORDER BY k.id_kuesioner ASC, w.id_wawancara DESC"
+     ORDER BY k.id_kuesioner ASC, w.id_wawancara ASC"
 )->fetchAll();
 
 $interviewIds = array_values(array_unique(array_filter(array_map(
@@ -56,8 +56,16 @@ $interviewIds = array_values(array_unique(array_filter(array_map(
 ))));
 $proofReviews = [];
 $answerReviews = [];
+$readInterviewIds = [];
 if ($interviewIds) {
     $placeholders = implode(',', array_fill(0, count($interviewIds), '?'));
+    $readStmt = $pdo->prepare(
+        "SELECT id_wawancara
+         FROM status_baca_admin
+         WHERE id_user_admin = ? AND id_wawancara IN ($placeholders)"
+    );
+    $readStmt->execute(array_merge([(int) $_SESSION['id_user']], $interviewIds));
+    $readInterviewIds = array_map('intval', $readStmt->fetchAll(PDO::FETCH_COLUMN));
     $reviewStmt = $pdo->prepare(
         "SELECT r.id_wawancara, r.file_bukti, COALESCE(p.nama_lengkap, u.NIP) AS nama_penilai, r.diperiksa_at
          FROM pemeriksaan_bukti_kuesioner r
@@ -85,6 +93,16 @@ if ($interviewIds) {
         $answerReviews[(int) $review['id_wawancara']][] = $review;
     }
 }
+$renderReadCheckbox = static function (int $idWawancara, bool $isRead): string {
+    $checked = $isRead ? ' checked' : '';
+    return '<form method="post" action="../status_baca.php" class="mt-2 mb-0">'
+        . csrfField()
+        . '<input type="hidden" name="jenis" value="kuesioner">'
+        . '<input type="hidden" name="id_wawancara" value="' . $idWawancara . '">'
+        . '<input type="hidden" name="dibaca" value="0">'
+        . '<label class="mb-0"><input type="checkbox" name="dibaca" value="1"'
+        . $checked . ' onchange="this.form.submit()"> Sudah dibaca</label></form>';
+};
 $renderReviewIcon = static function (array $reviews): string {
     if (!$reviews) {
         return '';
@@ -206,7 +224,7 @@ require_once __DIR__ . '/../../includes/header.php';
             </tr>
         </thead>
         <tbody>
-        <?php foreach ($data as $row): ?>
+        <?php foreach ($data as $index => $row): ?>
             <tr>
                 <?php
                 $answerContent = $row['id_wawancara']
@@ -216,7 +234,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     ? $renderDocumentationModal($row['dokumentasi_banyak'], 'modal-dokumentasi-' . (int) $row['id_wawancara'])
                     : '';
                 ?>
-                <td class="text-center"><?= (int) $row['id_kuesioner'] ?></td>
+                <td class="text-center"><?= $index + 1 ?></td>
                 <td><?= htmlspecialchars($row['nama_lengkap'] ? $row['nama_lengkap'] . ($row['nama_jabatan'] ? ' (' . $row['nama_jabatan'] . ')' : '') : 'Sesi belum dibuat') ?></td>
                 <td><?= htmlspecialchars($row['kompetensi']) ?></td>
                 <td class="question-cell"><?= $renderQuestions($row['daftar_pertanyaan'], 'modal-kuesioner-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
@@ -229,7 +247,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     return $score !== null && $score !== '';
                 })) > 0;
                 ?>
-                <td class="status-cell"><?= $hasScore ? htmlspecialchars($row['status_kompetensi'] ?: '-') : '-' ?><?php if ($row['id_wawancara']): ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?php endif; ?></td>
+                <td class="status-cell"><?= $hasScore ? htmlspecialchars($row['status_kompetensi'] ?: '-') : '-' ?><?php if ($row['id_wawancara']): ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?= $renderReadCheckbox((int) $row['id_wawancara'], in_array((int) $row['id_wawancara'], $readInterviewIds, true)) ?><?php endif; ?></td>
                 <td class="action-cell">
                     <div class="table-actions">
                         <div class="dropdown mr-1">
@@ -242,7 +260,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <?php if ($row['id_wawancara']): ?>
                             <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
                         <?php endif; ?>
-                        <form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus kuesioner ini beserta seluruh sesi, jawaban, dan bukti terkait?')"><?= csrfField() ?>
+                        <form method="post" action="hapus.php" class="d-inline ml-1" data-confirm-message="Hapus kuesioner ini beserta seluruh sesi, jawaban, dan bukti terkait?"><?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $row['id_kuesioner'] ?>">
                             <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus kuesioner" aria-label="Hapus kuesioner"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
                         </form>

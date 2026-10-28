@@ -337,3 +337,122 @@ function buatDokumenWordKegiatanHakim(array $data, ?string $attachmentPath, ?str
 
     return $wordDocument;
 }
+
+function buatLaporanWordKegiatanHakim(
+    array $rows,
+    string $filterLabel,
+    string $periode,
+    int $tahun
+): string {
+    if (!class_exists(ZipArchive::class)) {
+        throw new RuntimeException('Ekstensi ZipArchive diperlukan untuk membuat dokumen Word.');
+    }
+
+    $escape = static function ($value): string {
+        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', (string) ($value ?? '-'));
+        return htmlspecialchars($text ?? '-', ENT_XML1 | ENT_QUOTES, 'UTF-8');
+    };
+    $paragraph = static function (string $text, bool $bold = false, string $alignment = 'left') use ($escape): string {
+        $runProperties = $bold ? '<w:rPr><w:b/></w:rPr>' : '';
+        return '<w:p><w:pPr><w:jc w:val="' . $alignment . '"/></w:pPr><w:r>'
+            . $runProperties . '<w:t xml:space="preserve">' . $escape($text) . '</w:t></w:r></w:p>';
+    };
+    $widths = [1800, 1900, 3300, 2200, 2700, 3100];
+    $cell = static function (string $text, int $width, bool $header = false) use ($paragraph): string {
+        $properties = '<w:tcW w:w="' . $width . '" w:type="dxa"/><w:vAlign w:val="top"/>'
+            . ($header ? '<w:shd w:fill="E6E8F0"/>' : '');
+        return '<w:tc><w:tcPr>' . $properties . '</w:tcPr>'
+            . $paragraph($text, $header) . '</w:tc>';
+    };
+    $tableRow = static function (array $values, bool $header = false) use ($widths, $cell): string {
+        $cells = '';
+        foreach ($widths as $index => $width) {
+            $cells .= $cell((string) ($values[$index] ?? '-'), $width, $header);
+        }
+        return '<w:tr>' . ($header ? '<w:trPr><w:tblHeader/></w:trPr>' : '') . $cells . '</w:tr>';
+    };
+
+    $periodLabels = [
+        'bulan' => 'Per bulan',
+        'triwulan' => 'Per triwulan',
+        'tahun' => 'Per tahun',
+    ];
+    $tableRows = $tableRow([
+        'Nama hakim', 'Jenis kegiatan', 'Nama kegiatan', 'Penyelenggara', 'Tanggal', 'Tempat',
+    ], true);
+    if (!$rows) {
+        $tableRows .= $tableRow(['Tidak ada data sesuai filter.', '-', '-', '-', '-', '-']);
+    } else {
+        foreach ($rows as $row) {
+            $tableRows .= $tableRow([
+                (string) $row['nama_lengkap'],
+                (string) $row['jenis_kegiatan'],
+                (string) $row['nama_kegiatan'],
+                (string) ($row['penyelenggara'] ?: '-'),
+                (string) $row['tanggal_mulai']
+                    . ($row['tanggal_selesai'] ? ' s.d. ' . $row['tanggal_selesai'] : ''),
+                (string) ($row['lokasi'] ?: '-'),
+            ]);
+        }
+    }
+
+    $grid = '';
+    foreach ($widths as $width) {
+        $grid .= '<w:gridCol w:w="' . $width . '"/>';
+    }
+    $documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+        . $paragraph('LAPORAN KEGIATAN HAKIM', true, 'center')
+        . $paragraph('Filter: ' . $filterLabel)
+        . $paragraph('Periode: ' . ($periodLabels[$periode] ?? 'Per bulan') . ' - Tahun acuan: ' . $tahun)
+        . '<w:tbl><w:tblPr><w:tblW w:w="15000" w:type="dxa"/>'
+        . '<w:tblLayout w:type="fixed"/><w:tblCellMar>'
+        . '<w:top w:w="80" w:type="dxa"/><w:left w:w="80" w:type="dxa"/>'
+        . '<w:bottom w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/>'
+        . '</w:tblCellMar><w:tblBorders>'
+        . '<w:top w:val="single" w:sz="4" w:color="777777"/>'
+        . '<w:left w:val="single" w:sz="4" w:color="777777"/>'
+        . '<w:bottom w:val="single" w:sz="4" w:color="777777"/>'
+        . '<w:right w:val="single" w:sz="4" w:color="777777"/>'
+        . '<w:insideH w:val="single" w:sz="4" w:color="777777"/>'
+        . '<w:insideV w:val="single" w:sz="4" w:color="777777"/>'
+        . '</w:tblBorders></w:tblPr><w:tblGrid>' . $grid . '</w:tblGrid>'
+        . $tableRows . '</w:tbl>'
+        . '<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>'
+        . '<w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/>'
+        . '</w:sectPr></w:body></w:document>';
+    $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+        . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        . '<Default Extension="xml" ContentType="application/xml"/>'
+        . '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+        . '</Types>';
+    $relationships = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'
+        . '</Relationships>';
+
+    $temporaryFile = tempnam(sys_get_temp_dir(), 'kegiatan-hakim-laporan-');
+    if ($temporaryFile === false) {
+        throw new RuntimeException('File sementara laporan Word tidak dapat dibuat.');
+    }
+    $archive = new ZipArchive();
+    if ($archive->open($temporaryFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        unlink($temporaryFile);
+        throw new RuntimeException('Dokumen laporan Word tidak dapat dibuat.');
+    }
+    $written = $archive->addFromString('[Content_Types].xml', $contentTypes);
+    $written = $archive->addFromString('_rels/.rels', $relationships) && $written;
+    $written = $archive->addFromString('word/document.xml', $documentXml) && $written;
+    $closed = $archive->close();
+    if (!$written || !$closed) {
+        unlink($temporaryFile);
+        throw new RuntimeException('Dokumen laporan Word gagal diselesaikan.');
+    }
+    $document = file_get_contents($temporaryFile);
+    unlink($temporaryFile);
+    if ($document === false) {
+        throw new RuntimeException('Dokumen laporan Word gagal dibaca setelah dibuat.');
+    }
+    return $document;
+}

@@ -191,21 +191,18 @@ function downloadKuesionerWord(int $idKuesioner, array $rows, array $penulis): v
         . '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr><w:r><w:t></w:t></w:r></w:p>'
         . $questionsTable
         . $paragraph($run('Jawaban', 22, true), 'left', 360, 0, null, 500)
-        . '<w:sectPr><w:footerReference w:type="default" r:id="rId3"/>'
+        . $signatureTable
+        . '<w:sectPr>'
         . '<w:pgSz w:w="11906" w:h="16838"/>'
-        . '<w:pgMar w:top="0" w:right="600" w:bottom="4900" w:left="600" w:header="0" w:footer="3600"/>'
+        . '<w:pgMar w:top="0" w:right="600" w:bottom="600" w:left="600" w:header="0" w:footer="0"/>'
         . '</w:sectPr>'
         . '</w:body></w:document>';
-    $footerXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        . '<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
-        . $signatureTable . '</w:ftr>';
     $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
         . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
         . '<Default Extension="xml" ContentType="application/xml"/>'
         . '<Default Extension="png" ContentType="image/png"/>'
         . '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
-        . '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>'
         . '</Types>';
     $relationships = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
@@ -214,7 +211,6 @@ function downloadKuesionerWord(int $idKuesioner, array $rows, array $penulis): v
     $documentRelationships = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
         . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>'
-        . '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>'
         . '</Relationships>';
 
     $temporaryFile = tempnam(sys_get_temp_dir(), 'sipintar-kuesioner-');
@@ -229,7 +225,6 @@ function downloadKuesionerWord(int $idKuesioner, array $rows, array $penulis): v
     $written = $archive->addFromString('[Content_Types].xml', $contentTypes);
     $written = $archive->addFromString('_rels/.rels', $relationships) && $written;
     $written = $archive->addFromString('word/document.xml', $documentXml) && $written;
-    $written = $archive->addFromString('word/footer1.xml', $footerXml) && $written;
     $written = $archive->addFromString('word/_rels/document.xml.rels', $documentRelationships) && $written;
     $written = $archive->addFile($logoPath, 'word/media/logo.png') && $written;
     $closed = $archive->close();

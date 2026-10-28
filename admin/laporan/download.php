@@ -241,6 +241,7 @@ function laporanWordTemplate(PDO $pdo, array $data, DateTimeImmutable $start, Da
     }
     $resultClosed = false;
     try {
+        laporanWordForceBlackHeadingStyles($result);
         laporanWordAddAppendices($document, $result, $pdo, $start, $end, $chairName);
         $documentXml = $document->saveXML();
         if ($documentXml === false || $result->addFromString('word/document.xml', $documentXml) !== true) {

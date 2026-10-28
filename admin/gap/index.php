@@ -73,7 +73,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <td class="action-cell">
     <div class="action-buttons table-actions">
     <a href="edit.php?id=<?= (int) $row['id_kesenjangan'] ?>" class="btn btn-sm btn-warning table-action-btn" title="Edit" aria-label="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
-    <form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus analisis kesenjangan ini?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_kesenjangan'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
+    <form method="post" action="hapus.php" class="d-inline" data-confirm-message="Hapus analisis kesenjangan ini?"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_kesenjangan'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus" aria-label="Hapus"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
     </div>
   </td>
 </tr>

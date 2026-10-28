@@ -470,6 +470,50 @@ function laporanWordSetParagraphStyle(DOMElement $paragraph, string $styleId): v
     }
 }
 
+function laporanWordForceBlackHeadingStyles(ZipArchive $zip): void
+{
+    $stylesXml = $zip->getFromName('word/styles.xml');
+    if ($stylesXml === false) {
+        throw new RuntimeException('Gaya dokumen laporan TNA tidak ditemukan.');
+    }
+    $styles = new DOMDocument();
+    $styles->preserveWhiteSpace = false;
+    if (!$styles->loadXML($stylesXml)) {
+        throw new RuntimeException('Gaya dokumen laporan TNA tidak dapat dibuka.');
+    }
+
+    $xpath = new DOMXPath($styles);
+    $xpath->registerNamespace('w', LAPORAN_WORD_NS);
+    $headingStyles = $xpath->query('//w:style');
+    if (!$headingStyles) {
+        throw new RuntimeException('Gaya judul laporan TNA tidak dapat diperiksa.');
+    }
+    foreach ($headingStyles as $style) {
+        if (!$style instanceof DOMElement
+            || !preg_match('/^(?:Heading[1-9](?:Char)?|Title|Subtitle)$/', $style->getAttributeNS(LAPORAN_WORD_NS, 'styleId'))) {
+            continue;
+        }
+        $runProperties = $xpath->query('./w:rPr', $style)->item(0);
+        if (!$runProperties instanceof DOMElement) {
+            $runProperties = $styles->createElementNS(LAPORAN_WORD_NS, 'w:rPr');
+            $style->appendChild($runProperties);
+        }
+        $color = $xpath->query('./w:color', $runProperties)->item(0);
+        if (!$color instanceof DOMElement) {
+            $color = $styles->createElementNS(LAPORAN_WORD_NS, 'w:color');
+            $runProperties->appendChild($color);
+        }
+        $color->setAttributeNS(LAPORAN_WORD_NS, 'w:val', '000000');
+        foreach (['themeColor', 'themeTint', 'themeShade'] as $attribute) {
+            $color->removeAttributeNS(LAPORAN_WORD_NS, $attribute);
+        }
+    }
+    $updatedStyles = $styles->saveXML();
+    if ($updatedStyles === false || $zip->addFromString('word/styles.xml', $updatedStyles) !== true) {
+        throw new RuntimeException('Gaya judul laporan TNA gagal disimpan.');
+    }
+}
+
 function laporanWordAddContents(DOMDocument $document, ZipArchive $zip): void
 {
     $titles = [
@@ -481,6 +525,8 @@ function laporanWordAddContents(DOMDocument $document, ZipArchive $zip): void
         'ANALISIS KESENJANGAN (GAP) KOMPETENSI',
         'PENENTUAN KEBUTUHAN DIKLAT',
         'LAMPIRAN',
+        'SARAN',
+        'PENUTUP',
     ];
     $xpath = new DOMXPath($document);
     $xpath->registerNamespace('w', LAPORAN_WORD_NS);
@@ -638,7 +684,21 @@ function laporanWordAddAppendices(
     $appendPageHeader = static function (string $title) use ($document, $logoRelationship, &$drawingId): void {
         laporanWordAppendBodyNode($document, laporanWordPageBreak($document));
         laporanWordAppendixLetterhead($document, $logoRelationship, $drawingId++);
-        laporanWordAppendBodyNode($document, laporanWordParagraph($document, $title, 'center', true, 13, 180));
+        $heading = laporanWordParagraph($document, $title, 'center', true, 13, 180);
+        $xpath = new DOMXPath($document);
+        $xpath->registerNamespace('w', LAPORAN_WORD_NS);
+        $headingRuns = $xpath->query('.//w:rPr', $heading);
+        if ($headingRuns) {
+            foreach ($headingRuns as $runProperties) {
+                if (!$runProperties instanceof DOMElement) {
+                    continue;
+                }
+                $color = $document->createElementNS(LAPORAN_WORD_NS, 'w:color');
+                $color->setAttributeNS(LAPORAN_WORD_NS, 'w:val', '000000');
+                $runProperties->appendChild($color);
+            }
+        }
+        laporanWordAppendBodyNode($document, $heading);
     };
 
     laporanWordAppendBodyNode($document, laporanWordPageBreak($document));
@@ -793,6 +853,9 @@ function laporanWordAddAppendices(
             0
         ));
     }
+
+    $appendPageHeader('SARAN');
+    $appendPageHeader('PENUTUP');
 
     laporanWordAddContents($document, $zip);
     laporanWordAddPageNumberFooter($document, $zip, $relationships, $contentTypes);

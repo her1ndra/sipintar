@@ -116,12 +116,61 @@ if ($questionNumber === 0) {
     $tableRows .= $tableRow(['-', '-', '-', 'Belum ada pertanyaan.', '-']);
 }
 
+$logoPath = __DIR__ . '/../../assets/img/logo.png';
+$logoInfo = is_file($logoPath) ? getimagesize($logoPath) : false;
+if ($logoInfo === false || $logoInfo['mime'] !== 'image/png') {
+    throw new RuntimeException('Logo kop surat tidak dapat dibaca sebagai PNG.');
+}
+$logoWidth = 787400;
+$logoDrawing = '<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'
+    . '<wp:extent cx="' . $logoWidth . '" cy="' . $logoWidth . '"/>'
+    . '<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Logo Pengadilan Negeri Yogyakarta"/>'
+    . '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>'
+    . '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+    . '<pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="logo.png"/>'
+    . '<pic:cNvPicPr><a:picLocks noChangeAspect="1"/></pic:cNvPicPr></pic:nvPicPr>'
+    . '<pic:blipFill><a:blip r:embed="rId2"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+    . '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' . $logoWidth . '" cy="' . $logoWidth . '"/></a:xfrm>'
+    . '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>'
+    . '</a:graphicData></a:graphic></wp:inline></w:drawing>';
+$letterheadLines = '';
+foreach ([
+    ['MAHKAMAH AGUNG REPUBLIK INDONESIA', 20, true],
+    ['DIREKTORAT JENDERAL BADAN PERADILAN UMUM', 18, true],
+    ['PENGADILAN TINGGI YOGYAKARTA', 22, true],
+    ['PENGADILAN NEGERI YOGYAKARTA', 26, true],
+    ['Jalan Kapas Nomor 10, Semaki, Kecamatan Umbulharjo', 14, false],
+    ['Kota Yogyakarta, D.I. Yogyakarta 55166. www.pn-yogyakarta.go.id, pn.yogya@gmail.com', 14, false],
+] as [$text, $size, $bold]) {
+    $properties = '<w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="' . $size . '"/>'
+        . ($bold ? '<w:b/>' : '') . '</w:rPr>';
+    $letterheadLines .= '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:after="0"/></w:pPr>'
+        . '<w:r>' . $properties . '<w:t>' . $xmlText($text) . '</w:t></w:r></w:p>';
+}
+$letterhead = '<w:tbl><w:tblPr><w:tblW w:w="10106" w:type="dxa"/><w:tblLayout w:type="fixed"/>'
+    . '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>'
+    . '<w:bottom w:w="100" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>'
+    . '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/>'
+    . '<w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/>'
+    . '<w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders></w:tblPr>'
+    . '<w:tblGrid><w:gridCol w:w="1600"/><w:gridCol w:w="8506"/></w:tblGrid><w:tr>'
+    . '<w:tc><w:tcPr><w:tcW w:w="1600" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'
+    . '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r>' . $logoDrawing . '</w:r></w:p></w:tc>'
+    . '<w:tc><w:tcPr><w:tcW w:w="8506" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'
+    . $letterheadLines . '</w:tc></w:tr></w:tbl>';
+
 $grid = '';
 foreach ($columnWidths as $width) {
     $grid .= '<w:gridCol w:w="' . $width . '"/>';
 }
 $documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-    . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+    . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+    . ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+    . ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"'
+    . ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+    . ' xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>'
+    . '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr><w:r><w:t></w:t></w:r></w:p>'
+    . $letterhead
     . '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:after="240"/></w:pPr>'
     . '<w:r><w:rPr><w:b/><w:sz w:val="30"/></w:rPr><w:t>DATA WAWANCARA</w:t></w:r></w:p>'
     . $paragraph('Hari/Tanggal:', $tanggalLabel)
@@ -142,11 +191,16 @@ $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
     . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
     . '<Default Extension="xml" ContentType="application/xml"/>'
+    . '<Default Extension="png" ContentType="image/png"/>'
     . '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
     . '</Types>';
 $relationships = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
     . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'
+    . '</Relationships>';
+$documentRelationships = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>'
     . '</Relationships>';
 
 $temporaryFile = tempnam(sys_get_temp_dir(), 'sipintar-wawancara-');
@@ -163,6 +217,8 @@ if ($archive->open($temporaryFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !
 $archiveWritten = $archive->addFromString('[Content_Types].xml', $contentTypes);
 $archiveWritten = $archive->addFromString('_rels/.rels', $relationships) && $archiveWritten;
 $archiveWritten = $archive->addFromString('word/document.xml', $documentXml) && $archiveWritten;
+$archiveWritten = $archive->addFromString('word/_rels/document.xml.rels', $documentRelationships) && $archiveWritten;
+$archiveWritten = $archive->addFile($logoPath, 'word/media/logo.png') && $archiveWritten;
 $archiveClosed = $archive->close();
 if (!$archiveWritten || !$archiveClosed) {
     unlink($temporaryFile);

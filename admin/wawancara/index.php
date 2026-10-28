@@ -61,15 +61,23 @@ $data = $pdo->query(
      WHERE w.id_kuesioner IS NULL
      GROUP BY w.id_wawancara, p.nama_lengkap, p.id_jabatan, j.nama_jabatan,
               w.tanggal_wawancara, d.kompetensi
-     ORDER BY w.id_wawancara DESC"
+     ORDER BY w.id_wawancara ASC"
 )->fetchAll();
 $evidenceByInterview = [];
 $interviewIds = array_values(array_unique(array_map(
     static function ($row) { return (int) $row['id_wawancara']; },
     $data
 )));
+$readInterviewIds = [];
 if ($interviewIds) {
     $placeholders = implode(',', array_fill(0, count($interviewIds), '?'));
+    $readStmt = $pdo->prepare(
+        "SELECT id_wawancara
+         FROM status_baca_admin
+         WHERE id_user_admin = ? AND id_wawancara IN ($placeholders)"
+    );
+    $readStmt->execute(array_merge([(int) $_SESSION['id_user']], $interviewIds));
+    $readInterviewIds = array_map('intval', $readStmt->fetchAll(PDO::FETCH_COLUMN));
     $evidenceStmt = $pdo->prepare(
         "SELECT id_wawancara, kompetensi, isi_penilaian, jawaban, file_bukti,
                 ROW_NUMBER() OVER (
@@ -125,6 +133,16 @@ if ($interviewIds) {
         $pemeriksaanJawaban[(int) $review['id_wawancara']][] = $review;
     }
 }
+$renderReadCheckbox = static function (int $idWawancara, bool $isRead): string {
+    $checked = $isRead ? ' checked' : '';
+    return '<form method="post" action="../status_baca.php" class="mt-2 mb-0">'
+        . csrfField()
+        . '<input type="hidden" name="jenis" value="wawancara">'
+        . '<input type="hidden" name="id_wawancara" value="' . $idWawancara . '">'
+        . '<input type="hidden" name="dibaca" value="0">'
+        . '<label class="mb-0"><input type="checkbox" name="dibaca" value="1"'
+        . $checked . ' onchange="this.form.submit()"> Sudah dibaca</label></form>';
+};
 $renderReviewStatus = static function (int $idWawancara, string $file) use ($pemeriksaanByFile): string {
     $reviews = $pemeriksaanByFile[$idWawancara][$file] ?? [];
     if (!$reviews) {
@@ -251,7 +269,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <a href="tambah.php" class="btn btn-primary mb-3">+ Jadwalkan wawancara</a>
 <div class="table-responsive">
 <table class="table table-bordered table-hover bg-white align-middle wawancara-table"><thead class="table-light"><tr><th class="text-center col-no">No</th><th class="col-nama">Nama Pegawai/Jabatan</th><th class="col-kompetensi">Kompetensi Jabatan</th><th class="col-pertanyaan">Daftar pertanyaan</th><th class="col-bukti">Bukti kompetensi</th><th class="col-status">Status</th><th class="text-center col-aksi">Aksi</th></tr></thead><tbody>
-<?php foreach ($data as $index => $row): ?><tr><td class="text-center"><?= $index + 1 ?></td><td><?= htmlspecialchars($row['nama_lengkap']) ?><br>(<?= htmlspecialchars($row['nama_jabatan']) ?>)</td><td><?= htmlspecialchars($row['kompetensi'] ?: '-') ?></td><td class="question-cell"><?= $renderList($row['daftar_pertanyaan'], 'modal-pertanyaan-' . (int) $row['id_wawancara']) ?></td><td class="evidence-cell"><?= $renderEvidence((int) $row['id_wawancara'], $row['kompetensi'], $row['bukti_banyak'], $row['foto_banyak'], 'modal-jawaban-' . (int) $row['id_wawancara'] . '-' . substr(sha1((string) $row['kompetensi']), 0, 10)) ?></td><td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?></td><td class="text-center"><div class="action-buttons table-actions"><a href="download.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-outline-secondary table-action-btn" title="Download data wawancara Word" aria-label="Download data wawancara Word"><i class="fas fa-download" aria-hidden="true"></i></a><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><form method="post" action="hapus.php" class="d-inline" onsubmit="return confirm('Hapus wawancara beserta hasil dan bukti terkait?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus wawancara" aria-label="Hapus wawancara"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form></div></td></tr><?php endforeach; ?>
+<?php foreach ($data as $index => $row): ?><tr><td class="text-center"><?= $index + 1 ?></td><td><?= htmlspecialchars($row['nama_lengkap']) ?><br>(<?= htmlspecialchars($row['nama_jabatan']) ?>)</td><td><?= htmlspecialchars($row['kompetensi'] ?: '-') ?></td><td class="question-cell"><?= $renderList($row['daftar_pertanyaan'], 'modal-pertanyaan-' . (int) $row['id_wawancara']) ?></td><td class="evidence-cell"><?= $renderEvidence((int) $row['id_wawancara'], $row['kompetensi'], $row['bukti_banyak'], $row['foto_banyak'], 'modal-jawaban-' . (int) $row['id_wawancara'] . '-' . substr(sha1((string) $row['kompetensi']), 0, 10)) ?></td><td class="status-cell"><?= htmlspecialchars($row['status_kompetensi'] ?: '-') ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?= $renderReadCheckbox((int) $row['id_wawancara'], in_array((int) $row['id_wawancara'], $readInterviewIds, true)) ?></td><td class="text-center"><div class="action-buttons table-actions"><a href="download.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-outline-secondary table-action-btn" title="Download data wawancara Word" aria-label="Download data wawancara Word"><i class="fas fa-download" aria-hidden="true"></i></a><a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a><form method="post" action="hapus.php" class="d-inline" data-confirm-message="Hapus wawancara beserta hasil dan bukti terkait?"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>"><button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus wawancara" aria-label="Hapus wawancara"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form></div></td></tr><?php endforeach; ?>
 <?php if (!$data): ?><tr><td colspan="7" class="text-center text-muted">Belum ada data wawancara.</td></tr><?php endif; ?>
 </tbody></table>
 </div>

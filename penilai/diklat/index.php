@@ -65,7 +65,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <form method="post" action="<?= BASE_URL ?>/diklat/acc.php" onsubmit="return confirm('Ajukan kembali kebutuhan diklat ini?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_kebutuhan'] ?>"><input type="hidden" name="status" value="Diusulkan"><button type="submit" class="btn diklat-action-resubmit" title="Ajukan kembali" aria-label="Ajukan kembali"><i class="fas fa-undo" aria-hidden="true"></i></button></form>
     <?php endif; ?>
     <a href="edit.php?id=<?= (int) $row['id_kebutuhan'] ?>" class="btn diklat-action-edit" title="Edit kebutuhan diklat" aria-label="Edit kebutuhan diklat"><i class="fas fa-edit" aria-hidden="true"></i></a>
-    <form method="post" action="hapus.php" onsubmit="return confirm('Hapus kebutuhan diklat ini?')"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_kebutuhan'] ?>"><button type="submit" class="btn diklat-action-delete" title="Hapus kebutuhan diklat" aria-label="Hapus kebutuhan diklat"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
+    <form method="post" action="hapus.php" data-confirm-message="Hapus kebutuhan diklat ini?"><?= csrfField() ?><input type="hidden" name="id" value="<?= (int) $row['id_kebutuhan'] ?>"><button type="submit" class="btn diklat-action-delete" title="Hapus kebutuhan diklat" aria-label="Hapus kebutuhan diklat"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>
     </div>
   </td>
 </tr>

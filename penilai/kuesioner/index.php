@@ -52,7 +52,7 @@ $stmt = $pdo->prepare(
               j.nama_jabatan, j_target.nama_jabatan, k.kompetensi,
               hk.file_bukti, hk.daftar_nilai, hk.daftar_jawaban, hk.status_kompetensi,
               dk.dokumentasi_banyak
-     ORDER BY k.id_kuesioner ASC, w.id_wawancara DESC"
+     ORDER BY k.id_kuesioner ASC, w.id_wawancara ASC"
 );
 $stmt->execute(array_merge($jabatanIds, $jabatanIds, $jabatanIds));
 $data = $stmt->fetchAll();
@@ -204,7 +204,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <div class="table-responsive"><table class="table table-bordered table-hover bg-white align-middle kuesioner-table">
 <thead><tr><th class="text-center col-no">No</th><th class="col-nama">Nama pegawai/Jabatan</th><th class="col-kompetensi">Kompetensi jabatan</th><th class="col-pertanyaan">Daftar pertanyaan</th><th class="col-bukti">Bukti kompetensi</th><th class="col-status">Status</th><th class="col-aksi">Aksi</th></tr></thead>
 <tbody>
-<?php foreach ($data as $row): ?>
+<?php foreach ($data as $index => $row): ?>
 <tr>
   <?php
   $answerContent = $row['id_wawancara']
@@ -214,7 +214,7 @@ require_once __DIR__ . '/../../includes/header.php';
       ? $renderDocumentationModal($row['dokumentasi_banyak'], 'modal-dokumentasi-' . (int) $row['id_wawancara'])
       : '';
   ?>
-  <td class="text-center"><?= (int) $row['id_kuesioner'] ?></td>
+  <td class="text-center"><?= $index + 1 ?></td>
   <td><?= htmlspecialchars($row['nama_lengkap'] ? $row['nama_lengkap'] . ($row['nama_jabatan'] ? ' (' . $row['nama_jabatan'] . ')' : '') : 'Sesi belum dibuat') ?></td>
   <td><?= htmlspecialchars($row['kompetensi']) ?></td>
   <td class="question-cell"><?= $renderQuestions($row['daftar_pertanyaan'], 'modal-kuesioner-' . (int) $row['id_kuesioner'] . '-' . (int) $row['id_wawancara']) ?></td>
@@ -239,7 +239,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
                 <?php if ($row['id_wawancara']): ?>
                 <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
-                <form method="post" action="hapus.php" class="d-inline ml-1" onsubmit="return confirm('Hapus sesi kuesioner dan hasil penilaian ini?')"><?= csrfField() ?>
+                <form method="post" action="hapus.php" class="d-inline ml-1" data-confirm-message="Hapus sesi kuesioner dan hasil penilaian ini?"><?= csrfField() ?>
                     <input type="hidden" name="id" value="<?= (int) $row['id_wawancara'] ?>">
                     <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus sesi" aria-label="Hapus sesi"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
                 </form>

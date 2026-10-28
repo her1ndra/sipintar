@@ -4,13 +4,19 @@ requireKegiatanHakimAccess();
 
 $periode = $_GET['periode'] ?? 'bulan';
 if (!is_string($periode) || !in_array($periode, ['bulan', 'triwulan', 'tahun'], true)) {
-    $periode = 'bulan';
+    http_response_code(400);
+    exit('Periode laporan tidak valid.');
 }
 $tahunAkhir = (int) date('Y');
 $tahunInput = $_GET['tahun'] ?? '';
 $tahun = is_scalar($tahunInput) ? filter_var((string) $tahunInput, FILTER_VALIDATE_INT) : false;
 $tahun = $tahun && $tahun >= 2000 && $tahun <= $tahunAkhir + 1 ? $tahun : $tahunAkhir;
 
+$format = $_GET['format'] ?? 'csv';
+if (!is_string($format) || !in_array($format, ['csv', 'word'], true)) {
+    http_response_code(400);
+    exit('Format unduhan laporan tidak valid.');
+}
 $filterType = $_GET['filter'] ?? '';
 $filterValue = $_GET['value'] ?? '';
 if (!is_string($filterType) || !in_array($filterType, ['', 'hakim', 'jenis'], true)
@@ -21,7 +27,7 @@ if (!is_string($filterType) || !in_array($filterType, ['', 'hakim', 'jenis'], tr
     exit('Filter laporan tidak valid.');
 }
 
-$tanggalMulai = sprintf('%04d-01-01', $tahun);
+$tanggalMulai = sprintf('%04d-01-01', $periode === 'tahun' ? $tahun - 4 : $tahun);
 $tanggalBatas = sprintf('%04d-01-01', $tahun + 1);
 $sql = "SELECT p.nama_lengkap, kh.jenis_kegiatan, kh.nama_kegiatan, kh.penyelenggara,
                kh.tanggal_mulai, kh.tanggal_selesai, kh.lokasi
@@ -47,6 +53,16 @@ $filterLabel = $filterType === 'hakim'
     ? 'Nama hakim: ' . $filterValue
     : ($filterType === 'jenis' ? 'Jenis kegiatan: ' . $filterValue : 'Semua data');
 $filenameFilter = $filterType === 'hakim' ? 'hakim' : ($filterType === 'jenis' ? 'jenis-kegiatan' : 'semua');
+if ($format === 'word') {
+    require_once __DIR__ . '/../../includes/kegiatan_hakim_word.php';
+    $wordDocument = buatLaporanWordKegiatanHakim($data, $filterLabel, $periode, $tahun);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    header('Content-Disposition: attachment; filename="laporan-kegiatan-hakim-' . $filenameFilter . '-' . $tahun . '.docx"');
+    header('Content-Length: ' . strlen($wordDocument));
+    echo $wordDocument;
+    exit;
+}
+
 $filename = 'laporan-kegiatan-hakim-' . $filenameFilter . '-' . $tahun . '.csv';
 header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
