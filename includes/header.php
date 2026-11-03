@@ -38,8 +38,8 @@ function siPintarMenuActive(string $needle, string $path): string
         <div class="sidebar-brand-icon">
             <img src="<?= BASE_URL ?>/assets/img/logo.png" style="width: 40px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
         </div>
-        <div class="sidebar-brand-text mx-2" style="font-weight: 800; letter-spacing: 1px;">
-            SI PINTAR <sup style="color: #F9A825;">PNYK</sup>
+        <div class="sidebar-brand-text mx-2" style="font-weight: 800; letter-spacing: 0.1px; line-height: 2;">
+            SI PINTAR <sup style="display: block; color: #F9A825; font-size: 0.6em; line-height: 1;">Pengadilan Negeri Yogyakarta</sup>
         </div>
     </a>
 

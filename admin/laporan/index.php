@@ -15,6 +15,8 @@ require_once __DIR__ . '/../../includes/header.php';
 ?>
 <style>
 .report-hero { background: linear-gradient(135deg, #006837, #0b7d54); color: #fff; border-radius: .5rem; padding: 1.5rem; }
+.report-hero .text-uppercase { color: #fff; }
+#content-wrapper .report-hero h2 { color: #fff !important; }
 .report-card { border-left: 4px solid #f9a825; }
 .report-table td { vertical-align: top; }
 </style>
