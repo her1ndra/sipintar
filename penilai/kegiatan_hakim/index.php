@@ -93,7 +93,8 @@ require_once __DIR__ . '/../../includes/header.php';
   </select>
 </div>
 <?php endif; ?>
-<div class="dropdown d-inline-block mb-3 mr-2">
+<div class="d-flex align-items-center flex-wrap mb-3">
+<div class="dropdown d-inline-block mr-2">
   <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
     <i class="fas fa-download mr-1" aria-hidden="true"></i>Unduh laporan
   </button>
@@ -106,7 +107,8 @@ require_once __DIR__ . '/../../includes/header.php';
     </a>
   </div>
 </div>
-<a href="tambah.php" class="btn btn-primary mb-3">+ Catat kegiatan</a>
+<a href="tambah.php" class="btn btn-primary">+ Catat kegiatan</a>
+</div>
 <?php if (!$data): ?>
 <div class="alert alert-info">Belum ada data kegiatan hakim.</div>
 <?php endif; ?>

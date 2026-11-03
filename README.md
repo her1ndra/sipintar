@@ -1,99 +1,102 @@
-# SI PINTAR - Pengembangan Kompetensi Aparatur
+# Panduan Penggunaan SI PINTAR
 
-Aplikasi web PHP native (tanpa framework) + MySQL/MariaDB (PDO) untuk penilaian kompetensi
-pegawai: analisis tugas, kuesioner, wawancara, analisis kesenjangan, kebutuhan diklat,
-sertifikat, dan kegiatan hakim.
+Panduan singkat untuk pegawai Pengadilan Negeri Yogyakarta yang menggunakan SI PINTAR.
 
-Kebutuhan: PHP >= 8.1 dengan ekstensi `pdo_mysql`, `fileinfo`, `mbstring`, `zip`, `dom`
-serta Composer (lihat `composer.json`).
+## Membuka aplikasi
 
-## Setup
+1. Pastikan komputer terhubung ke jaringan kantor.
+2. Buka Google Chrome atau Microsoft Edge.
+3. Buka alamat SI PINTAR dari Admin/pengelola aplikasi.
+4. Masukkan NIP dan kata sandi, lalu pilih **Masuk**.
 
-1. Pasang dependensi PHP:
-   ```
-   composer install
-   ```
-2. Buat database dan impor dump terbaru:
-   ```
-   mysql -u root -e "CREATE DATABASE si_pintar CHARACTER SET utf8mb4"
-   mysql -u root si_pintar < database/si_pintar.sql
-   ```
-   Dump ini sudah berisi seluruh skema aplikasi, termasuk tabel keamanan, jawaban, dokumentasi,
-   pemeriksaan, dan status baca admin. Gunakan hanya pada database kosong; dump ini bukan skrip
-   pembaruan untuk database yang sudah berisi data.
-3. Konfigurasi koneksi. Salin `config/local.example.php` menjadi `config/local.php` lalu isi.
-   Semua nilai juga dapat diberikan lewat environment variable `SIPINTAR_<NAMA>`
-   (mis. `SIPINTAR_DB_PASS`). `config/local.php` tidak di-commit.
-   - Pengembangan (XAMPP): isi `'env' => 'development'` (error ditampilkan).
-   - Produksi: `'env' => 'production'` (default; error hanya dicatat di log), gunakan
-     user database khusus dengan hak terbatas, **bukan `root`**, dan beri password kuat.
-4. Akun Admin pertama (jika database kosong) dibuat lewat SQL:
-   ```sql
-   INSERT INTO users (nip, password, role) VALUES ('<nip angka>', '<hash>', 'Admin');
-   ```
-   Hash: `php -r "echo password_hash('rahasia-kuat', PASSWORD_DEFAULT);"`
-5. Jalankan:
-   - Apache/XAMPP: letakkan folder di `htdocs`; pastikan `AllowOverride All` agar `.htaccess` aktif.
-   - Pengembangan cepat: `php -S localhost:8000 router.php`  
-     (**wajib memakai `router.php`**; built-in server mengabaikan `.htaccess`).
-7. Buka `/auth/login.php`.
+Simpan alamat aplikasi sebagai bookmark dengan menekan `Ctrl+D` agar mudah dibuka kembali.
+Tidak perlu memasang aplikasi tambahan.
 
-### Nginx (produksi)
-```nginx
-location ~ ^/(database|includes|config|tests|vendor)/ { deny all; }
-location ~ ^/(assets/uploads|uploads)/              { deny all; }
-location ~* \.(sql|log|bak|lock|md)$                { deny all; }
-```
-Untuk HTTPS di belakang reverse proxy, set `'trust_proxy' => true` di `config/local.php`.
+## Mengenali menu
 
-## Keamanan (ringkas)
+Menu di sebelah kiri berbeda sesuai akun dan kewenangan:
 
-- **CSRF**: semua request POST wajib membawa token (`csrfField()` di form, divalidasi global di
-  `config/config.php`). Aksi hapus dan logout hanya lewat POST.
-- **Sesi**: cookie `HttpOnly` + `SameSite=Lax` (+ `Secure` bila HTTPS), ID sesi diganti saat login,
-  logout menghapus cookie, sesi berakhir setelah tidak aktif (`session_idle`, default 2 jam),
-  akun yang dinonaktifkan langsung kehilangan akses.
-- **File upload**: tidak bisa dibuka langsung. Semua lewat `file.php?f=...` yang mengecek login,
-  keberadaan file di database, dan hak akses (Admin; Penilai hanya untuk pegawai dalam wewenangnya;
-  Ketua/Wakil Ketua untuk kegiatan hakim). Validasi upload terpusat di `includes/upload.php`
-  (MIME asli via `finfo`, ukuran, nama acak). PDF bukti wawancara/kuesioner yang sudah diperiksa
-  ditampilkan dan diunduh sebagai salinan bertanda kotak centang “Sudah diperiksa”; unggahan asli
-  tidak diubah.
-- **Otorisasi penilai**: modul gap dan usulan diklat dibatasi sesuai `wewenang_penilaian`.
-  Modul Kegiatan Hakim untuk Admin, Ketua, dan Wakil Ketua (`canAccessKegiatanHakim()`).
-- **Audit log**: login/logout, hapus data, perubahan sertifikat tercatat di `audit_log`.
-- **Error**: tidak ditampilkan di produksi; kredensial tidak ada di kode.
+- **Dashboard**: melihat ringkasan.
+- **Kuesioner** dan **Wawancara**: mengisi atau meninjau penilaian kompetensi.
+- **Analisis Kesenjangan** dan **Kebutuhan Diklat**: mencatat kesenjangan kompetensi atau usulan
+  pengembangan.
+- **Kegiatan Hakim**: mencatat dan melihat kegiatan hakim. Menu ini hanya tersedia untuk akun yang
+  berwenang.
+- Admin dapat melihat menu tambahan seperti data pegawai, sertifikat, analisis tugas, laporan TNA,
+  dan akun pengguna.
 
-## Struktur folder
+Jika menu yang dibutuhkan tidak terlihat, tanyakan kepada Admin apakah akun Anda memiliki akses.
 
-- `config/` - bootstrap (`config.php`), koneksi (`database.php`), konfigurasi lokal (`local.php`).
-- `includes/` - `auth.php` (requireLogin/requireRole/wewenang), `security.php` (CSRF,
-  audit, hapus aman), `upload.php`, `sertifikat_form.php`, layout `header.php`/`footer.php`.
-- `auth/` - login, proses login, logout, profil. `file.php` - pengiriman file upload terproteksi.
-- `admin/`, `penilai/` - modul per role (Kegiatan Hakim: Admin lewat `admin/kegiatan_hakim/`, Ketua/Wakil Ketua lewat `penilai/kegiatan_hakim/`, isi halaman dipakai bersama). `admin/laporan/` - laporan TNA (Word).
-- `database/` - `si_pintar.sql` (dump skema lengkap terbaru), `si_pintar_schema.sql` dan `legacy/`
-  (arsip skema lama; jangan digunakan untuk instalasi baru).
-- `tests/smoke.php` - tes end-to-end (lihat di bawah).
+## Mencatat kegiatan hakim
 
-## Tes
+1. Buka menu **Kegiatan Hakim**.
+2. Pilih **+ Catat kegiatan**.
+3. Isi nama hakim, jenis kegiatan, nama kegiatan, dan tanggal mulai. Lengkapi penyelenggara, tanggal
+   selesai, dan tempat bila ada.
+4. Jika tersedia, unggah surat tugas berformat PDF, Word, atau JPG dengan ukuran maksimal 5 MB.
+5. Pilih **Simpan**. Kegiatan yang berhasil dicatat akan muncul pada daftar.
 
-Jalankan **hanya pada database uji** (tes menulis dan menghapus data):
-```
-php -S 127.0.0.1:8000 router.php &
-SMOKE_ADMIN_NIP=.. SMOKE_ADMIN_PASS=.. SMOKE_KETUA_NIP=.. SMOKE_KETUA_PASS=.. \
-SMOKE_PANITERA_NIP=.. SMOKE_PANITERA_PASS=.. php tests/smoke.php
-```
-Butuh ekstensi `curl`, dan data uji berupa akun Admin, Ketua, dan Panitera (jabatan id 6) seperti pada dump.
+Untuk memperbaiki data, pilih ikon edit pada baris kegiatan. Untuk menghapus, pilih ikon hapus dan
+pastikan penghapusan memang diperlukan sebelum menyetujui konfirmasi.
 
-## Alur otorisasi
+### Melihat dan menyaring kegiatan
 
-Penilai hanya melihat dan menilai pegawai yang jabatannya ada di `wewenang_penilaian`
-(`getJabatanWewenang()`, `penilaiBerwenangAtasPegawai()`).
+- Pilih **Per bulan**, **Per triwulan**, atau **Per tahun**, tentukan tahun acuan, lalu tekan
+  **Tampilkan**.
+- Gunakan pilihan filter nama hakim atau jenis kegiatan untuk menyaring daftar yang sedang tampil.
+- Ikon unduh pada baris kegiatan digunakan untuk mengunduh informasi kegiatan tersebut.
 
-## Yang masih perlu dikembangkan
+### Mengunduh laporan kegiatan
 
-- Analisis kesenjangan masih diisi manual (belum otomatis membandingkan standar vs hasil penilaian).
-- `admin/jawab.php` dan `penilai/jawab.php` (kuesioner, wawancara) masih dua file terpisah dengan tampilan
-  mirip; logika upload dan otorisasi sudah dipusatkan, tetapi templatenya belum digabung.
-- Hapus pegawai menghapus berantai (FK `ON DELETE CASCADE`) data sertifikat, penilaian, dll. File fisik
-  terkait tidak ikut dibersihkan.
+Tombol **Unduh laporan** berada sejajar dengan **+ Catat kegiatan**.
+
+1. Atur periode dan tahun, lalu pilih **Tampilkan**.
+2. Pilih **Unduh laporan**.
+3. Pilih format **PDF** atau **Word**.
+4. Buka berkas yang selesai diunduh. Biasanya berkas tersimpan di folder **Downloads/Unduhan**.
+
+## Mengisi kuesioner atau wawancara
+
+1. Buka **Kuesioner** atau **Wawancara**.
+2. Pilih penilaian atau pegawai yang sesuai, kemudian buka aksi untuk mengisi atau melihat jawaban.
+3. Isi jawaban yang diminta. Unggah dokumentasi atau bukti jika formulir menyediakannya.
+4. Periksa kembali isian sebelum memilih tombol simpan atau kirim.
+
+Gunakan aksi dokumentasi/bukti pada baris yang sesuai untuk membuka atau mengunduh berkas pendukung.
+Dokumen Word bukti memuat berkas yang sudah tersedia untuk item tersebut.
+
+## Analisis kesenjangan dan kebutuhan diklat
+
+- Pada **Analisis Kesenjangan**, pilih **Tambah analisis kesenjangan**, isi pegawai dan informasi
+  kompetensi yang diminta, kemudian simpan.
+- Pada **Kebutuhan Diklat**, pilih **Ajukan kebutuhan diklat**, isi pegawai, diklat, prioritas,
+  tahun rencana, dan catatan, kemudian simpan usulan.
+- Pantau status usulan pada daftar. Pilihan yang tersedia bergantung pada peran dan kewenangan akun.
+
+## Laporan TNA
+
+Menu **Laporan TNA** tersedia untuk Admin.
+
+1. Pilih laporan bulanan atau tahunan.
+2. Pilih bulan/tahun yang diinginkan.
+3. Tekan **Tampilkan laporan** untuk memperbarui ringkasan.
+4. Tekan **Word** untuk mengunduh laporan.
+
+## Profil dan keluar
+
+- Untuk mengganti nama atau kata sandi, buka menu akun di kanan atas lalu pilih **Ganti profil**.
+- Setelah selesai, pilih **Keluar**, terutama jika komputer digunakan bersama.
+- Jangan membagikan kata sandi kepada orang lain. Jika lupa kata sandi, hubungi Admin.
+
+## Jika mengalami kendala
+
+- **Alamat tidak terbuka:** pastikan komputer terhubung ke jaringan kantor, periksa alamat aplikasi,
+  lalu coba muat ulang halaman. Hubungi Admin jika masih gagal.
+- **Tidak bisa masuk:** periksa NIP dan kata sandi. Hubungi Admin jika akun belum dibuat atau kata
+  sandi terlupa.
+- **Data atau menu tidak terlihat:** akses bergantung pada peran dan kewenangan akun; tanyakan
+  kepada Admin.
+- **Berkas tidak dapat diunduh atau dibuka:** periksa folder **Downloads/Unduhan**. Berkas Word
+  menggunakan format `.docx`; gunakan Microsoft Word atau aplikasi yang mendukung format tersebut.
+- Saat melaporkan masalah kepada Admin, sebutkan menu yang dibuka dan pesan yang muncul. Jangan
+  mengirim kata sandi.
