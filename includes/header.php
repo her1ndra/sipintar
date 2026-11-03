@@ -32,7 +32,7 @@ function siPintarMenuActive(string $needle, string $path): string
 <div id="wrapper">
 
 <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar"
-    style="background: linear-gradient(180deg, #004d00 10%, #004d00 100%); position: sticky; top: 0; height: 100vh; overflow-y: hidden; overflow-x: hidden; z-index: 1050;">
+    style="background: linear-gradient(180deg, #004d00 10%, #004d00 100%); position: sticky; top: 0; height: 100vh; overflow-y: auto; overflow-x: hidden; z-index: 1050;">
 
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= BASE_URL ?>/index.php">
         <div class="sidebar-brand-icon">

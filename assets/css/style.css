@@ -15,7 +15,25 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 }
 
 /* 2. Background area konten */
-#content-wrapper { background-color: #F2F5F3 !important; }
+#content-wrapper {
+  color: #212529 !important;
+  background-color: #F2F5F3 !important;
+}
+#content-wrapper h1,
+#content-wrapper h2,
+#content-wrapper h3,
+#content-wrapper h4,
+#content-wrapper h5,
+#content-wrapper h6,
+#content-wrapper .h1,
+#content-wrapper .h2,
+#content-wrapper .h3,
+#content-wrapper .h4,
+#content-wrapper .h5,
+#content-wrapper .h6 {
+  color: #212529 !important;
+}
+#content-wrapper .text-muted { color: #212529 !important; }
 
 /* 3. Kartu (card) */
 .card {
@@ -177,6 +195,7 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .table tbody tr:hover > td {
   background-color: #e7f3ec !important;
 }
+.table tbody td { color: #212529 !important; }
 .table tbody td { vertical-align: middle; }
 .table.kegiatan-hakim-table tbody td:not(.action-cell) {
   text-align: justify;
@@ -215,8 +234,18 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .sidebar .nav-item .nav-link span { font-size: 0.8rem; }
 .sidebar-brand-text { font-size: 0.85rem; }
 
-#accordionSidebar { scrollbar-width: none; -ms-overflow-style: none; }
-#accordionSidebar::-webkit-scrollbar { display: none; }
+#accordionSidebar {
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+  -ms-overflow-style: auto;
+}
+#accordionSidebar::-webkit-scrollbar { width: 6px; }
+#accordionSidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+}
+#accordionSidebar::-webkit-scrollbar-track { background: transparent; }
 
 .sidebar .nav-item .nav-link i {
   color: rgba(255, 255, 255, 0.35) !important;
@@ -264,6 +293,16 @@ body, #wrapper, h1, h2, h3, h4, h5, h6, p, span, a, div, table, input, button, s
 .table-actions {
   width: fit-content;
   flex-wrap: nowrap !important;
+}
+
+.table-actions.penilaian-item-actions,
+.wawancara-table .table-actions.penilaian-item-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, 2.25rem);
+  grid-auto-rows: 2.25rem;
+  flex-wrap: unset !important;
+  gap: 0.25rem;
+  white-space: normal;
 }
 
 .diklat-action-cell {

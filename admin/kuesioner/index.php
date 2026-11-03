@@ -249,8 +249,8 @@ require_once __DIR__ . '/../../includes/header.php';
                 ?>
                 <td class="status-cell"><?= $hasScore ? htmlspecialchars($row['status_kompetensi'] ?: '-') : '-' ?><?php if ($row['id_wawancara']): ?><br><?= $renderInfoModal($row, 'modal-informasi-' . (int) $row['id_wawancara']) ?><?= $renderReadCheckbox((int) $row['id_wawancara'], in_array((int) $row['id_wawancara'], $readInterviewIds, true)) ?><?php endif; ?></td>
                 <td class="action-cell">
-                    <div class="table-actions">
-                        <div class="dropdown mr-1">
+                    <div class="table-actions penilaian-item-actions">
+                        <div class="dropdown">
                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle table-action-btn" data-toggle="dropdown" title="Download kuesioner" aria-label="Download kuesioner"><i class="fas fa-download" aria-hidden="true"></i></button>
                             <div class="dropdown-menu dropdown-menu-right">
                                 <a class="dropdown-item" href="download.php?id=<?= (int) $row['id_kuesioner'] ?>&amp;format=pdf"><i class="fas fa-file-pdf text-danger mr-2" aria-hidden="true"></i>PDF</a>
@@ -258,9 +258,10 @@ require_once __DIR__ . '/../../includes/header.php';
                             </div>
                         </div>
                         <?php if ($row['id_wawancara']): ?>
+                            <a href="../download_bukti.php?jenis=kuesioner&amp;id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-outline-primary table-action-btn" title="Download dokumentasi dan bukti Word" aria-label="Download dokumentasi dan bukti Word"><i class="fas fa-image" aria-hidden="true"></i></a>
                             <a href="jawab.php?id=<?= (int) $row['id_wawancara'] ?>" class="btn btn-sm btn-primary table-action-btn" title="Isi data" aria-label="Isi data"><i class="fas fa-clipboard-check" aria-hidden="true"></i></a>
                         <?php endif; ?>
-                        <form method="post" action="hapus.php" class="d-inline ml-1" data-confirm-message="Hapus kuesioner ini beserta seluruh sesi, jawaban, dan bukti terkait?"><?= csrfField() ?>
+                        <form method="post" action="hapus.php" class="d-inline" data-confirm-message="Hapus kuesioner ini beserta seluruh sesi, jawaban, dan bukti terkait?"><?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= (int) $row['id_kuesioner'] ?>">
                             <button type="submit" class="btn btn-sm btn-danger table-action-btn" title="Hapus kuesioner" aria-label="Hapus kuesioner"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
                         </form>

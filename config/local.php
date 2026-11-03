@@ -6,5 +6,5 @@ return [
     'db_name' => 'si_pintar',
     'db_user' => 'root',
     'db_pass' => '',
-    'base_url'     => 'sipintar',
+    'base_url'     => '',
 ];
