@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 20 Okt 2026 pada 09.20
+-- Waktu pembuatan: 3 Nov 2026
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -866,21 +866,14 @@ INSERT INTO `pertanyaan_kuesioner` (`id_pertanyaan`, `id_kuesioner`, `id_kompete
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `schema_migrations`
+-- Struktur dari tabel `status_baca_admin`
 --
 
-CREATE TABLE `schema_migrations` (
-  `filename` varchar(190) NOT NULL,
-  `applied_at` timestamp NOT NULL DEFAULT current_timestamp()
+CREATE TABLE `status_baca_admin` (
+  `id_wawancara` int(10) UNSIGNED NOT NULL,
+  `id_user_admin` int(10) UNSIGNED NOT NULL,
+  `dibaca_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data untuk tabel `schema_migrations`
---
-
-INSERT INTO `schema_migrations` (`filename`, `applied_at`) VALUES
-('20261009_001_keamanan.sql', '2026-10-14 03:46:10'),
-('20261014_001_jawaban_wawancara.sql', '2026-10-14 03:46:10');
 
 -- --------------------------------------------------------
 
@@ -1736,10 +1729,11 @@ ALTER TABLE `pertanyaan_kuesioner`
   ADD KEY `fk_pertanyaan_kompetensi` (`id_kompetensi`);
 
 --
--- Indeks untuk tabel `schema_migrations`
+-- Indeks untuk tabel `status_baca_admin`
 --
-ALTER TABLE `schema_migrations`
-  ADD PRIMARY KEY (`filename`);
+ALTER TABLE `status_baca_admin`
+  ADD PRIMARY KEY (`id_wawancara`,`id_user_admin`),
+  ADD KEY `idx_status_baca_admin_user` (`id_user_admin`);
 
 --
 -- Indeks untuk tabel `sertifikat_pegawai`
@@ -2112,6 +2106,13 @@ ALTER TABLE `sertifikat_pegawai`
 ALTER TABLE `standar_kompetensi_jabatan`
   ADD CONSTRAINT `fk_standar_jabatan` FOREIGN KEY (`id_jabatan`) REFERENCES `jabatan` (`id_jabatan`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_standar_kompetensi` FOREIGN KEY (`id_kompetensi`) REFERENCES `kompetensi` (`id_kompetensi`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `status_baca_admin`
+--
+ALTER TABLE `status_baca_admin`
+  ADD CONSTRAINT `fk_status_baca_admin_user` FOREIGN KEY (`id_user_admin`) REFERENCES `users` (`id_user`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_status_baca_admin_wawancara` FOREIGN KEY (`id_wawancara`) REFERENCES `wawancara` (`id_wawancara`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `users`

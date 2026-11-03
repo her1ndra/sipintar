@@ -18,22 +18,21 @@ serta Composer (lihat `composer.json`).
    mysql -u root -e "CREATE DATABASE si_pintar CHARACTER SET utf8mb4"
    mysql -u root si_pintar < database/si_pintar.sql
    ```
-3. Terapkan migrasi yang belum ada di dump (termasuk tabel `audit_log`, kolom jawaban wawancara, serta dokumentasi foto kuesioner dan wawancara):
-   ```
-   php database/migrate.php            # tambahkan --status untuk melihat status
-   ```
-4. Konfigurasi koneksi. Salin `config/local.example.php` menjadi `config/local.php` lalu isi.
+   Dump ini sudah berisi seluruh skema aplikasi, termasuk tabel keamanan, jawaban, dokumentasi,
+   pemeriksaan, dan status baca admin. Gunakan hanya pada database kosong; dump ini bukan skrip
+   pembaruan untuk database yang sudah berisi data.
+3. Konfigurasi koneksi. Salin `config/local.example.php` menjadi `config/local.php` lalu isi.
    Semua nilai juga dapat diberikan lewat environment variable `SIPINTAR_<NAMA>`
    (mis. `SIPINTAR_DB_PASS`). `config/local.php` tidak di-commit.
    - Pengembangan (XAMPP): isi `'env' => 'development'` (error ditampilkan).
    - Produksi: `'env' => 'production'` (default; error hanya dicatat di log), gunakan
      user database khusus dengan hak terbatas, **bukan `root`**, dan beri password kuat.
-5. Akun Admin pertama (jika database kosong) dibuat lewat SQL:
+4. Akun Admin pertama (jika database kosong) dibuat lewat SQL:
    ```sql
    INSERT INTO users (nip, password, role) VALUES ('<nip angka>', '<hash>', 'Admin');
    ```
    Hash: `php -r "echo password_hash('rahasia-kuat', PASSWORD_DEFAULT);"`
-6. Jalankan:
+5. Jalankan:
    - Apache/XAMPP: letakkan folder di `htdocs`; pastikan `AllowOverride All` agar `.htaccess` aktif.
    - Pengembangan cepat: `php -S localhost:8000 router.php`  
      (**wajib memakai `router.php`**; built-in server mengabaikan `.htaccess`).
@@ -72,8 +71,8 @@ Untuk HTTPS di belakang reverse proxy, set `'trust_proxy' => true` di `config/lo
   audit, hapus aman), `upload.php`, `sertifikat_form.php`, layout `header.php`/`footer.php`.
 - `auth/` - login, proses login, logout, profil. `file.php` - pengiriman file upload terproteksi.
 - `admin/`, `penilai/` - modul per role (Kegiatan Hakim: Admin lewat `admin/kegiatan_hakim/`, Ketua/Wakil Ketua lewat `penilai/kegiatan_hakim/`, isi halaman dipakai bersama). `admin/laporan/` - laporan TNA (Word).
-- `database/` - `si_pintar.sql` (dump terbaru), `migrations/` + `migrate.php`, `legacy/` (arsip migrasi
-  lama yang sudah tergabung di dump).
+- `database/` - `si_pintar.sql` (dump skema lengkap terbaru), `si_pintar_schema.sql` dan `legacy/`
+  (arsip skema lama; jangan digunakan untuk instalasi baru).
 - `tests/smoke.php` - tes end-to-end (lihat di bawah).
 
 ## Tes
